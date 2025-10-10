@@ -13,9 +13,9 @@ function App() {
   return (
     <Web3Provider>
       <Router>
-        <div className="min-h-screen bg-slate-900 text-white">
+        <div className="min-h-screen bg-black text-white">
           <Navbar />
-          <main className="container mx-auto px-4 py-8">
+          <main className="max-w-6xl mx-auto">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/explore" element={<Explore />} />

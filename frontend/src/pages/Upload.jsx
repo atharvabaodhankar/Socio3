@@ -69,18 +69,18 @@ const Upload = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Create New Post</h1>
-        <p className="text-gray-400">Share your content with the Socio3 community</p>
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold gradient-text mb-2">Create New Post</h1>
+        <p className="text-gray-400 text-lg">Share your content with the Socio3 community</p>
       </div>
 
-      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+      <div className="glass rounded-2xl p-8">
         {/* File Upload Area */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Upload Image or Video</label>
+        <div className="mb-8">
+          <label className="block text-lg font-medium mb-4 text-white">Upload Media</label>
           {!previewUrl ? (
-            <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center hover:border-violet-500 transition-colors">
+            <div className="border-2 border-dashed border-gray-600 rounded-2xl p-12 text-center hover:border-purple-500 transition-all duration-300 hover:bg-white/5">
               <input
                 type="file"
                 accept="image/*,video/*"
@@ -89,24 +89,29 @@ const Upload = () => {
                 id="file-upload"
               />
               <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="text-4xl mb-4">📁</div>
-                <p className="text-gray-400 mb-2">Click to upload or drag and drop</p>
-                <p className="text-sm text-gray-500">PNG, JPG, GIF, MP4 up to 10MB</p>
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <p className="text-xl text-white mb-2">Drop your files here</p>
+                <p className="text-gray-400 mb-4">or click to browse</p>
+                <p className="text-sm text-gray-500">Supports PNG, JPG, GIF, MP4 up to 10MB</p>
               </label>
             </div>
           ) : (
-            <div className="relative">
+            <div className="relative rounded-2xl overflow-hidden">
               {selectedFile?.type.startsWith('image/') ? (
                 <img
                   src={previewUrl}
                   alt="Preview"
-                  className="w-full max-h-96 object-cover rounded-lg"
+                  className="w-full max-h-96 object-cover"
                 />
               ) : (
                 <video
                   src={previewUrl}
                   controls
-                  className="w-full max-h-96 rounded-lg"
+                  className="w-full max-h-96"
                 />
               )}
               <button
@@ -114,42 +119,78 @@ const Upload = () => {
                   setSelectedFile(null);
                   setPreviewUrl(null);
                 }}
-                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors"
+                className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200"
               >
-                ✕
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
           )}
         </div>
 
         {/* Caption */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-2">Caption</label>
-          <textarea
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder="Write a caption for your post..."
-            className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-violet-500 resize-none"
-            rows={4}
-          />
-          <div className="text-right text-sm text-gray-400 mt-1">
-            {caption.length}/500
+        <div className="mb-8">
+          <label className="block text-lg font-medium mb-4 text-white">Caption</label>
+          <div className="relative">
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Write a caption for your post... #hashtags #web3"
+              className="w-full bg-white/5 border border-gray-600 rounded-2xl px-6 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-white/10 resize-none transition-all duration-200"
+              rows={4}
+              maxLength={500}
+            />
+            <div className="absolute bottom-4 right-6 text-sm text-gray-400">
+              {caption.length}/500
+            </div>
           </div>
+        </div>
+
+        {/* Advanced Options */}
+        <div className="mb-8">
+          <details className="group">
+            <summary className="flex items-center justify-between cursor-pointer text-white font-medium mb-4">
+              <span>Advanced Options</span>
+              <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div className="space-y-4 pl-4 border-l-2 border-gray-700">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Allow comments</span>
+                <button className="w-12 h-6 bg-purple-500 rounded-full relative">
+                  <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">Show like count</span>
+                <button className="w-12 h-6 bg-purple-500 rounded-full relative">
+                  <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                </button>
+              </div>
+            </div>
+          </details>
         </div>
 
         {/* Post Button */}
         <button
           onClick={handleUpload}
           disabled={!selectedFile || !caption.trim() || isUploading}
-          className="w-full bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-medium transition-all duration-200"
+          className="w-full btn-primary py-4 rounded-2xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
           {isUploading ? (
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Uploading to IPFS...</span>
+            <div className="flex items-center justify-center space-x-3">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Publishing to Blockchain...</span>
             </div>
           ) : (
-            'Share Post'
+            <div className="flex items-center justify-center space-x-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              <span>Share Post</span>
+            </div>
           )}
         </button>
       </div>
