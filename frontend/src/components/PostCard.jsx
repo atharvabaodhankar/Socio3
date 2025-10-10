@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 
-const PostCard = ({ post, onLike, onTip, onComment }) => {
+const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const { account, formatAddress } = useWeb3();
   const [isLiked, setIsLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -47,7 +47,10 @@ const PostCard = ({ post, onLike, onTip, onComment }) => {
       </div>
 
       {/* Post Image */}
-      <div className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900">
+      <div 
+        className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer"
+        onClick={onClick}
+      >
         {post.imageUrl ? (
           <img 
             src={post.imageUrl} 

@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { usePosts } from '../hooks/usePosts';
 import PostCard from '../components/PostCard';
+import PostModal from '../components/PostModal';
 
 const Explore = () => {
   const { isConnected, formatAddress } = useWeb3();
   const [activeTab, setActiveTab] = useState('trending');
+  const [selectedPostIndex, setSelectedPostIndex] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { posts, loading, error } = usePosts(); // Fetch all posts
 
   // Users can browse posts without connecting wallet
@@ -32,6 +35,28 @@ const Explore = () => {
   };
 
   const sortedPosts = getSortedPosts();
+
+  const openPostModal = (index) => {
+    setSelectedPostIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const closePostModal = () => {
+    setIsModalOpen(false);
+    setSelectedPostIndex(null);
+  };
+
+  const goToNextPost = () => {
+    if (selectedPostIndex < sortedPosts.length - 1) {
+      setSelectedPostIndex(selectedPostIndex + 1);
+    }
+  };
+
+  const goToPrevPost = () => {
+    if (selectedPostIndex > 0) {
+      setSelectedPostIndex(selectedPostIndex - 1);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -79,8 +104,12 @@ const Explore = () => {
                 </button>
               </div>
             ) : sortedPosts.length > 0 ? (
-              sortedPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
+              sortedPosts.map((post, index) => (
+                <PostCard 
+                  key={post.id} 
+                  post={post} 
+                  onClick={() => openPostModal(index)}
+                />
               ))
             ) : (
               <div className="text-center py-16">
@@ -147,8 +176,12 @@ const Explore = () => {
           <>
             {/* Posts Grid for Mobile */}
             <div className="grid grid-cols-3 gap-1 mb-8">
-              {sortedPosts.slice(0, 12).map((post) => (
-                <div key={post.id} className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden">
+              {sortedPosts.slice(0, 12).map((post, index) => (
+                <div 
+                  key={post.id} 
+                  onClick={() => openPostModal(index)}
+                  className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                >
                   <img 
                     src={post.imageUrl} 
                     alt="Post" 
@@ -193,6 +226,17 @@ const Explore = () => {
           Load More Posts
         </button>
       </div>
+
+      {/* Post Modal */}
+      <PostModal
+        post={selectedPostIndex !== null ? sortedPosts[selectedPostIndex] : null}
+        isOpen={isModalOpen}
+        onClose={closePostModal}
+        onNext={goToNextPost}
+        onPrev={goToPrevPost}
+        hasNext={selectedPostIndex !== null && selectedPostIndex < sortedPosts.length - 1}
+        hasPrev={selectedPostIndex !== null && selectedPostIndex > 0}
+      />
     </div>
   );
 };

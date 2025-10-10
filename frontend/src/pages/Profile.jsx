@@ -3,11 +3,14 @@ import { useParams } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { usePosts } from '../hooks/usePosts';
 import { useContracts } from '../hooks/useContracts';
+import PostModal from '../components/PostModal';
 
 const Profile = () => {
   const { address } = useParams();
   const { account, formatAddress, isConnected } = useWeb3();
   const [activeTab, setActiveTab] = useState('posts');
+  const [selectedPostIndex, setSelectedPostIndex] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Determine if this is the current user's profile
   const isOwnProfile = !address || address.toLowerCase() === account?.toLowerCase();
@@ -16,6 +19,28 @@ const Profile = () => {
   // Fetch posts for this profile
   const { posts, loading, error } = usePosts(profileAddress);
   const { getFollowerCount } = useContracts();
+
+  const openPostModal = (index) => {
+    setSelectedPostIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const closePostModal = () => {
+    setIsModalOpen(false);
+    setSelectedPostIndex(null);
+  };
+
+  const goToNextPost = () => {
+    if (selectedPostIndex < posts.length - 1) {
+      setSelectedPostIndex(selectedPostIndex + 1);
+    }
+  };
+
+  const goToPrevPost = () => {
+    if (selectedPostIndex > 0) {
+      setSelectedPostIndex(selectedPostIndex - 1);
+    }
+  };
 
 
 
@@ -189,8 +214,12 @@ const Profile = () => {
         </div>
       ) : activeTab === 'posts' && posts.length > 0 ? (
         <div className="grid grid-cols-3 gap-1 md:gap-4">
-          {posts.map((post) => (
-            <div key={post.id} className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden">
+          {posts.map((post, index) => (
+            <div 
+              key={post.id} 
+              onClick={() => openPostModal(index)}
+              className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
+            >
               <img 
                 src={post.imageUrl} 
                 alt="Post" 
@@ -267,6 +296,17 @@ const Profile = () => {
           </button>
         </div>
       )}
+
+      {/* Post Modal */}
+      <PostModal
+        post={selectedPostIndex !== null ? posts[selectedPostIndex] : null}
+        isOpen={isModalOpen}
+        onClose={closePostModal}
+        onNext={goToNextPost}
+        onPrev={goToPrevPost}
+        hasNext={selectedPostIndex !== null && selectedPostIndex < posts.length - 1}
+        hasPrev={selectedPostIndex !== null && selectedPostIndex > 0}
+      />
     </div>
   );
 };

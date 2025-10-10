@@ -66,7 +66,8 @@ export const usePosts = (authorAddress = null) => {
               timestamp: new Date(timestamp * 1000),
               likes: Number(likesCount),
               tips: parseFloat(ethers.formatEther(tipsAmount)),
-              commentCount: 0 // TODO: Implement comments
+              commentCount: 0, // TODO: Implement comments
+              caption: '' // TODO: Add caption support to smart contract
             };
           } catch (err) {
             console.error('Error processing post:', err);
@@ -79,7 +80,8 @@ export const usePosts = (authorAddress = null) => {
               timestamp: new Date(),
               likes: 0,
               tips: 0,
-              commentCount: 0
+              commentCount: 0,
+              caption: ''
             };
           }
         })
