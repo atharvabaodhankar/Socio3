@@ -17,6 +17,8 @@ const Profile = () => {
   const { posts, loading, error } = usePosts(profileAddress);
   const { getFollowerCount } = useContracts();
 
+
+
   // If no wallet connected and no address provided, show connect message
   if (!isConnected && !address) {
     return (

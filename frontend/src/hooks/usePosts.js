@@ -45,28 +45,37 @@ export const usePosts = (authorAddress = null) => {
       const processedPosts = await Promise.all(
         rawPosts.map(async (post, index) => {
           try {
+            // Post structure: (address author, string ipfsHash, uint256 timestamp, uint256 id)
+            const postId = Number(post[3]);
+            const author = post[0];
+            const ipfsHash = post[1];
+            const timestamp = Number(post[2]);
+
+
+
             const [likesCount, tipsAmount] = await Promise.all([
-              socialContract.getLikesCount(post.id || index),
-              socialContract.getTipsAmount(post.id || index)
+              socialContract.getLikesCount(postId),
+              socialContract.getTipsAmount(postId)
             ]);
 
             return {
-              id: post.id ? Number(post.id) : index,
-              author: post.author,
-              ipfsHash: post.ipfsHash,
-              imageUrl: getIPFSUrl(post.ipfsHash),
-              timestamp: post.timestamp ? new Date(Number(post.timestamp) * 1000) : new Date(),
+              id: postId,
+              author: author,
+              ipfsHash: ipfsHash,
+              imageUrl: getIPFSUrl(ipfsHash),
+              timestamp: new Date(timestamp * 1000),
               likes: Number(likesCount),
               tips: parseFloat(ethers.formatEther(tipsAmount)),
               commentCount: 0 // TODO: Implement comments
             };
           } catch (err) {
             console.error('Error processing post:', err);
+            // Fallback with array access
             return {
               id: index,
-              author: post.author,
-              ipfsHash: post.ipfsHash,
-              imageUrl: getIPFSUrl(post.ipfsHash),
+              author: post[0] || 'Unknown',
+              ipfsHash: post[1] || '',
+              imageUrl: getIPFSUrl(post[1] || ''),
               timestamp: new Date(),
               likes: 0,
               tips: 0,

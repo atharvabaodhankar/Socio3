@@ -54,5 +54,6 @@ export const uploadToPinata = async (file) => {
 };
 
 export const getIPFSUrl = (hash) => {
-  return `https://gateway.pinata.cloud/ipfs/${hash}`;
+  // Use public IPFS gateway for now
+  return `https://ipfs.io/ipfs/${hash}`;
 };
