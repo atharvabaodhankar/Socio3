@@ -1,52 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
+import { useSocialInteractions } from '../hooks/useSocialInteractions';
 
 const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) => {
   const { account, formatAddress, isConnected } = useWeb3();
-  const { likePost, unlikePost, tipPost, hasUserLiked } = useContracts();
-  const [isLiked, setIsLiked] = useState(false);
-  const [likes, setLikes] = useState(post?.likes || 0);
+  const { tipPost } = useContracts();
+  const { 
+    isLiked, 
+    likes, 
+    comments, 
+    commentsCount, 
+    loading: socialLoading, 
+    toggleLike, 
+    postComment 
+  } = useSocialInteractions(post?.id);
+  
   const [comment, setComment] = useState('');
   const [tipAmount, setTipAmount] = useState('');
   const [showTipInput, setShowTipInput] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (post && account && isConnected) {
-      checkLikeStatus();
-    }
-  }, [post, account, isConnected]);
-
-  const checkLikeStatus = async () => {
-    if (!post || !account) return;
-    try {
-      const liked = await hasUserLiked(post.id, account);
-      setIsLiked(liked);
-    } catch (error) {
-      console.error('Error checking like status:', error);
-    }
-  };
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   const handleLike = async () => {
-    if (!isConnected || !post) return;
+    if (!isConnected || !post || socialLoading) return;
     
-    setIsLoading(true);
     try {
-      if (isLiked) {
-        await unlikePost(post.id);
-        setLikes(prev => prev - 1);
-        setIsLiked(false);
-      } else {
-        await likePost(post.id);
-        setLikes(prev => prev + 1);
-        setIsLiked(true);
-      }
+      await toggleLike();
     } catch (error) {
       console.error('Error toggling like:', error);
       alert('Failed to update like. Please try again.');
-    } finally {
-      setIsLoading(false);
+    }
+  };
+
+  const handleComment = async () => {
+    if (!comment.trim() || !isConnected || !post) return;
+    
+    try {
+      await postComment(comment);
+      setComment('');
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      alert('Failed to post comment. Please try again.');
     }
   };
 
@@ -77,6 +73,31 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
     }
   };
 
+  // Touch handlers for swipe navigation
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && hasNext) {
+      onNext();
+    }
+    if (isRightSwipe && hasPrev) {
+      onPrev();
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleKeyPress);
@@ -92,24 +113,48 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
   if (!isOpen || !post) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 bg-black z-50 flex items-center justify-center lg:bg-black/90 lg:backdrop-blur-sm lg:p-4"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Mobile progress indicator */}
+      <div className="absolute top-4 left-4 right-16 z-20 lg:hidden">
+        <div className="flex space-x-1">
+          {Array.from({ length: Math.min(5, (hasNext || hasPrev) ? 3 : 1) }).map((_, index) => (
+            <div
+              key={index}
+              className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden"
+            >
+              <div 
+                className="h-full bg-white rounded-full transition-all duration-300"
+                style={{ 
+                  width: index === 0 ? '100%' : '0%' 
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+        className="absolute top-4 right-4 z-20 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
 
-      {/* Navigation arrows */}
+      {/* Navigation arrows - Better positioned for mobile */}
       {hasPrev && (
         <button
           onClick={onPrev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+          className="absolute left-2 lg:left-4 top-1/2 -translate-y-1/2 w-10 h-10 lg:w-12 lg:h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors z-10"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -118,22 +163,22 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       {hasNext && (
         <button
           onClick={onNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+          className="absolute right-2 lg:right-4 top-1/2 -translate-y-1/2 w-10 h-10 lg:w-12 lg:h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors z-10"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
       )}
 
       {/* Modal content */}
-      <div className="max-w-6xl w-full max-h-[90vh] bg-black rounded-2xl overflow-hidden flex">
-        {/* Image section */}
-        <div className="flex-1 flex items-center justify-center bg-black">
+      <div className="w-full h-full flex flex-col lg:flex-row lg:max-w-6xl lg:max-h-[90vh] lg:bg-black lg:rounded-2xl overflow-hidden">
+        {/* Mobile: Full screen image with overlay */}
+        <div className="relative flex-1 flex items-center justify-center bg-black lg:bg-transparent">
           <img
             src={post.imageUrl}
             alt="Post"
-            className="max-w-full max-h-full object-contain"
+            className="w-full h-full object-contain lg:max-w-full lg:max-h-full"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
@@ -144,10 +189,96 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
+
+          {/* Mobile overlay with post info */}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 lg:hidden">
+            {/* Author info */}
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">
+                  {post.author?.slice(2, 4).toUpperCase()}
+                </span>
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-white">{formatAddress(post.author)}</p>
+                <p className="text-xs text-gray-300">
+                  {post.timestamp instanceof Date 
+                    ? post.timestamp.toLocaleDateString() 
+                    : post.timestamp
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* Caption */}
+            {post.caption && (
+              <p className="text-white mb-4">{post.caption}</p>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-6">
+                <button 
+                  onClick={handleLike}
+                  disabled={!isConnected || socialLoading}
+                  className="flex items-center space-x-2 disabled:opacity-50"
+                >
+                  <svg className={`w-7 h-7 transition-colors ${isLiked ? 'text-red-500 fill-current' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  <span className="text-white font-medium">{likes}</span>
+                </button>
+                
+                <button className="text-white">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </button>
+                
+                <button className="text-white">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                  </svg>
+                </button>
+              </div>
+              
+              <button 
+                onClick={() => setShowTipInput(!showTipInput)}
+                disabled={!isConnected}
+                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-full text-white font-medium disabled:opacity-50 transition-colors"
+              >
+                💰 {post.tips?.toFixed(3) || '0.000'} ETH
+              </button>
+            </div>
+
+            {/* Tip input for mobile */}
+            {showTipInput && (
+              <div className="mt-4 p-3 bg-black/60 backdrop-blur-sm rounded-xl">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    step="0.001"
+                    placeholder="0.001"
+                    value={tipAmount}
+                    onChange={(e) => setTipAmount(e.target.value)}
+                    className="flex-1 bg-gray-800 text-white placeholder-gray-400 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                  <span className="text-gray-300 text-sm">ETH</span>
+                  <button
+                    onClick={handleTip}
+                    disabled={!tipAmount || isLoading}
+                    className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white text-sm disabled:opacity-50 transition-colors"
+                  >
+                    {isLoading ? '...' : 'Send'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="w-96 bg-gray-900 flex flex-col">
+        {/* Desktop Sidebar - Hidden on mobile */}
+        <div className="hidden lg:flex lg:w-96 bg-gray-900 flex-col">
           {/* Header */}
           <div className="p-4 border-b border-gray-700 flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
@@ -183,9 +314,32 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
               </div>
             )}
 
-            {/* Comments would go here */}
+            {/* Comments */}
             <div className="space-y-3">
-              <p className="text-gray-400 text-sm">Comments coming soon...</p>
+              {comments.length > 0 ? (
+                comments.map((comment) => (
+                  <div key={comment.id} className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-semibold text-xs">
+                        {comment.userAddress?.slice(2, 4).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white text-sm">
+                        <span className="font-semibold mr-2">{formatAddress(comment.userAddress)}</span>
+                        {comment.text}
+                      </p>
+                      {comment.timestamp && (
+                        <p className="text-gray-400 text-xs mt-1">
+                          {comment.timestamp.toDate ? comment.timestamp.toDate().toLocaleDateString() : 'Just now'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm">No comments yet. Be the first to comment!</p>
+              )}
             </div>
           </div>
 
@@ -226,7 +380,7 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
             {/* Like count and tips */}
             <div className="mb-3">
               <p className="font-semibold text-white text-sm">
-                {likes} likes • {post.tips?.toFixed(3) || '0.000'} ETH in tips
+                {likes} likes • {commentsCount} comments • {post.tips?.toFixed(3) || '0.000'} ETH in tips
               </p>
             </div>
 
@@ -262,10 +416,16 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
                 placeholder="Add a comment..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleComment()}
                 className="flex-1 bg-transparent text-white placeholder-gray-400 text-sm focus:outline-none"
+                disabled={!isConnected}
               />
               {comment.trim() && (
-                <button className="text-blue-400 font-semibold text-sm hover:text-blue-300 transition-colors">
+                <button 
+                  onClick={handleComment}
+                  disabled={!isConnected}
+                  className="text-blue-400 font-semibold text-sm hover:text-blue-300 transition-colors disabled:opacity-50"
+                >
                   Post
                 </button>
               )}

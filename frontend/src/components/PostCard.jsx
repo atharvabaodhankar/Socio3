@@ -1,21 +1,42 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
+import { useSocialInteractions } from '../hooks/useSocialInteractions';
 
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
-  const { account, formatAddress } = useWeb3();
-  const [isLiked, setIsLiked] = useState(false);
+  const { account, formatAddress, isConnected } = useWeb3();
+  const { 
+    isLiked, 
+    likes, 
+    comments, 
+    commentsCount, 
+    loading: socialLoading, 
+    toggleLike, 
+    postComment 
+  } = useSocialInteractions(post?.id);
+  
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    onLike && onLike(post.id);
+  const handleLike = async () => {
+    if (!isConnected || socialLoading) return;
+    
+    try {
+      await toggleLike();
+      onLike && onLike(post.id);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
   };
 
-  const handleComment = () => {
-    if (comment.trim()) {
-      onComment && onComment(post.id, comment);
+  const handleComment = async () => {
+    if (!comment.trim() || !isConnected) return;
+    
+    try {
+      await postComment(comment);
       setComment('');
+      onComment && onComment(post.id, comment);
+    } catch (error) {
+      console.error('Error posting comment:', error);
     }
   };
 
@@ -110,7 +131,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         {/* Like count and tips */}
         <div className="mb-3">
           <p className="font-semibold text-white text-sm">
-            {post.likes || 0} likes • {post.tips || '0'} ETH in tips
+            {likes} likes • {post.tips || '0'} ETH in tips
           </p>
         </div>
 
@@ -125,23 +146,23 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         )}
 
         {/* View comments */}
-        {post.commentCount > 0 && (
+        {commentsCount > 0 && (
           <button 
             onClick={() => setShowComments(!showComments)}
             className="text-gray-400 text-sm mb-3 hover:text-white transition-colors"
           >
-            View all {post.commentCount} comments
+            View all {commentsCount} comments
           </button>
         )}
 
         {/* Comments section */}
         {showComments && (
           <div className="space-y-2 mb-4">
-            {post.comments?.map((comment, index) => (
-              <div key={index} className="flex items-start space-x-2">
+            {comments.map((comment) => (
+              <div key={comment.id} className="flex items-start space-x-2">
                 <div className="w-6 h-6 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex-shrink-0"></div>
                 <p className="text-sm text-white">
-                  <span className="font-semibold mr-2">{formatAddress(comment.author)}</span>
+                  <span className="font-semibold mr-2">{formatAddress(comment.userAddress)}</span>
                   {comment.text}
                 </p>
               </div>

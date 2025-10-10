@@ -3,6 +3,7 @@ import { ethers } from 'ethers';
 import { useWeb3 } from '../context/Web3Context';
 import { getIPFSUrl } from '../config/pinata';
 import { CONTRACT_ADDRESSES, POST_CONTRACT_ABI, SOCIAL_CONTRACT_ABI } from '../config/contracts';
+import { getMultiplePostStats } from '../services/firebaseService';
 
 export const usePosts = (authorAddress = null) => {
   const [posts, setPosts] = useState([]);
@@ -53,10 +54,8 @@ export const usePosts = (authorAddress = null) => {
 
 
 
-            const [likesCount, tipsAmount] = await Promise.all([
-              socialContract.getLikesCount(postId),
-              socialContract.getTipsAmount(postId)
-            ]);
+            // Get tips from blockchain (financial data stays on-chain)
+            const tipsAmount = await socialContract.getTipsAmount(postId);
 
             return {
               id: postId,
@@ -64,9 +63,9 @@ export const usePosts = (authorAddress = null) => {
               ipfsHash: ipfsHash,
               imageUrl: getIPFSUrl(ipfsHash),
               timestamp: new Date(timestamp * 1000),
-              likes: Number(likesCount),
+              likes: 0, // Will be loaded from Firebase
               tips: parseFloat(ethers.formatEther(tipsAmount)),
-              commentCount: 0, // TODO: Implement comments
+              commentCount: 0, // Will be loaded from Firebase
               caption: '' // TODO: Add caption support to smart contract
             };
           } catch (err) {
@@ -86,6 +85,25 @@ export const usePosts = (authorAddress = null) => {
           }
         })
       );
+
+      // Get social data from Firebase for all posts
+      if (processedPosts.length > 0) {
+        try {
+          const postIds = processedPosts.map(post => post.id);
+          const socialStats = await getMultiplePostStats(postIds);
+          
+          // Merge Firebase social data with blockchain data
+          processedPosts.forEach(post => {
+            const stats = socialStats[post.id];
+            if (stats) {
+              post.likes = stats.likes || 0;
+              post.commentCount = stats.comments || 0;
+            }
+          });
+        } catch (error) {
+          console.error('Error loading social stats from Firebase:', error);
+        }
+      }
 
       setPosts(processedPosts.reverse()); // Show newest first
     } catch (err) {
