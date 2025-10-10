@@ -31,7 +31,12 @@ const PostCard = ({ post, onLike, onTip, onComment }) => {
           </div>
           <div>
             <p className="font-semibold text-white">{formatAddress(post.author)}</p>
-            <p className="text-xs text-gray-400">{post.timestamp}</p>
+            <p className="text-xs text-gray-400">
+              {post.timestamp instanceof Date 
+                ? post.timestamp.toLocaleDateString() 
+                : post.timestamp
+              }
+            </p>
           </div>
         </div>
         <button className="p-2 hover:bg-white/10 rounded-full transition-colors">

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
+import { usePosts } from '../hooks/usePosts';
 import PostCard from '../components/PostCard';
 
 const Explore = () => {
   const { isConnected, formatAddress } = useWeb3();
   const [activeTab, setActiveTab] = useState('trending');
+  const { posts, loading, error } = usePosts(); // Fetch all posts
 
   if (!isConnected) {
     return (
@@ -28,40 +30,22 @@ const Explore = () => {
     { id: 'recent', label: 'Recent', icon: '⏰' }
   ];
 
-  // Sample posts data
-  const samplePosts = [
-    {
-      id: 1,
-      author: '0x1234567890123456789012345678901234567890',
-      caption: 'Just deployed my first smart contract! 🚀 #Web3 #Ethereum',
-      timestamp: '2 hours ago',
-      likes: 24,
-      tips: '0.15',
-      commentCount: 8,
-      comments: [
-        { author: '0x9876543210987654321098765432109876543210', text: 'Congrats! 🎉' },
-        { author: '0x1111222233334444555566667777888899990000', text: 'Amazing work!' }
-      ]
-    },
-    {
-      id: 2,
-      author: '0x9876543210987654321098765432109876543210',
-      caption: 'Beautiful sunset from my balcony 🌅',
-      timestamp: '4 hours ago',
-      likes: 156,
-      tips: '0.08',
-      commentCount: 23
-    },
-    {
-      id: 3,
-      author: '0x1111222233334444555566667777888899990000',
-      caption: 'Building the future of social media, one block at a time ⛓️',
-      timestamp: '6 hours ago',
-      likes: 89,
-      tips: '0.22',
-      commentCount: 15
+  // Sort posts based on active tab
+  const getSortedPosts = () => {
+    if (!posts.length) return [];
+    
+    switch (activeTab) {
+      case 'trending':
+        return [...posts].sort((a, b) => b.likes - a.likes);
+      case 'tipped':
+        return [...posts].sort((a, b) => b.tips - a.tips);
+      case 'recent':
+      default:
+        return [...posts].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     }
-  ];
+  };
+
+  const sortedPosts = getSortedPosts();
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -94,9 +78,35 @@ const Explore = () => {
         <div className="grid grid-cols-3 gap-8">
           {/* Main Feed */}
           <div className="col-span-2 space-y-8">
-            {samplePosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
+            {loading ? (
+              <div className="flex justify-center items-center py-16">
+                <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : error ? (
+              <div className="text-center py-16">
+                <p className="text-red-400 mb-4">Error loading posts: {error}</p>
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="btn-primary px-6 py-3 rounded-xl"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : sortedPosts.length > 0 ? (
+              sortedPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))
+            ) : (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-semibold mb-3 text-white">No Posts Yet</h3>
+                <p className="text-gray-400">Be the first to share something amazing!</p>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -143,25 +153,52 @@ const Explore = () => {
 
       {/* Mobile Layout */}
       <div className="lg:hidden">
-        {/* Posts Grid for Mobile */}
-        <div className="grid grid-cols-3 gap-1 mb-8">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
-            <div key={i} className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:opacity-80 transition-opacity">
-              <div className="w-full h-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : sortedPosts.length > 0 ? (
+          <>
+            {/* Posts Grid for Mobile */}
+            <div className="grid grid-cols-3 gap-1 mb-8">
+              {sortedPosts.slice(0, 12).map((post) => (
+                <div key={post.id} className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden">
+                  <img 
+                    src={post.imageUrl} 
+                    alt="Post" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="w-full h-full hidden items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Feed View Toggle */}
-        <div className="text-center mb-8">
-          <button className="btn-primary px-6 py-3 rounded-xl font-medium">
-            Switch to Feed View
-          </button>
-        </div>
+            {/* Feed View Toggle */}
+            <div className="text-center mb-8">
+              <button className="btn-primary px-6 py-3 rounded-xl font-medium">
+                Switch to Feed View
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-3 text-white">No Posts Yet</h3>
+            <p className="text-gray-400">Be the first to share something amazing!</p>
+          </div>
+        )}
       </div>
 
       {/* Load more */}

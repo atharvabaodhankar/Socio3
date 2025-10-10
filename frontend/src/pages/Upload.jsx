@@ -48,6 +48,11 @@ const Upload = () => {
         setSelectedFile(null);
         setCaption('');
         setPreviewUrl(null);
+        
+        // Redirect to profile to see the new post
+        setTimeout(() => {
+          window.location.href = '/profile';
+        }, 1000);
       } else {
         throw new Error(result.error);
       }
