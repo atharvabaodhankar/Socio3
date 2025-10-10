@@ -1,19 +1,14 @@
-// Contract addresses and ABIs
-// Note: Update these addresses after deploying contracts
+import deployedContracts from './deployedContracts.json';
 
+// Contract addresses from deployment
 export const CONTRACT_ADDRESSES = {
-  POST_CONTRACT: "", // Update after deployment
-  SOCIAL_CONTRACT: "" // Update after deployment
+  POST_CONTRACT: deployedContracts.PostContract.address,
+  SOCIAL_CONTRACT: deployedContracts.SocialContract.address
 };
 
-// Contract ABIs (will be generated after compilation)
-export const POST_CONTRACT_ABI = [
-  // This will be populated from artifacts after compilation
-];
-
-export const SOCIAL_CONTRACT_ABI = [
-  // This will be populated from artifacts after compilation
-];
+// Contract ABIs from deployment
+export const POST_CONTRACT_ABI = deployedContracts.PostContract.abi;
+export const SOCIAL_CONTRACT_ABI = deployedContracts.SocialContract.abi;
 
 // Network configuration
 export const NETWORK_CONFIG = {

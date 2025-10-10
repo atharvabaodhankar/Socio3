@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
+import { useContracts } from '../hooks/useContracts';
 import { uploadToPinata } from '../config/pinata';
 
 const Upload = () => {
   const { isConnected, account } = useWeb3();
+  const { createPost } = useContracts();
   const [selectedFile, setSelectedFile] = useState(null);
   const [caption, setCaption] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -30,15 +32,17 @@ const Upload = () => {
     
     try {
       // Upload to IPFS via Pinata
+      console.log('Uploading to IPFS...');
       const result = await uploadToPinata(selectedFile);
       
       if (result.success) {
         console.log('File uploaded to IPFS:', result.ipfsHash);
         
-        // Here you would interact with the smart contract
-        // to create the post on-chain
+        // Create post on blockchain
+        console.log('Creating post on blockchain...');
+        await createPost(result.ipfsHash);
         
-        alert('Post uploaded successfully!');
+        alert('Post created successfully!');
         
         // Reset form
         setSelectedFile(null);
@@ -49,7 +53,7 @@ const Upload = () => {
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload post. Please try again.');
+      alert(`Failed to create post: ${error.message}`);
     } finally {
       setIsUploading(false);
     }

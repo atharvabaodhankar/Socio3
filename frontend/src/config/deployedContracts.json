@@ -1,0 +1,43 @@
+{
+  "PostContract": {
+    "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "abi": [
+      "event PostCreated(uint256 indexed,address indexed,string,uint256)",
+      "function createPost(string)",
+      "function getAllPosts() view returns ((address,string,uint256,uint256)[])",
+      "function getPost(uint256) view returns ((address,string,uint256,uint256))",
+      "function getPostsByAuthor(address) view returns ((address,string,uint256,uint256)[])",
+      "function postCount() view returns (uint256)",
+      "function posts(uint256) view returns (address,string,uint256,uint256)"
+    ]
+  },
+  "SocialContract": {
+    "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "abi": [
+      "event PostLiked(uint256 indexed,address indexed)",
+      "event PostTipped(uint256 indexed,address indexed,address indexed,uint256)",
+      "event PostUnliked(uint256 indexed,address indexed)",
+      "event UserFollowed(address indexed,address indexed)",
+      "event UserUnfollowed(address indexed,address indexed)",
+      "function followUser(address)",
+      "function followerCount(address) view returns (uint256)",
+      "function following(address,address) view returns (bool)",
+      "function followingCount(address) view returns (uint256)",
+      "function getFollowerCount(address) view returns (uint256)",
+      "function getFollowingCount(address) view returns (uint256)",
+      "function getLikesCount(uint256) view returns (uint256)",
+      "function getTipsAmount(uint256) view returns (uint256)",
+      "function getTotalTipsReceived(address) view returns (uint256)",
+      "function hasLiked(uint256,address) view returns (bool)",
+      "function hasUserLiked(uint256,address) view returns (bool)",
+      "function isFollowing(address,address) view returns (bool)",
+      "function likePost(uint256)",
+      "function likesCount(uint256) view returns (uint256)",
+      "function tipPost(uint256,address) payable",
+      "function tips(uint256) view returns (uint256)",
+      "function totalTipsReceived(address) view returns (uint256)",
+      "function unfollowUser(address)",
+      "function unlikePost(uint256)"
+    ]
+  }
+}
