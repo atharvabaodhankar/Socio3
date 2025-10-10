@@ -1,6 +1,6 @@
-import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
-export default buildModule("SocialContractModule", (m) => {
+module.exports = buildModule("SocialContractModule", (m) => {
   const socialContract = m.contract("SocialContract");
 
   return { socialContract };
