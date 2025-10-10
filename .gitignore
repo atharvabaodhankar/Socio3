@@ -1,10 +1,10 @@
 node_modules
 .env
+frontend/.env
 
 # Hardhat files
 /cache
 /artifacts
-.env
 
 # TypeChain files
 /typechain
@@ -16,3 +16,7 @@ node_modules
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
+
+# Frontend build
+frontend/dist
+frontend/node_modules

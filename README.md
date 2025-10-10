@@ -56,11 +56,20 @@ cd ..
 ```
 
 3. **Environment Setup**
-Create a `.env` file in the root directory:
-```env
-INFURA_PROJECT_ID=your_infura_project_id
-PRIVATE_KEY=your_wallet_private_key_for_deployment
+Create environment files from examples:
+```bash
+# Root .env for blockchain and backend services
+cp .env.example .env
+
+# Frontend .env for client-side environment variables
+cp frontend/.env.example frontend/.env
 ```
+
+Then update both `.env` files with your actual credentials:
+- **Root .env**: Infura Project ID, Private Key, Pinata credentials, Firebase config
+- **Frontend .env**: Same credentials but with `VITE_` prefix for Vite
+
+⚠️ **Security Note**: Never commit `.env` files to version control. They contain sensitive credentials.
 
 ## 🔧 Development
 
