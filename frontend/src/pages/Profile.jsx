@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { usePosts } from '../hooks/usePosts';
 import { useContracts } from '../hooks/useContracts';
 import PostModal from '../components/PostModal';
+import EditProfileModal from '../components/EditProfileModal';
+import { getUserProfile, getDisplayName } from '../services/profileService';
+import { getIPFSUrl } from '../config/pinata';
 
 const Profile = () => {
   const { address } = useParams();
-  const { account, formatAddress, isConnected } = useWeb3();
+  const { account, formatAddress, isConnected, provider } = useWeb3();
   const [activeTab, setActiveTab] = useState('posts');
   const [selectedPostIndex, setSelectedPostIndex] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   
   // Determine if this is the current user's profile
   const isOwnProfile = !address || address.toLowerCase() === account?.toLowerCase();
@@ -19,6 +25,29 @@ const Profile = () => {
   // Fetch posts for this profile
   const { posts, loading, error } = usePosts(profileAddress);
   const { getFollowerCount } = useContracts();
+
+  // Load user profile
+  useEffect(() => {
+    if (profileAddress && provider) {
+      loadUserProfile();
+    }
+  }, [profileAddress, provider]);
+
+  const loadUserProfile = async () => {
+    try {
+      setProfileLoading(true);
+      const profile = await getUserProfile(provider, profileAddress);
+      setUserProfile(profile);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleProfileUpdate = (updatedProfile) => {
+    setUserProfile(updatedProfile);
+  };
 
   const openPostModal = (index) => {
     setSelectedPostIndex(index);
@@ -61,13 +90,24 @@ const Profile = () => {
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-32 h-32 bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 rounded-full flex items-center justify-center text-4xl shadow-2xl">
-              <span className="text-white font-bold">
-                {profileAddress?.slice(2, 4).toUpperCase()}
-              </span>
+            <div className="w-32 h-32 bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 rounded-full flex items-center justify-center text-4xl shadow-2xl overflow-hidden">
+              {userProfile?.profileImage ? (
+                <img
+                  src={getIPFSUrl(userProfile.profileImage)}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-white font-bold">
+                  {(userProfile?.username || profileAddress)?.slice(0, 2).toUpperCase()}
+                </span>
+              )}
             </div>
             {isOwnProfile && (
-              <button className="absolute bottom-2 right-2 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors">
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className="absolute bottom-2 right-2 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+              >
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
@@ -79,10 +119,19 @@ const Profile = () => {
           <div className="flex-1 text-center md:text-left">
             <div className="mb-4">
               <h1 className="text-3xl font-bold mb-2 text-white">
-                {formatAddress(profileAddress)}
+                {profileLoading ? (
+                  <div className="w-48 h-8 bg-gray-700 rounded animate-pulse"></div>
+                ) : (
+                  getDisplayName(userProfile, profileAddress)
+                )}
               </h1>
+              {!profileLoading && profileAddress && (
+                <p className="text-gray-400 text-sm mb-2">
+                  {formatAddress(profileAddress)}
+                </p>
+              )}
               <p className="text-gray-400 text-lg">
-                Web3 Creator • Blockchain Enthusiast • NFT Artist
+                {userProfile?.bio || 'Web3 Creator • Blockchain Enthusiast • NFT Artist'}
               </p>
             </div>
             
@@ -109,17 +158,46 @@ const Profile = () => {
             </div>
             
             {/* Bio */}
-            <p className="text-gray-300 mb-6 max-w-md">
-              Building the future of decentralized social media 🚀 
-              Passionate about Web3, DeFi, and digital art. 
-              Join me on this journey! ✨
-            </p>
+            {userProfile?.bio && (
+              <p className="text-gray-300 mb-6 max-w-md">
+                {userProfile.bio}
+              </p>
+            )}
+
+            {/* Links */}
+            {(userProfile?.website || userProfile?.twitter) && (
+              <div className="flex items-center space-x-4 mb-6">
+                {userProfile.website && (
+                  <a
+                    href={userProfile.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    🌐 Website
+                  </a>
+                )}
+                {userProfile.twitter && (
+                  <a
+                    href={`https://twitter.com/${userProfile.twitter}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    🐦 @{userProfile.twitter}
+                  </a>
+                )}
+              </div>
+            )}
             
             {/* Action Buttons */}
             <div className="flex justify-center md:justify-start space-x-4">
               {isOwnProfile ? (
                 <>
-                  <button className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2">
+                  <button 
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
+                  >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
@@ -306,6 +384,13 @@ const Profile = () => {
         onPrev={goToPrevPost}
         hasNext={selectedPostIndex !== null && selectedPostIndex < posts.length - 1}
         hasPrev={selectedPostIndex !== null && selectedPostIndex > 0}
+      />
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onProfileUpdate={handleProfileUpdate}
       />
     </div>
   );

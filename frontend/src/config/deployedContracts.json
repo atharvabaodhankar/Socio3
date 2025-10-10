@@ -39,5 +39,20 @@
       "function unfollowUser(address)",
       "function unlikePost(uint256)"
     ]
+  },
+  "ProfileContract": {
+    "address": "0x08A915445A77Fe63aD1c57a8A6034F3159A7fcD2",
+    "abi": [
+      "function createProfile(string memory ipfsHash, string memory username) external",
+      "function updateProfile(string memory ipfsHash) external", 
+      "function updateUsername(string memory newUsername) external",
+      "function getProfile(address user) external view returns (string memory ipfsHash, uint256 timestamp, bool exists)",
+      "function getUsername(address user) external view returns (string memory)",
+      "function getUserByUsername(string memory username) external view returns (address)",
+      "function hasProfile(address user) external view returns (bool)",
+      "function isUsernameAvailable(string memory username) external view returns (bool)",
+      "event ProfileCreated(address indexed user, string ipfsHash, string username, uint256 timestamp)",
+      "event ProfileUpdated(address indexed user, string ipfsHash, uint256 timestamp)"
+    ]
   }
 }
