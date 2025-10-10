@@ -14,7 +14,7 @@ export const SOCIAL_CONTRACT_ABI = deployedContracts.SocialContract.abi;
 export const NETWORK_CONFIG = {
   chainId: 11155111, // Sepolia testnet
   chainName: "Sepolia",
-  rpcUrl: "https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+  rpcUrl: "https://ethereum-sepolia-rpc.publicnode.com",
   blockExplorer: "https://sepolia.etherscan.io"
 };
 

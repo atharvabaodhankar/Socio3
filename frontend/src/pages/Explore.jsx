@@ -8,21 +8,7 @@ const Explore = () => {
   const [activeTab, setActiveTab] = useState('trending');
   const { posts, loading, error } = usePosts(); // Fetch all posts
 
-  if (!isConnected) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
-        <div className="glass p-12 rounded-2xl max-w-md">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold mb-4 text-white">Discover Amazing Content</h2>
-          <p className="text-gray-400 leading-relaxed">Connect your wallet to explore trending posts and discover new creators from around the world.</p>
-        </div>
-      </div>
-    );
-  }
+  // Users can browse posts without connecting wallet
 
   const tabs = [
     { id: 'trending', label: 'Trending', icon: '🔥' },

@@ -19,8 +19,9 @@ export const Web3Provider = ({ children }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [chainId, setChainId] = useState(null);
 
-  // Check if wallet is already connected
+  // Initialize provider and check if wallet is already connected
   useEffect(() => {
+    initializeProvider();
     checkConnection();
     
     if (window.ethereum) {
@@ -36,17 +37,33 @@ export const Web3Provider = ({ children }) => {
     };
   }, []);
 
+  const initializeProvider = async () => {
+    try {
+      if (window.ethereum) {
+        // Create provider for reading blockchain data even without wallet connection
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        setProvider(provider);
+      } else {
+        // Fallback to a public RPC provider for reading data
+        const provider = new ethers.JsonRpcProvider(NETWORK_CONFIG.rpcUrl);
+        setProvider(provider);
+      }
+    } catch (error) {
+      console.error('Error initializing provider:', error);
+    }
+  };
+
   const checkConnection = async () => {
     if (window.ethereum) {
       try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.listAccounts();
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await browserProvider.listAccounts();
         
         if (accounts.length > 0) {
-          const signer = await provider.getSigner();
-          const network = await provider.getNetwork();
+          const signer = await browserProvider.getSigner();
+          const network = await browserProvider.getNetwork();
           
-          setProvider(provider);
+          setProvider(browserProvider);
           setSigner(signer);
           setAccount(accounts[0].address);
           setChainId(Number(network.chainId));

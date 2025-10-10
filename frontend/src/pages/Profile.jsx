@@ -17,11 +17,12 @@ const Profile = () => {
   const { posts, loading, error } = usePosts(profileAddress);
   const { getFollowerCount } = useContracts();
 
-  if (!isConnected) {
+  // If no wallet connected and no address provided, show connect message
+  if (!isConnected && !address) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <h2 className="text-2xl font-bold mb-4">Connect Wallet to View Profile</h2>
-        <p className="text-gray-400">Connect your wallet to view profiles and interact with the community.</p>
+        <h2 className="text-2xl font-bold mb-4">Connect Wallet to View Your Profile</h2>
+        <p className="text-gray-400">Connect your wallet to view your profile and interact with the community.</p>
       </div>
     );
   }

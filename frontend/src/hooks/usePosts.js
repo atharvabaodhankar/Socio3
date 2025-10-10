@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useContracts } from './useContracts';
+import { ethers } from 'ethers';
 import { useWeb3 } from '../context/Web3Context';
 import { getIPFSUrl } from '../config/pinata';
+import { CONTRACT_ADDRESSES, POST_CONTRACT_ABI, SOCIAL_CONTRACT_ABI } from '../config/contracts';
 
 export const usePosts = (authorAddress = null) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { getAllPosts, getPostsByAuthor, getLikesCount, getTipsAmount } = useContracts();
-  const { isConnected } = useWeb3();
+  const { provider, signer } = useWeb3();
 
   const fetchPosts = async () => {
-    if (!isConnected) {
+    // We need at least a provider to read from the blockchain
+    if (!provider) {
       setLoading(false);
       return;
     }
@@ -20,11 +21,24 @@ export const usePosts = (authorAddress = null) => {
       setLoading(true);
       setError(null);
 
+      // Create contract instances for reading (using provider for read-only operations)
+      const postContract = new ethers.Contract(
+        CONTRACT_ADDRESSES.POST_CONTRACT,
+        POST_CONTRACT_ABI,
+        provider
+      );
+
+      const socialContract = new ethers.Contract(
+        CONTRACT_ADDRESSES.SOCIAL_CONTRACT,
+        SOCIAL_CONTRACT_ABI,
+        provider
+      );
+
       let rawPosts;
       if (authorAddress) {
-        rawPosts = await getPostsByAuthor(authorAddress);
+        rawPosts = await postContract.getPostsByAuthor(authorAddress);
       } else {
-        rawPosts = await getAllPosts();
+        rawPosts = await postContract.getAllPosts();
       }
 
       // Process posts and get additional data
@@ -32,8 +46,8 @@ export const usePosts = (authorAddress = null) => {
         rawPosts.map(async (post, index) => {
           try {
             const [likesCount, tipsAmount] = await Promise.all([
-              getLikesCount(post.id || index),
-              getTipsAmount(post.id || index)
+              socialContract.getLikesCount(post.id || index),
+              socialContract.getTipsAmount(post.id || index)
             ]);
 
             return {
@@ -43,7 +57,7 @@ export const usePosts = (authorAddress = null) => {
               imageUrl: getIPFSUrl(post.ipfsHash),
               timestamp: post.timestamp ? new Date(Number(post.timestamp) * 1000) : new Date(),
               likes: Number(likesCount),
-              tips: parseFloat(tipsAmount),
+              tips: parseFloat(ethers.formatEther(tipsAmount)),
               commentCount: 0 // TODO: Implement comments
             };
           } catch (err) {
@@ -73,7 +87,7 @@ export const usePosts = (authorAddress = null) => {
 
   useEffect(() => {
     fetchPosts();
-  }, [isConnected, authorAddress]);
+  }, [provider, authorAddress]);
 
   const refetch = () => {
     fetchPosts();
