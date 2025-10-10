@@ -16,6 +16,16 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
+// Check if Firebase is properly configured
+const isFirebaseConfigured = () => {
+  try {
+    return !!db && !!import.meta.env.VITE_FIREBASE_PROJECT_ID;
+  } catch (error) {
+    console.warn('Firebase not configured:', error);
+    return false;
+  }
+};
+
 // Collections
 const LIKES_COLLECTION = 'likes';
 const COMMENTS_COLLECTION = 'comments';
@@ -23,8 +33,13 @@ const POST_STATS_COLLECTION = 'postStats';
 
 // Like functions
 export const likePost = async (postId, userAddress) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured. Please set up Firestore database.');
+    throw new Error('Firebase not configured');
+  }
+
   try {
-    const likeId = `${postId}_${userAddress}`;
+    const likeId = `${postId}_${userAddress.toLowerCase()}`;
     const likeRef = doc(db, LIKES_COLLECTION, likeId);
     
     await setDoc(likeRef, {
@@ -39,13 +54,16 @@ export const likePost = async (postId, userAddress) => {
     return true;
   } catch (error) {
     console.error('Error liking post:', error);
+    if (error.code === 'permission-denied') {
+      throw new Error('Please set up Firebase Firestore in test mode. See FIREBASE_QUICK_SETUP.md');
+    }
     throw error;
   }
 };
 
 export const unlikePost = async (postId, userAddress) => {
   try {
-    const likeId = `${postId}_${userAddress}`;
+    const likeId = `${postId}_${userAddress.toLowerCase()}`;
     const likeRef = doc(db, LIKES_COLLECTION, likeId);
     
     await deleteDoc(likeRef);
@@ -62,7 +80,7 @@ export const unlikePost = async (postId, userAddress) => {
 
 export const hasUserLiked = async (postId, userAddress) => {
   try {
-    const likeId = `${postId}_${userAddress}`;
+    const likeId = `${postId}_${userAddress.toLowerCase()}`;
     const likeRef = doc(db, LIKES_COLLECTION, likeId);
     const likeDoc = await getDoc(likeRef);
     
@@ -74,6 +92,10 @@ export const hasUserLiked = async (postId, userAddress) => {
 };
 
 export const getLikesCount = async (postId) => {
+  if (!isFirebaseConfigured()) {
+    return 0;
+  }
+
   try {
     const statsRef = doc(db, POST_STATS_COLLECTION, postId.toString());
     const statsDoc = await getDoc(statsRef);
@@ -134,6 +156,10 @@ export const getComments = async (postId) => {
 };
 
 export const getCommentsCount = async (postId) => {
+  if (!isFirebaseConfigured()) {
+    return 0;
+  }
+
   try {
     const statsRef = doc(db, POST_STATS_COLLECTION, postId.toString());
     const statsDoc = await getDoc(statsRef);

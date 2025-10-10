@@ -72,6 +72,15 @@ export const useSocialInteractions = (postId) => {
       console.error('Error toggling like:', error);
       // Revert optimistic update on error
       setIsLiked(!isLiked);
+      
+      // Show user-friendly error message
+      if (error.message.includes('Firebase not configured')) {
+        alert('Firebase is not set up yet. Likes will be available once Firebase is configured.');
+      } else if (error.message.includes('permission-denied')) {
+        alert('Please set up Firebase Firestore in test mode. Check the setup guide.');
+      } else {
+        alert('Failed to update like. Please try again.');
+      }
       throw error;
     } finally {
       setLoading(false);
