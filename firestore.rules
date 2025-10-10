@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read all profiles but only update their own
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Posts collection - anyone can read, only authenticated users can create
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null 
+        && request.auth.uid == resource.data.authorId;
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.authorId;
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.authorId;
+    }
+    
+    // Comments collection - anyone can read, authenticated users can create
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.authorId;
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.authorId;
+      allow delete: if request.auth != null 
+        && (request.auth.uid == resource.data.authorId 
+            || request.auth.uid == resource.data.postAuthorId);
+    }
+    
+    // Notifications collection - users can only read their own notifications
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.userId;
+    }
+    
+    // Follows collection - users can read all follows, create/delete their own
+    match /follows/{followId} {
+      allow read: if true;
+      allow create: if request.auth != null 
+        && request.auth.uid == request.resource.data.followerId;
+      allow delete: if request.auth != null 
+        && request.auth.uid == resource.data.followerId;
+    }
+  }
+}
