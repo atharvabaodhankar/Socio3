@@ -166,17 +166,19 @@ const Profile = () => {
                   {formatAddress(profileAddress)}
                 </p>
               )}
-              <p className="text-gray-400 text-lg">
-                {profileLoading ? (
-                  <div className="w-64 h-6 bg-gray-700 rounded animate-pulse"></div>
-                ) : userProfile?.bio ? (
-                  userProfile.bio
-                ) : userProfile?.exists ? (
-                  'Web3 Creator • Blockchain Enthusiast • NFT Artist'
-                ) : (
-                  'New to Socio3 • Setup your profile to get started!'
-                )}
-              </p>
+              {profileLoading ? (
+                <div className="w-64 h-6 bg-gray-700 rounded animate-pulse"></div>
+              ) : (
+                <p className="text-gray-400 text-lg">
+                  {userProfile?.bio ? (
+                    userProfile.bio
+                  ) : userProfile?.exists ? (
+                    'Web3 Creator • Blockchain Enthusiast • NFT Artist'
+                  ) : (
+                    'New to Socio3 • Setup your profile to get started!'
+                  )}
+                </p>
+              )}
             </div>
             
             {/* Stats */}
