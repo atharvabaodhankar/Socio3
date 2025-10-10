@@ -143,12 +143,15 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
       }
 
       // Save profile to blockchain + IPFS
-      await saveUserProfile(signer, updatedProfile);
+      const savedProfile = await saveUserProfile(signer, updatedProfile);
 
       // Notify parent component
-      onProfileUpdate && onProfileUpdate(updatedProfile);
+      onProfileUpdate && onProfileUpdate(savedProfile);
       
-      alert('Profile updated successfully on blockchain!');
+      const message = profileData.exists 
+        ? 'Profile updated successfully on blockchain!' 
+        : 'Profile created successfully on blockchain! Welcome to Web3!';
+      alert(message);
       onClose();
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -183,7 +186,9 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
       <div className="bg-gray-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700">
-          <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
+          <h2 className="text-2xl font-bold text-white">
+            {profileData.exists ? 'Edit Profile' : 'Setup Your Profile'}
+          </h2>
           <button
             onClick={onClose}
             className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-white transition-colors"
@@ -376,10 +381,10 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
             {uploading ? (
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Saving...</span>
+                <span>{profileData.exists ? 'Updating...' : 'Creating Profile...'}</span>
               </div>
             ) : (
-              'Save Changes'
+              profileData.exists ? 'Save Changes' : 'Create Profile'
             )}
           </button>
         </div>

@@ -34,12 +34,26 @@ const Profile = () => {
   }, [profileAddress, provider]);
 
   const loadUserProfile = async () => {
+    if (!profileAddress || !provider) return;
+    
     try {
       setProfileLoading(true);
       const profile = await getUserProfile(provider, profileAddress);
       setUserProfile(profile);
     } catch (error) {
       console.error('Error loading user profile:', error);
+      // Set default profile on error (for accounts created before ProfileContract)
+      setUserProfile({
+        userAddress: profileAddress.toLowerCase(),
+        username: '',
+        displayName: '',
+        bio: '',
+        website: '',
+        twitter: '',
+        profileImage: '',
+        coverImage: '',
+        exists: false
+      });
     } finally {
       setProfileLoading(false);
     }
@@ -85,6 +99,26 @@ const Profile = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Setup Profile Banner */}
+      {isOwnProfile && userProfile && !userProfile.exists && !profileLoading && (
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-2">Complete Your Web3 Profile</h3>
+              <p className="text-purple-100">
+                Set up your username, profile picture, and bio to get the full Socio3 experience!
+              </p>
+            </div>
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-xl text-white font-medium transition-colors"
+            >
+              Setup Now
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Profile Header */}
       <div className="glass rounded-2xl p-8 mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
@@ -121,8 +155,10 @@ const Profile = () => {
               <h1 className="text-3xl font-bold mb-2 text-white">
                 {profileLoading ? (
                   <div className="w-48 h-8 bg-gray-700 rounded animate-pulse"></div>
-                ) : (
+                ) : userProfile?.exists ? (
                   getDisplayName(userProfile, profileAddress)
+                ) : (
+                  formatAddress(profileAddress)
                 )}
               </h1>
               {!profileLoading && profileAddress && (
@@ -131,7 +167,15 @@ const Profile = () => {
                 </p>
               )}
               <p className="text-gray-400 text-lg">
-                {userProfile?.bio || 'Web3 Creator • Blockchain Enthusiast • NFT Artist'}
+                {profileLoading ? (
+                  <div className="w-64 h-6 bg-gray-700 rounded animate-pulse"></div>
+                ) : userProfile?.bio ? (
+                  userProfile.bio
+                ) : userProfile?.exists ? (
+                  'Web3 Creator • Blockchain Enthusiast • NFT Artist'
+                ) : (
+                  'New to Socio3 • Setup your profile to get started!'
+                )}
               </p>
             </div>
             
@@ -201,7 +245,7 @@ const Profile = () => {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
-                    <span>Edit Profile</span>
+                    <span>{userProfile?.exists ? 'Edit Profile' : 'Setup Profile'}</span>
                   </button>
                   <button className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

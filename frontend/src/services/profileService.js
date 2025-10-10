@@ -1,10 +1,10 @@
-import { ethers } from 'ethers';
-import { uploadToPinata, getIPFSUrl } from '../config/pinata';
+import { ethers } from "ethers";
+import { uploadToPinata, getIPFSUrl } from "../config/pinata";
 
 // Profile contract ABI (will be updated after deployment)
 const PROFILE_CONTRACT_ABI = [
   "function createProfile(string memory ipfsHash, string memory username) external",
-  "function updateProfile(string memory ipfsHash) external", 
+  "function updateProfile(string memory ipfsHash) external",
   "function updateUsername(string memory newUsername) external",
   "function getProfile(address user) external view returns (string memory ipfsHash, uint256 timestamp, bool exists)",
   "function getUsername(address user) external view returns (string memory)",
@@ -12,7 +12,7 @@ const PROFILE_CONTRACT_ABI = [
   "function hasProfile(address user) external view returns (bool)",
   "function isUsernameAvailable(string memory username) external view returns (bool)",
   "event ProfileCreated(address indexed user, string ipfsHash, string username, uint256 timestamp)",
-  "event ProfileUpdated(address indexed user, string ipfsHash, uint256 timestamp)"
+  "event ProfileUpdated(address indexed user, string ipfsHash, uint256 timestamp)",
 ];
 
 // Contract address
@@ -21,36 +21,78 @@ const PROFILE_CONTRACT_ADDRESS = "0x08A915445A77Fe63aD1c57a8A6034F3159A7fcD2";
 // Save user profile to blockchain + IPFS
 export const saveUserProfile = async (signer, profileData) => {
   try {
+    console.log("Saving profile to blockchain...", profileData);
+
     // Upload profile data to IPFS
-    const profileBlob = new Blob([JSON.stringify(profileData)], { type: 'application/json' });
-    const profileFile = new File([profileBlob], 'profile.json', { type: 'application/json' });
-    
+    const profileBlob = new Blob([JSON.stringify(profileData)], {
+      type: "application/json",
+    });
+    const profileFile = new File([profileBlob], "profile.json", {
+      type: "application/json",
+    });
+
+    console.log("Uploading profile data to IPFS...");
     const uploadResult = await uploadToPinata(profileFile);
     if (!uploadResult.success) {
-      throw new Error(uploadResult.error);
+      throw new Error(uploadResult.error || "Failed to upload to IPFS");
     }
 
+    console.log("Profile data uploaded to IPFS:", uploadResult.ipfsHash);
+
     // Get contract instance
-    const contract = new ethers.Contract(PROFILE_CONTRACT_ADDRESS, PROFILE_CONTRACT_ABI, signer);
-    
+    const contract = new ethers.Contract(
+      PROFILE_CONTRACT_ADDRESS,
+      PROFILE_CONTRACT_ABI,
+      signer
+    );
+    const userAddress = await signer.getAddress();
+
     // Check if profile exists
-    const hasProfile = await contract.hasProfile(await signer.getAddress());
-    
+    let hasProfile = false;
+    try {
+      hasProfile = await contract.hasProfile(userAddress);
+    } catch (error) {
+      console.log("Profile does not exist yet, will create new one");
+      hasProfile = false;
+    }
+
+    console.log("Profile exists:", hasProfile);
+
     let tx;
     if (hasProfile) {
       // Update existing profile
+      console.log("Updating existing profile...");
       tx = await contract.updateProfile(uploadResult.ipfsHash);
     } else {
       // Create new profile
-      const username = profileData.username || '';
+      console.log("Creating new profile...");
+      const username = profileData.username || "";
       tx = await contract.createProfile(uploadResult.ipfsHash, username);
     }
-    
-    await tx.wait();
-    return { ...profileData, ipfsHash: uploadResult.ipfsHash };
+
+    console.log("Transaction sent:", tx.hash);
+    const receipt = await tx.wait();
+    console.log("Transaction confirmed:", receipt.transactionHash);
+
+    return {
+      ...profileData,
+      ipfsHash: uploadResult.ipfsHash,
+      exists: true,
+      timestamp: Date.now(),
+    };
   } catch (error) {
-    console.error('Error saving profile:', error);
-    throw error;
+    console.error("Error saving profile:", error);
+
+    // Provide more specific error messages
+    if (error.message.includes("user rejected")) {
+      throw new Error("Transaction was rejected by user");
+    } else if (error.message.includes("insufficient funds")) {
+      throw new Error("Insufficient funds for transaction");
+    } else if (error.message.includes("Username already taken")) {
+      throw new Error("Username is already taken");
+    } else {
+      throw new Error(`Failed to save profile: ${error.message}`);
+    }
   }
 };
 
@@ -58,11 +100,17 @@ export const saveUserProfile = async (signer, profileData) => {
 export const getUserProfile = async (provider, userAddress) => {
   try {
     // Get contract instance
-    const contract = new ethers.Contract(PROFILE_CONTRACT_ADDRESS, PROFILE_CONTRACT_ABI, provider);
-    
+    const contract = new ethers.Contract(
+      PROFILE_CONTRACT_ADDRESS,
+      PROFILE_CONTRACT_ABI,
+      provider
+    );
+
     // Get profile from blockchain
-    const [ipfsHash, timestamp, exists] = await contract.getProfile(userAddress);
-    
+    const [ipfsHash, timestamp, exists] = await contract.getProfile(
+      userAddress
+    );
+
     if (!exists || !ipfsHash) {
       return getDefaultProfile(userAddress);
     }
@@ -70,22 +118,22 @@ export const getUserProfile = async (provider, userAddress) => {
     // Fetch profile data from IPFS
     const ipfsUrl = getIPFSUrl(ipfsHash);
     const response = await fetch(ipfsUrl);
-    
+
     if (!response.ok) {
-      throw new Error('Failed to fetch profile from IPFS');
+      throw new Error("Failed to fetch profile from IPFS");
     }
-    
+
     const profileData = await response.json();
-    
+
     return {
       ...profileData,
       userAddress: userAddress.toLowerCase(),
       ipfsHash,
       timestamp: Number(timestamp),
-      exists
+      exists,
     };
   } catch (error) {
-    console.error('Error getting profile:', error);
+    console.error("Error getting profile:", error);
     return getDefaultProfile(userAddress);
   }
 };
@@ -93,11 +141,15 @@ export const getUserProfile = async (provider, userAddress) => {
 // Get username for a user address
 export const getUsername = async (provider, userAddress) => {
   try {
-    const contract = new ethers.Contract(PROFILE_CONTRACT_ADDRESS, PROFILE_CONTRACT_ABI, provider);
+    const contract = new ethers.Contract(
+      PROFILE_CONTRACT_ADDRESS,
+      PROFILE_CONTRACT_ABI,
+      provider
+    );
     const username = await contract.getUsername(userAddress);
     return username || null;
   } catch (error) {
-    console.error('Error getting username:', error);
+    console.error("Error getting username:", error);
     return null;
   }
 };
@@ -106,18 +158,18 @@ export const getUsername = async (provider, userAddress) => {
 export const getMultipleUsernames = async (provider, userAddresses) => {
   try {
     const usernames = {};
-    
+
     const promises = userAddresses.map(async (address) => {
       const username = await getUsername(provider, address);
       usernames[address.toLowerCase()] = username;
     });
-    
+
     await Promise.all(promises);
     return usernames;
   } catch (error) {
-    console.error('Error getting multiple usernames:', error);
+    console.error("Error getting multiple usernames:", error);
     const usernames = {};
-    userAddresses.forEach(address => {
+    userAddresses.forEach((address) => {
       usernames[address.toLowerCase()] = null;
     });
     return usernames;
@@ -127,10 +179,14 @@ export const getMultipleUsernames = async (provider, userAddresses) => {
 // Check if username is available
 export const isUsernameAvailable = async (provider, username) => {
   try {
-    const contract = new ethers.Contract(PROFILE_CONTRACT_ADDRESS, PROFILE_CONTRACT_ABI, provider);
+    const contract = new ethers.Contract(
+      PROFILE_CONTRACT_ADDRESS,
+      PROFILE_CONTRACT_ABI,
+      provider
+    );
     return await contract.isUsernameAvailable(username);
   } catch (error) {
-    console.error('Error checking username availability:', error);
+    console.error("Error checking username availability:", error);
     return false;
   }
 };
@@ -139,18 +195,18 @@ export const isUsernameAvailable = async (provider, username) => {
 export const getMultipleUserProfiles = async (provider, userAddresses) => {
   try {
     const profiles = {};
-    
+
     const promises = userAddresses.map(async (address) => {
       const profile = await getUserProfile(provider, address);
       profiles[address.toLowerCase()] = profile;
     });
-    
+
     await Promise.all(promises);
     return profiles;
   } catch (error) {
-    console.error('Error getting multiple profiles:', error);
+    console.error("Error getting multiple profiles:", error);
     const profiles = {};
-    userAddresses.forEach(address => {
+    userAddresses.forEach((address) => {
       profiles[address.toLowerCase()] = getDefaultProfile(address);
     });
     return profiles;
@@ -159,17 +215,17 @@ export const getMultipleUserProfiles = async (provider, userAddresses) => {
 
 // Default profile structure
 const getDefaultProfile = (userAddress) => ({
-  userAddress: userAddress?.toLowerCase() || '',
-  username: '',
-  displayName: '',
-  bio: '',
-  website: '',
-  twitter: '',
-  profileImage: '',
-  coverImage: '',
-  ipfsHash: '',
+  userAddress: userAddress?.toLowerCase() || "",
+  username: "",
+  displayName: "",
+  bio: "",
+  website: "",
+  twitter: "",
+  profileImage: "",
+  coverImage: "",
+  ipfsHash: "",
   timestamp: 0,
-  exists: false
+  exists: false,
 });
 
 // Helper function to format profile for display
@@ -181,7 +237,10 @@ export const formatProfileForDisplay = (profile, userAddress) => {
   return {
     ...getDefaultProfile(userAddress),
     ...profile,
-    displayName: profile.displayName || profile.username || `User ${userAddress?.slice(2, 8)}`,
+    displayName:
+      profile.displayName ||
+      profile.username ||
+      `User ${userAddress?.slice(2, 8)}`,
   };
 };
 
