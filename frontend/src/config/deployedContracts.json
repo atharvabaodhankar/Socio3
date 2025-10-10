@@ -1,6 +1,6 @@
 {
   "PostContract": {
-    "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "address": "0xDA671972905F8F6Ee25c4c745822690970418285",
     "abi": [
       "event PostCreated(uint256 indexed,address indexed,string,uint256)",
       "function createPost(string)",
@@ -12,7 +12,7 @@
     ]
   },
   "SocialContract": {
-    "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "address": "0x041AD53f5d83ce489BA2eC2F87D7Bd04F221a9a0",
     "abi": [
       "event PostLiked(uint256 indexed,address indexed)",
       "event PostTipped(uint256 indexed,address indexed,address indexed,uint256)",
