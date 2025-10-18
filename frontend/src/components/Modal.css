@@ -168,36 +168,103 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  padding: 20px 0;
+  gap: 28px;
+  padding: 24px 0;
 }
 
 .spinner {
-  width: 64px;
-  height: 64px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top: 3px solid transparent;
-  border-radius: 50%;
-  animation: spin 1.2s linear infinite;
+  width: 80px;
+  height: 80px;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .spinner::before {
   content: '';
   position: absolute;
-  top: -3px;
-  left: -3px;
-  right: -3px;
-  bottom: -3px;
-  border: 3px solid transparent;
-  border-top: 3px solid #667eea;
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  animation: spin 1.2s linear infinite reverse;
 }
 
-@keyframes spin {
+.spinner::after {
+  content: '';
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 3px solid transparent;
+  border-top: 3px solid #667eea;
+  border-right: 3px solid #764ba2;
+  border-radius: 50%;
+  animation: modernSpin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+.spinner-inner {
+  width: 50px;
+  height: 50px;
+  border: 2px solid transparent;
+  border-top: 2px solid rgba(102, 126, 234, 0.6);
+  border-radius: 50%;
+  animation: modernSpin 1s linear infinite reverse;
+}
+
+.spinner-dot {
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes modernSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% { 
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+@keyframes successPulse {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% { 
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes checkDraw {
+  0% {
+    stroke-dasharray: 0 20;
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dasharray: 20 20;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); }
+  20%, 40%, 60%, 80% { transform: translateX(3px); }
 }
 
 .loading-text {
