@@ -1,5 +1,6 @@
 import React from 'react';
 import { useFollow } from '../hooks/useFollow';
+import { useContracts } from '../hooks/useContracts';
 
 const FollowButton = ({ 
   userAddress, 
@@ -8,7 +9,10 @@ const FollowButton = ({
   showFollowerCount = false,
   className = '' 
 }) => {
+  const { socialContract } = useContracts();
   const { isFollowingUser, followerCount, loading, toggleFollow, canFollow } = useFollow(userAddress);
+  
+  const contractsReady = !!socialContract;
 
   if (!canFollow) {
     return null;
@@ -36,7 +40,7 @@ const FollowButton = ({
     <div className={`flex items-center space-x-2 ${className}`}>
       <button
         onClick={toggleFollow}
-        disabled={loading}
+        disabled={loading || !contractsReady}
         className={`
           ${sizeClasses[size]} 
           ${variantClasses[variant]}
@@ -45,7 +49,7 @@ const FollowButton = ({
           flex items-center space-x-2
         `}
       >
-        {loading ? (
+        {loading || !contractsReady ? (
           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
         ) : (
           <>

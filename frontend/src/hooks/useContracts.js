@@ -142,13 +142,16 @@ export const useContracts = () => {
   };
 
   const isFollowing = async (followerAddress, followedAddress) => {
-    if (!socialContract) throw new Error('Social contract not initialized');
+    if (!socialContract) {
+      console.log('Social contract not ready yet');
+      return false; // Return default value instead of throwing
+    }
     
     try {
       return await socialContract.isFollowing(followerAddress, followedAddress);
     } catch (error) {
       console.error('Error checking follow status:', error);
-      throw error;
+      return false; // Return default value on error
     }
   };
 
@@ -164,14 +167,17 @@ export const useContracts = () => {
   };
 
   const getFollowerCount = async (userAddress) => {
-    if (!socialContract) throw new Error('Social contract not initialized');
+    if (!socialContract) {
+      console.log('Social contract not ready yet');
+      return 0; // Return default value instead of throwing
+    }
     
     try {
       const count = await socialContract.getFollowerCount(userAddress);
       return Number(count);
     } catch (error) {
       console.error('Error getting follower count:', error);
-      throw error;
+      return 0; // Return default value on error
     }
   };
 
