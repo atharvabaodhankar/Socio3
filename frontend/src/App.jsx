@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Web3Provider } from './context/Web3Context';
 import Navbar from './components/Navbar';
-import NetworkChecker from './components/NetworkChecker';
 import WalletConnectionHandler from './components/WalletConnectionHandler';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
@@ -17,7 +16,6 @@ function App() {
       <Router>
         <div className="min-h-screen bg-black text-white">
           <Navbar />
-          <NetworkChecker />
           <WalletConnectionHandler />
           <main className="max-w-6xl mx-auto">
             <Routes>
