@@ -68,7 +68,7 @@ const SearchModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-start justify-center pt-20">
       <div className="glass rounded-2xl w-full max-w-2xl mx-4 overflow-hidden">
         {/* Search Input */}
         <div className="p-4 border-b border-gray-700">

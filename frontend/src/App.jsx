@@ -10,7 +10,6 @@ import Profile from './pages/Profile';
 import Upload from './pages/Upload';
 import Wallet from './pages/Wallet';
 import ScrollToTop from './components/ScrollToTop';
-import ContractStatus from './components/ContractStatus';
 import './App.css';
 
 const AppRoutes = () => {
@@ -35,7 +34,6 @@ function App() {
         <div className="min-h-screen bg-black text-white">
           <Navbar />
           <WalletConnectionHandler />
-          <ContractStatus />
           <main className="max-w-6xl mx-auto">
             <AppRoutes />
           </main>

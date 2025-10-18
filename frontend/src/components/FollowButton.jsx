@@ -1,4 +1,3 @@
-import React from 'react';
 import { useFollow } from '../hooks/useFollow';
 import { useContracts } from '../hooks/useContracts';
 

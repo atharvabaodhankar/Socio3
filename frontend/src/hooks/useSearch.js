@@ -36,7 +36,7 @@ export const useSearch = () => {
         }
       }
 
-      // For now, we'll search through a mock list of users with sample profiles
+      // Mock users with sample profiles for testing
       // In a real app, you'd have an indexing service or subgraph
       const mockUsers = [
         {
@@ -45,7 +45,8 @@ export const useSearch = () => {
             username: 'alice.eth',
             displayName: 'Alice Cooper',
             bio: 'Digital artist and NFT creator 🎨',
-            exists: true
+            exists: true,
+            userAddress: '0x1234567890123456789012345678901234567890'
           }
         },
         {
@@ -54,7 +55,8 @@ export const useSearch = () => {
             username: 'bob_crypto',
             displayName: 'Bob Smith',
             bio: 'Blockchain developer and DeFi enthusiast',
-            exists: true
+            exists: true,
+            userAddress: '0x2345678901234567890123456789012345678901'
           }
         },
         {
@@ -63,7 +65,8 @@ export const useSearch = () => {
             username: 'charlie.dev',
             displayName: 'Charlie Brown',
             bio: 'Web3 builder | Smart contract auditor',
-            exists: true
+            exists: true,
+            userAddress: '0x3456789012345678901234567890123456789012'
           }
         },
         {
@@ -72,7 +75,8 @@ export const useSearch = () => {
             username: 'diana_nft',
             displayName: 'Diana Prince',
             bio: 'NFT collector and community builder 🚀',
-            exists: true
+            exists: true,
+            userAddress: '0x4567890123456789012345678901234567890123'
           }
         },
         {
@@ -81,24 +85,38 @@ export const useSearch = () => {
             username: 'eve.creator',
             displayName: 'Eve Johnson',
             bio: 'Content creator in the metaverse',
-            exists: true
+            exists: true,
+            userAddress: '0x5678901234567890123456789012345678901234'
+          }
+        },
+        {
+          address: '0x6789012345678901234567890123456789012345',
+          profile: {
+            username: 'atharva',
+            displayName: 'Atharva',
+            bio: 'Blockchain Developer',
+            exists: true,
+            userAddress: '0x6789012345678901234567890123456789012345'
           }
         }
       ];
 
-      // Search through mock users if query is not an exact address match
-      if (!query.match(/^0x[a-fA-F0-9]{40}$/)) {
-        for (const user of mockUsers) {
-          const { address, profile } = user;
+      // Always search through mock users (not just for non-address queries)
+      for (const user of mockUsers) {
+        const { address, profile } = user;
+        
+        // Check if username or display name matches query
+        const username = profile?.username?.toLowerCase() || '';
+        const displayName = profile?.displayName?.toLowerCase() || '';
+        const bio = profile?.bio?.toLowerCase() || '';
+        const queryLower = query.toLowerCase();
+        
+        if (username.includes(queryLower) || displayName.includes(queryLower) || 
+            bio.includes(queryLower) || address.toLowerCase().includes(queryLower)) {
           
-          // Check if username or display name matches query
-          const username = profile?.username?.toLowerCase() || '';
-          const displayName = profile?.displayName?.toLowerCase() || '';
-          const bio = profile?.bio?.toLowerCase() || '';
-          const queryLower = query.toLowerCase();
-          
-          if (username.includes(queryLower) || displayName.includes(queryLower) || 
-              bio.includes(queryLower) || address.toLowerCase().includes(queryLower)) {
+          // Avoid duplicates if we already found this address
+          const alreadyExists = results.some(r => r.address === address.toLowerCase());
+          if (!alreadyExists) {
             results.push({
               address: address.toLowerCase(),
               profile: {
