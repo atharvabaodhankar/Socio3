@@ -162,10 +162,24 @@ export const Web3Provider = ({ children }) => {
     if (accounts.length === 0) {
       disconnectWallet();
     } else {
-      // For Web3 apps, it's often better to reload the page when accounts change
-      // to ensure all state is properly reset
-      console.log('Reloading page due to account change...');
-      window.location.reload();
+      // Update the account state properly instead of reloading
+      try {
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await browserProvider.getSigner();
+        const address = await signer.getAddress();
+        const network = await browserProvider.getNetwork();
+        
+        setProvider(browserProvider);
+        setSigner(signer);
+        setAccount(address);
+        setChainId(Number(network.chainId));
+        
+        console.log('Account updated to:', address);
+      } catch (error) {
+        console.error('Error updating account:', error);
+        // Fallback to reload if there's an error
+        window.location.reload();
+      }
     }
   };
 

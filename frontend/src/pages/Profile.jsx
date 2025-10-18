@@ -22,8 +22,8 @@ const Profile = () => {
   const isOwnProfile = !address || address.toLowerCase() === account?.toLowerCase();
   const profileAddress = address || account;
   
-  // Fetch posts for this profile
-  const { posts, loading, error } = usePosts(profileAddress);
+  // Fetch posts for this profile - ensure it updates when account changes
+  const { posts, loading, error, refetch } = usePosts(profileAddress);
   const { getFollowerCount } = useContracts();
 
   // Load user profile

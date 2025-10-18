@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Web3Provider } from './context/Web3Context';
+import { Web3Provider, useWeb3 } from './context/Web3Context';
 import Navbar from './components/Navbar';
 import WalletConnectionHandler from './components/WalletConnectionHandler';
 import Home from './pages/Home';
@@ -10,6 +10,20 @@ import Upload from './pages/Upload';
 import Wallet from './pages/Wallet';
 import './App.css';
 
+const AppRoutes = () => {
+  const { account } = useWeb3();
+  
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/explore" element={<Explore />} />
+      <Route path="/upload" element={<Upload />} />
+      <Route path="/profile/:address?" element={<Profile key={account || 'no-account'} />} />
+      <Route path="/wallet" element={<Wallet />} />
+    </Routes>
+  );
+};
+
 function App() {
   return (
     <Web3Provider>
@@ -18,13 +32,7 @@ function App() {
           <Navbar />
           <WalletConnectionHandler />
           <main className="max-w-6xl mx-auto">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/profile/:address?" element={<Profile />} />
-              <Route path="/wallet" element={<Wallet />} />
-            </Routes>
+            <AppRoutes />
           </main>
         </div>
       </Router>

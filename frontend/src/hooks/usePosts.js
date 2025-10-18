@@ -37,10 +37,13 @@ export const usePosts = (authorAddress = null) => {
 
       let rawPosts;
       if (authorAddress) {
+        console.log('Fetching posts for author:', authorAddress);
         rawPosts = await postContract.getPostsByAuthor(authorAddress);
       } else {
+        console.log('Fetching all posts');
         rawPosts = await postContract.getAllPosts();
       }
+      console.log('Raw posts fetched:', rawPosts.length);
 
       // Process posts and get additional data
       const processedPosts = await Promise.all(
@@ -115,6 +118,10 @@ export const usePosts = (authorAddress = null) => {
   };
 
   useEffect(() => {
+    console.log('usePosts: authorAddress changed to:', authorAddress);
+    // Clear posts immediately when authorAddress changes to prevent showing wrong posts
+    setPosts([]);
+    setError(null);
     fetchPosts();
   }, [provider, authorAddress]); // This is correct - authorAddress changes when account changes
 
