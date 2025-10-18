@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
+import AutoScrollButton from '../components/AutoScrollButton';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -131,6 +132,9 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* Auto Scroll Button */}
+      {isConnected && <AutoScrollButton />}
     </div>
   );
 };

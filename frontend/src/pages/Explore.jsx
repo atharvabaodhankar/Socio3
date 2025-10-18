@@ -4,6 +4,8 @@ import { useWeb3 } from '../context/Web3Context';
 import { usePosts } from '../hooks/usePosts';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
+import FollowButton from '../components/FollowButton';
+import AutoScrollButton from '../components/AutoScrollButton';
 
 const Explore = () => {
   const navigate = useNavigate();
@@ -146,9 +148,11 @@ const Explore = () => {
                         <p className="text-xs text-gray-400">{Math.floor(Math.random() * 1000)}K followers</p>
                       </div>
                     </div>
-                    <button className="btn-primary px-3 py-1 rounded-lg text-xs">
-                      Follow
-                    </button>
+                    <FollowButton 
+                      userAddress={`0x${i.toString().padStart(40, '0')}`}
+                      size="small"
+                      variant="primary"
+                    />
                   </div>
                 ))}
               </div>
@@ -242,6 +246,9 @@ const Explore = () => {
         hasNext={selectedPostIndex !== null && selectedPostIndex < sortedPosts.length - 1}
         hasPrev={selectedPostIndex !== null && selectedPostIndex > 0}
       />
+
+      {/* Auto Scroll Button */}
+      <AutoScrollButton />
     </div>
   );
 };

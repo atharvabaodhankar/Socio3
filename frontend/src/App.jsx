@@ -5,9 +5,11 @@ import Navbar from './components/Navbar';
 import WalletConnectionHandler from './components/WalletConnectionHandler';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
+import Search from './pages/Search';
 import Profile from './pages/Profile';
 import Upload from './pages/Upload';
 import Wallet from './pages/Wallet';
+import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
 const AppRoutes = () => {
@@ -17,6 +19,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/explore" element={<Explore />} />
+      <Route path="/search" element={<Search />} />
       <Route path="/upload" element={<Upload />} />
       <Route path="/profile/:address?" element={<Profile key={account || 'no-account'} />} />
       <Route path="/wallet" element={<Wallet />} />
@@ -34,6 +37,7 @@ function App() {
           <main className="max-w-6xl mx-auto">
             <AppRoutes />
           </main>
+          <ScrollToTop />
         </div>
       </Router>
     </Web3Provider>

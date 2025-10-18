@@ -1,11 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import ConnectWalletButton from './ConnectWalletButton';
+import SearchModal from './SearchModal';
 
 const Navbar = () => {
   const location = useLocation();
   const { isConnected } = useWeb3();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Keyboard shortcut for search (Ctrl+K)
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (isConnected) {
+          setIsSearchOpen(true);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isConnected]);
 
   const navItems = [
     { path: '/', label: 'Home', icon: (
@@ -14,6 +31,11 @@ const Navbar = () => {
       </svg>
     )},
     { path: '/explore', label: 'Explore', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    )},
+    { path: '/search', label: 'Search', icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
@@ -65,6 +87,23 @@ const Navbar = () => {
                 <span className="font-medium">{item.label}</span>
               </Link>
             ))}
+            
+            {/* Search Button */}
+            {isConnected && (
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 text-gray-400 hover:text-white hover:bg-white/5"
+                title="Search users (Ctrl+K)"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span className="font-medium">Search</span>
+                <kbd className="hidden lg:inline-block ml-2 px-2 py-1 text-xs bg-gray-700 rounded border border-gray-600">
+                  ⌘K
+                </kbd>
+              </button>
+            )}
           </div>
 
           {/* Connect Wallet Button */}
@@ -90,9 +129,26 @@ const Navbar = () => {
                 <span className="text-xs mt-1 font-medium">{item.label}</span>
               </Link>
             ))}
+            
+            {/* Mobile Search Button */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 text-gray-400 hover:text-white"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span className="text-xs mt-1 font-medium">Search</span>
+            </button>
           </div>
         </div>
       )}
+
+      {/* Search Modal */}
+      <SearchModal 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+      />
     </nav>
   );
 };

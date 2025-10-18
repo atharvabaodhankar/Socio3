@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
@@ -19,8 +19,11 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     postComment 
   } = useSocialInteractions(post?.id);
   
-  // Get usernames for post author and commenters
-  const userAddresses = [post?.author, ...comments.map(c => c.userAddress)].filter(Boolean);
+  // Get usernames for post author and commenters - memoize to prevent infinite re-renders
+  const userAddresses = useMemo(() => {
+    return [post?.author, ...comments.map(c => c.userAddress)].filter(Boolean);
+  }, [post?.author, comments]);
+  
   const { getDisplayName } = useUsernames(userAddresses);
   
   const [showComments, setShowComments] = useState(false);
