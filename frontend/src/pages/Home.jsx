@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 
 const Home = () => {
+  const navigate = useNavigate();
   const { isConnected, account } = useWeb3();
 
   if (!isConnected) {
@@ -81,11 +82,15 @@ const Home = () => {
             <span className="text-xs text-gray-400">Your story</span>
           </div>
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex-shrink-0 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center mb-2 cursor-pointer hover:scale-105 transition-transform">
+            <div 
+              key={i} 
+              className="flex-shrink-0 text-center cursor-pointer"
+              onClick={() => navigate(`/profile/0x${i.toString().padStart(40, '0')}`)}
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center mb-2 hover:scale-105 transition-transform">
                 <span className="text-white font-semibold">{i}</span>
               </div>
-              <span className="text-xs text-gray-400">user{i}</span>
+              <span className="text-xs text-gray-400 hover:text-purple-300 transition-colors">user{i}</span>
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
@@ -8,6 +9,7 @@ import SuccessModal from './SuccessModal';
 import ErrorModal from './ErrorModal';
 
 const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) => {
+  const navigate = useNavigate();
   const { account, formatAddress, isConnected } = useWeb3();
   const { tipPost } = useContracts();
   const { 
@@ -95,6 +97,14 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
     setShowErrorModal(false);
     setModalMessage('');
     setErrorMessage('');
+  };
+
+  const handleProfileClick = (userAddress, e) => {
+    e?.stopPropagation();
+    if (userAddress) {
+      onClose(); // Close the modal first
+      navigate(`/profile/${userAddress}`);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -228,13 +238,21 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 lg:hidden">
             {/* Author info */}
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <div 
+                className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                onClick={(e) => handleProfileClick(post.author, e)}
+              >
                 <span className="text-white font-semibold text-sm">
                   {getDisplayName(post.author)?.slice(0, 2).toUpperCase()}
                 </span>
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-white">{getDisplayName(post.author)}</p>
+                <p 
+                  className="font-semibold text-white cursor-pointer hover:text-purple-300 transition-colors"
+                  onClick={(e) => handleProfileClick(post.author, e)}
+                >
+                  {getDisplayName(post.author)}
+                </p>
                 <p className="text-xs text-gray-300">
                   {post.timestamp instanceof Date 
                     ? post.timestamp.toLocaleDateString() 
@@ -246,7 +264,15 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
 
             {/* Caption */}
             {post.caption && (
-              <p className="text-white mb-4">{post.caption}</p>
+              <p className="text-white mb-4">
+                <span 
+                  className="font-semibold mr-2 cursor-pointer hover:text-purple-300 transition-colors"
+                  onClick={(e) => handleProfileClick(post.author, e)}
+                >
+                  {getDisplayName(post.author)}
+                </span>
+                {post.caption}
+              </p>
             )}
 
             {/* Action buttons */}
@@ -315,13 +341,21 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
         <div className="hidden lg:flex lg:w-96 bg-gray-900 flex-col">
           {/* Header */}
           <div className="p-4 border-b border-gray-700 flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+            <div 
+              className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+              onClick={(e) => handleProfileClick(post.author, e)}
+            >
               <span className="text-white font-semibold text-sm">
                 {post.author?.slice(2, 4).toUpperCase()}
               </span>
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-white">{getDisplayName(post.author)}</p>
+              <p 
+                className="font-semibold text-white cursor-pointer hover:text-purple-300 transition-colors"
+                onClick={(e) => handleProfileClick(post.author, e)}
+              >
+                {getDisplayName(post.author)}
+              </p>
               <p className="text-xs text-gray-400">
                 {post.timestamp instanceof Date 
                   ? post.timestamp.toLocaleDateString() 
@@ -342,7 +376,12 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
             {post.caption && (
               <div className="mb-4">
                 <p className="text-white">
-                  <span className="font-semibold mr-2">{getDisplayName(post.author)}</span>
+                  <span 
+                    className="font-semibold mr-2 cursor-pointer hover:text-purple-300 transition-colors"
+                    onClick={(e) => handleProfileClick(post.author, e)}
+                  >
+                    {getDisplayName(post.author)}
+                  </span>
                   {post.caption}
                 </p>
               </div>
@@ -353,14 +392,22 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
               {comments.length > 0 ? (
                 comments.map((comment) => (
                   <div key={comment.id} className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div 
+                      className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                      onClick={(e) => handleProfileClick(comment.userAddress, e)}
+                    >
                       <span className="text-white font-semibold text-xs">
                         {comment.userAddress?.slice(2, 4).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1">
                       <p className="text-white text-sm">
-                        <span className="font-semibold mr-2">{getDisplayName(comment.userAddress)}</span>
+                        <span 
+                          className="font-semibold mr-2 cursor-pointer hover:text-purple-300 transition-colors"
+                          onClick={(e) => handleProfileClick(comment.userAddress, e)}
+                        >
+                          {getDisplayName(comment.userAddress)}
+                        </span>
                         {comment.text}
                       </p>
                       {comment.timestamp && (

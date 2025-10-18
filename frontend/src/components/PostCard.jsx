@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
 import { useUsernames } from '../hooks/useUsernames';
 import { useContracts } from '../hooks/useContracts';
 
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
+  const navigate = useNavigate();
   const { account, formatAddress, isConnected } = useWeb3();
   const { tipPost } = useContracts();
   const { 
@@ -81,18 +83,33 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     }
   };
 
+  const handleProfileClick = (e) => {
+    e.stopPropagation(); // Prevent triggering post click
+    if (post?.author) {
+      navigate(`/profile/${post.author}`);
+    }
+  };
+
   return (
     <div className="glass rounded-2xl overflow-hidden card-hover mb-8">
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+          <div 
+            className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+            onClick={handleProfileClick}
+          >
             <span className="text-white font-semibold text-sm">
               {post.author?.slice(2, 4).toUpperCase()}
             </span>
           </div>
           <div>
-            <p className="font-semibold text-white">{getDisplayName(post.author)}</p>
+            <p 
+              className="font-semibold text-white cursor-pointer hover:text-purple-300 transition-colors"
+              onClick={handleProfileClick}
+            >
+              {getDisplayName(post.author)}
+            </p>
             <p className="text-xs text-gray-400">
               {post.timestamp instanceof Date 
                 ? post.timestamp.toLocaleDateString() 
@@ -191,7 +208,12 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         {post.caption && (
           <div className="mb-3">
             <p className="text-white">
-              <span className="font-semibold mr-2">{getDisplayName(post.author)}</span>
+              <span 
+                className="font-semibold mr-2 cursor-pointer hover:text-purple-300 transition-colors"
+                onClick={handleProfileClick}
+              >
+                {getDisplayName(post.author)}
+              </span>
               {post.caption}
             </p>
           </div>
@@ -212,9 +234,23 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           <div className="space-y-2 mb-4">
             {comments.map((comment) => (
               <div key={comment.id} className="flex items-start space-x-2">
-                <div className="w-6 h-6 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex-shrink-0"></div>
+                <div 
+                  className="w-6 h-6 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/profile/${comment.userAddress}`);
+                  }}
+                ></div>
                 <p className="text-sm text-white">
-                  <span className="font-semibold mr-2">{getDisplayName(comment.userAddress)}</span>
+                  <span 
+                    className="font-semibold mr-2 cursor-pointer hover:text-purple-300 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile/${comment.userAddress}`);
+                    }}
+                  >
+                    {getDisplayName(comment.userAddress)}
+                  </span>
                   {comment.text}
                 </p>
               </div>
@@ -261,13 +297,21 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
             </div>
             
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <div 
+                className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                onClick={handleProfileClick}
+              >
                 <span className="text-white font-semibold">
                   {post.author?.slice(2, 4).toUpperCase()}
                 </span>
               </div>
               <div>
-                <p className="font-semibold text-white">{getDisplayName(post.author)}</p>
+                <p 
+                  className="font-semibold text-white cursor-pointer hover:text-purple-300 transition-colors"
+                  onClick={handleProfileClick}
+                >
+                  {getDisplayName(post.author)}
+                </p>
                 <p className="text-sm text-gray-400">Send a tip to support this creator</p>
               </div>
             </div>

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { usePosts } from '../hooks/usePosts';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 
 const Explore = () => {
+  const navigate = useNavigate();
   const { isConnected, formatAddress } = useWeb3();
   const [activeTab, setActiveTab] = useState('trending');
   const [selectedPostIndex, setSelectedPostIndex] = useState(null);
@@ -132,12 +134,15 @@ const Explore = () => {
               <div className="space-y-4">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
+                    <div 
+                      className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 -m-2 transition-colors"
+                      onClick={() => navigate(`/profile/0x${i.toString().padStart(40, '0')}`)}
+                    >
                       <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                         <span className="text-white font-semibold text-sm">{i}</span>
                       </div>
                       <div>
-                        <p className="font-medium text-white text-sm">creator{i}.eth</p>
+                        <p className="font-medium text-white text-sm hover:text-purple-300 transition-colors">creator{i}.eth</p>
                         <p className="text-xs text-gray-400">{Math.floor(Math.random() * 1000)}K followers</p>
                       </div>
                     </div>
