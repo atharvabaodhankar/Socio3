@@ -6,6 +6,9 @@ import {
   getUserProfile,
   isUsernameAvailable 
 } from '../services/profileService';
+import LoadingModal from './LoadingModal';
+import SuccessModal from './SuccessModal';
+import ErrorModal from './ErrorModal';
 
 const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
   const { account, formatAddress, provider, signer } = useWeb3();
@@ -26,6 +29,12 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
   const [selectedCoverImage, setSelectedCoverImage] = useState(null);
   const [profileImagePreview, setProfileImagePreview] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [transactionHash, setTransactionHash] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Load existing profile data when modal opens
   useEffect(() => {
@@ -117,17 +126,20 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
 
     // Validate username
     if (profileData.username && (profileData.username.length < 3 || profileData.username.length > 20)) {
-      alert('Username must be between 3 and 20 characters');
+      setErrorMessage('Username must be between 3 and 20 characters');
+      setShowErrorModal(true);
       return;
     }
 
     if (profileData.username && usernameAvailable === false) {
-      alert('Username is not available');
+      setErrorMessage('Username is not available. Please choose a different one.');
+      setShowErrorModal(true);
       return;
     }
 
     try {
       setUploading(true);
+      setShowLoadingModal(true);
       let updatedProfile = { ...profileData };
 
       // Upload profile image if selected
@@ -143,22 +155,48 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
       }
 
       // Save profile to blockchain + IPFS
-      const savedProfile = await saveUserProfile(signer, updatedProfile);
+      const result = await saveUserProfile(signer, updatedProfile);
+      
+      // Extract transaction hash if available
+      const txHash = result.transactionHash || result.hash || '';
+      setTransactionHash(txHash);
 
       // Notify parent component
-      onProfileUpdate && onProfileUpdate(savedProfile);
+      onProfileUpdate && onProfileUpdate(result.profile || result);
       
       const message = profileData.exists 
-        ? 'Profile updated successfully on blockchain!' 
-        : 'Profile created successfully on blockchain! Welcome to Web3!';
-      alert(message);
-      onClose();
+        ? 'Your profile has been updated successfully on the blockchain!' 
+        : 'Welcome to Web3! Your profile has been created successfully on the blockchain!';
+      
+      setSuccessMessage(message);
+      setShowLoadingModal(false);
+      setShowSuccessModal(true);
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Failed to save profile. Please try again.');
+      setShowLoadingModal(false);
+      setErrorMessage(error.message || 'Failed to save profile. Please check your connection and try again.');
+      setShowErrorModal(true);
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    setTransactionHash('');
+    setSuccessMessage('');
+    onClose();
+  };
+
+  const handleErrorClose = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
+  };
+
+  const handleRetry = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
+    handleSave();
   };
 
   const handleKeyPress = (e) => {
@@ -389,6 +427,31 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
           </button>
         </div>
       </div>
+
+      {/* Loading Modal */}
+      <LoadingModal
+        isOpen={showLoadingModal}
+        title="Creating Your Web3 Profile"
+        message="Your profile is being saved to the blockchain. This may take a few moments..."
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessClose}
+        title="Profile Saved!"
+        message={successMessage}
+        txHash={transactionHash}
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={handleErrorClose}
+        title="Transaction Failed"
+        message={errorMessage}
+        onRetry={handleRetry}
+      />
     </div>
   );
 };

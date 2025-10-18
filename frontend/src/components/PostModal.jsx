@@ -3,6 +3,9 @@ import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
 import { useUsernames } from '../hooks/useUsernames';
+import LoadingModal from './LoadingModal';
+import SuccessModal from './SuccessModal';
+import ErrorModal from './ErrorModal';
 
 const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) => {
   const { account, formatAddress, isConnected } = useWeb3();
@@ -34,6 +37,11 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
   const [isLoading, setIsLoading] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLike = async () => {
     if (!isConnected || !post || socialLoading) return;
@@ -42,7 +50,8 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       await toggleLike();
     } catch (error) {
       console.error('Error toggling like:', error);
-      alert('Failed to update like. Please try again.');
+      setErrorMessage('Failed to update like. Please try again.');
+      setShowErrorModal(true);
     }
   };
 
@@ -54,7 +63,8 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       setComment('');
     } catch (error) {
       console.error('Error posting comment:', error);
-      alert('Failed to post comment. Please try again.');
+      setErrorMessage('Failed to post comment. Please try again.');
+      setShowErrorModal(true);
     }
   };
 
@@ -62,17 +72,29 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
     if (!isConnected || !post || !tipAmount) return;
     
     setIsLoading(true);
+    setShowLoadingModal(true);
     try {
       await tipPost(post.id, post.author, tipAmount);
-      alert(`Successfully tipped ${tipAmount} ETH!`);
+      setShowLoadingModal(false);
+      setModalMessage(`Successfully tipped ${tipAmount} ETH to ${getDisplayName(post.author)}!`);
+      setShowSuccessModal(true);
       setTipAmount('');
       setShowTipInput(false);
     } catch (error) {
       console.error('Error sending tip:', error);
-      alert('Failed to send tip. Please try again.');
+      setShowLoadingModal(false);
+      setErrorMessage('Failed to send tip. Please try again.');
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    setShowErrorModal(false);
+    setModalMessage('');
+    setErrorMessage('');
   };
 
   const handleKeyPress = (e) => {
@@ -445,6 +467,33 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
           </div>
         </div>
       </div>
+
+      {/* Loading Modal */}
+      <LoadingModal
+        isOpen={showLoadingModal}
+        title="Sending Tip"
+        message="Your tip is being processed on the blockchain..."
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleModalClose}
+        title="Tip Sent!"
+        message={modalMessage}
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={handleModalClose}
+        title="Action Failed"
+        message={errorMessage}
+        onRetry={() => {
+          handleModalClose();
+          // Could add retry logic here if needed
+        }}
+      />
     </div>
   );
 };

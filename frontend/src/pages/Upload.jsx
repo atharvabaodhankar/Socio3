@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
 import { uploadToPinata } from '../config/pinata';
+import LoadingModal from '../components/LoadingModal';
+import SuccessModal from '../components/SuccessModal';
+import ErrorModal from '../components/ErrorModal';
 
 const Upload = () => {
   const { isConnected, account } = useWeb3();
@@ -10,6 +13,10 @@ const Upload = () => {
   const [caption, setCaption] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -24,11 +31,13 @@ const Upload = () => {
 
   const handleUpload = async () => {
     if (!selectedFile || !caption.trim()) {
-      alert('Please select a file and add a caption');
+      setErrorMessage('Please select a file and add a caption before posting.');
+      setShowErrorModal(true);
       return;
     }
 
     setIsUploading(true);
+    setShowLoadingModal(true);
     
     try {
       // Upload to IPFS via Pinata
@@ -42,26 +51,41 @@ const Upload = () => {
         console.log('Creating post on blockchain...');
         await createPost(result.ipfsHash);
         
-        alert('Post created successfully!');
+        setShowLoadingModal(false);
+        setShowSuccessModal(true);
         
         // Reset form
         setSelectedFile(null);
         setCaption('');
         setPreviewUrl(null);
-        
-        // Redirect to profile to see the new post
-        setTimeout(() => {
-          window.location.href = '/profile';
-        }, 1000);
       } else {
         throw new Error(result.error);
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert(`Failed to create post: ${error.message}`);
+      setShowLoadingModal(false);
+      setErrorMessage(`Failed to create post: ${error.message}`);
+      setShowErrorModal(true);
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    // Redirect to profile to see the new post
+    window.location.href = '/profile';
+  };
+
+  const handleErrorClose = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
+  };
+
+  const handleRetry = () => {
+    setShowErrorModal(false);
+    setErrorMessage('');
+    handleUpload();
   };
 
   if (!isConnected) {
@@ -199,6 +223,30 @@ const Upload = () => {
           )}
         </button>
       </div>
+
+      {/* Loading Modal */}
+      <LoadingModal
+        isOpen={showLoadingModal}
+        title="Publishing Your Post"
+        message="Your content is being uploaded to IPFS and saved to the blockchain..."
+      />
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessClose}
+        title="Post Published!"
+        message="Your post has been successfully published to the blockchain! You'll be redirected to your profile to see it."
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        onClose={handleErrorClose}
+        title="Upload Failed"
+        message={errorMessage}
+        onRetry={handleRetry}
+      />
     </div>
   );
 };

@@ -29,11 +29,19 @@ export const Web3Provider = ({ children }) => {
       window.ethereum.on('chainChanged', handleChainChanged);
     }
 
+    // Listen for retry wallet connection events
+    const handleRetryConnection = () => {
+      connectWallet();
+    };
+    
+    window.addEventListener('retryWalletConnection', handleRetryConnection);
+
     return () => {
       if (window.ethereum) {
         window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
         window.ethereum.removeListener('chainChanged', handleChainChanged);
       }
+      window.removeEventListener('retryWalletConnection', handleRetryConnection);
     };
   }, []);
 
@@ -76,7 +84,9 @@ export const Web3Provider = ({ children }) => {
 
   const connectWallet = async () => {
     if (!window.ethereum) {
-      alert('Please install MetaMask to use this application');
+      window.dispatchEvent(new CustomEvent('walletError', {
+        detail: { message: 'Please install MetaMask to use this application. Visit metamask.io to download.' }
+      }));
       return;
     }
 
@@ -103,7 +113,9 @@ export const Web3Provider = ({ children }) => {
 
     } catch (error) {
       console.error('Error connecting wallet:', error);
-      alert('Failed to connect wallet. Please try again.');
+      window.dispatchEvent(new CustomEvent('walletError', {
+        detail: { message: 'Failed to connect wallet. Please make sure MetaMask is unlocked and try again.' }
+      }));
     } finally {
       setIsConnecting(false);
     }
