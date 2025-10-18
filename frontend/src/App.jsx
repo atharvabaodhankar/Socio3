@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Web3Provider } from './context/Web3Context';
 import Navbar from './components/Navbar';
+import NetworkChecker from './components/NetworkChecker';
+import AccountDebugger from './components/AccountDebugger';
 import Home from './pages/Home';
 import Explore from './pages/Explore';
 import Profile from './pages/Profile';
@@ -15,6 +17,8 @@ function App() {
       <Router>
         <div className="min-h-screen bg-black text-white">
           <Navbar />
+          <NetworkChecker />
+          <AccountDebugger />
           <main className="max-w-6xl mx-auto">
             <Routes>
               <Route path="/" element={<Home />} />
