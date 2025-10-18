@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
 import { useUsernames } from '../hooks/useUsernames';
+import { useContracts } from '../hooks/useContracts';
 
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const { account, formatAddress, isConnected } = useWeb3();
+  const { tipPost } = useContracts();
   const { 
     isLiked, 
     likes, 
@@ -22,6 +24,9 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [tipAmount, setTipAmount] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLike = async () => {
     if (!isConnected || socialLoading) return;
@@ -49,6 +54,24 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
       onComment && onComment(post.id, comment);
     } catch (error) {
       console.error('Error posting comment:', error);
+    }
+  };
+
+  const handleTip = async () => {
+    if (!isConnected || !post || !tipAmount) return;
+    
+    setIsLoading(true);
+    try {
+      await tipPost(post.id, post.author, tipAmount);
+      alert(`Successfully tipped ${tipAmount} ETH to ${getDisplayName(post.author)}!`);
+      setTipAmount('');
+      setShowTipModal(false);
+      onTip && onTip(post.id, tipAmount);
+    } catch (error) {
+      console.error('Error sending tip:', error);
+      alert('Failed to send tip. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -143,8 +166,9 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
             </button>
           </div>
           <button 
-            onClick={() => onTip && onTip(post.id)}
-            className="btn-primary px-4 py-2 rounded-xl text-sm font-medium"
+            onClick={() => setShowTipModal(true)}
+            disabled={!isConnected}
+            className="btn-primary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
           >
             💰 Tip
           </button>
@@ -213,6 +237,81 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           )}
         </div>
       </div>
+
+      {/* Tip Modal */}
+      {showTipModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass rounded-2xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Tip Creator</h3>
+              <button 
+                onClick={() => setShowTipModal(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-semibold">
+                  {post.author?.slice(2, 4).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <p className="font-semibold text-white">{getDisplayName(post.author)}</p>
+                <p className="text-sm text-gray-400">Send a tip to support this creator</p>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Tip Amount (ETH)
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  step="0.001"
+                  placeholder="0.001"
+                  value={tipAmount}
+                  onChange={(e) => setTipAmount(e.target.value)}
+                  className="flex-1 bg-gray-800 text-white placeholder-gray-400 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <span className="text-gray-400 font-medium">ETH</span>
+              </div>
+              <div className="flex space-x-2 mt-2">
+                {['0.001', '0.01', '0.1'].map((amount) => (
+                  <button
+                    key={amount}
+                    onClick={() => setTipAmount(amount)}
+                    className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+                  >
+                    {amount} ETH
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowTipModal(false)}
+                className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTip}
+                disabled={!tipAmount || isLoading}
+                className="flex-1 btn-primary px-4 py-3 rounded-xl disabled:opacity-50"
+              >
+                {isLoading ? 'Sending...' : `Send ${tipAmount || '0'} ETH`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
