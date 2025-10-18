@@ -4,12 +4,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(10px);
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .modal-content {
@@ -19,11 +21,12 @@
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
   max-width: 500px;
   width: 90%;
-  max-height: 80vh;
-  overflow: hidden;
+  max-height: 85vh;
+  overflow-y: auto;
   animation: modalSlideIn 0.3s ease-out;
   border: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
+  min-height: fit-content;
 }
 
 .modal-content::before {
@@ -94,8 +97,9 @@
 }
 
 .modal-body {
-  padding: 28px;
+  padding: 28px 28px 32px;
   color: #ffffff;
+  min-height: fit-content;
 }
 
 .modal-body p {
@@ -168,8 +172,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
-  padding: 24px 0;
+  gap: 24px;
+  padding: 16px 0;
+  min-height: fit-content;
 }
 
 .spinner {
@@ -274,12 +279,29 @@
   color: #ffffff;
   font-weight: 500;
   font-family: 'Inter', sans-serif;
+  line-height: 1.4;
 }
 
 .loading-subtext {
   text-align: center;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
   margin: 0;
   font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+}
+
+.loading-tip {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.4;
 }
