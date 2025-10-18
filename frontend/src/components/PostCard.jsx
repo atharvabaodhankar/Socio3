@@ -25,8 +25,12 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const [comment, setComment] = useState('');
   const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const [showTipModal, setShowTipModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [tipAmount, setTipAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLike = async () => {
     if (!isConnected || socialLoading) return;
@@ -63,13 +67,15 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     setIsLoading(true);
     try {
       await tipPost(post.id, post.author, tipAmount);
-      alert(`Successfully tipped ${tipAmount} ETH to ${getDisplayName(post.author)}!`);
+      setSuccessMessage(`Successfully sent ${tipAmount} ETH to ${getDisplayName(post.author)}! 🎉`);
+      setShowSuccessModal(true);
       setTipAmount('');
       setShowTipModal(false);
       onTip && onTip(post.id, tipAmount);
     } catch (error) {
       console.error('Error sending tip:', error);
-      alert('Failed to send tip. Please try again.');
+      setErrorMessage('Failed to send tip. Please check your wallet and try again.');
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -307,6 +313,63 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
                 className="flex-1 btn-primary px-4 py-3 rounded-xl disabled:opacity-50"
               >
                 {isLoading ? 'Sending...' : `Send ${tipAmount || '0'} ETH`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass rounded-2xl p-6 w-full max-w-md text-center">
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">Tip Sent Successfully!</h3>
+            <p className="text-gray-300 mb-6">{successMessage}</p>
+            <div className="text-sm text-gray-400 mb-6">
+              <p>💰 The tip has been sent directly to the creator's wallet</p>
+              <p>🔗 Transaction confirmed on the blockchain</p>
+            </div>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="btn-primary px-6 py-3 rounded-xl w-full"
+            >
+              Awesome! 🎉
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass rounded-2xl p-6 w-full max-w-md text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">Tip Failed</h3>
+            <p className="text-gray-300 mb-6">{errorMessage}</p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowErrorModal(false);
+                  setShowTipModal(true);
+                }}
+                className="flex-1 btn-primary px-4 py-3 rounded-xl"
+              >
+                Try Again
               </button>
             </div>
           </div>
