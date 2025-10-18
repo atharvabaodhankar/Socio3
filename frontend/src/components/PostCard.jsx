@@ -21,11 +21,18 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
 
   const handleLike = async () => {
     if (!isConnected || socialLoading) return;
     
     try {
+      // Show animation only when liking (not unliking)
+      if (!isLiked) {
+        setShowLikeAnimation(true);
+        setTimeout(() => setShowLikeAnimation(false), 1000);
+      }
+      
       await toggleLike();
       onLike && onLike(post.id);
     } catch (error) {
@@ -75,6 +82,10 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
       {/* Post Image */}
       <div 
         className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer"
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          if (!isLiked) handleLike();
+        }}
         onClick={onClick}
       >
         {post.imageUrl ? (
@@ -91,10 +102,16 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           </div>
         )}
         
-        {/* Double tap to like overlay */}
+        {/* Instagram-like heart animation */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className={`text-6xl transition-all duration-300 ${isLiked ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
-            ❤️
+          <div className={`transition-all duration-500 ease-out ${
+            showLikeAnimation 
+              ? 'scale-125 opacity-100' 
+              : 'scale-0 opacity-0'
+          }`}>
+            <svg className="w-20 h-20 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
           </div>
         </div>
       </div>
