@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
@@ -18,10 +18,13 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
   } = useSocialInteractions(post?.id);
   
   // Get usernames for all users in comments + post author
-  const userAddresses = [
-    post?.author,
-    ...comments.map(comment => comment.userAddress)
-  ].filter(Boolean);
+  const userAddresses = useMemo(() => {
+    if (!post) return [];
+    return [
+      post.author,
+      ...comments.map(comment => comment.userAddress)
+    ].filter(Boolean);
+  }, [post?.author, comments]);
   
   const { getDisplayName } = useUsernames(userAddresses);
   
