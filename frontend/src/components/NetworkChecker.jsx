@@ -78,5 +78,3 @@ const NetworkChecker = () => {
 };
 
 export default NetworkChecker;
-</text>
-</invoke>
