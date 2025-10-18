@@ -144,11 +144,23 @@ export const Web3Provider = ({ children }) => {
     setChainId(null);
   };
 
-  const handleAccountsChanged = (accounts) => {
+  const handleAccountsChanged = async (accounts) => {
     if (accounts.length === 0) {
       disconnectWallet();
     } else {
-      setAccount(accounts[0]);
+      try {
+        // Update account and get new signer for the new account
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        
+        setProvider(provider);
+        setSigner(signer);
+        setAccount(address);
+      } catch (error) {
+        console.error('Error updating account:', error);
+        disconnectWallet();
+      }
     }
   };
 

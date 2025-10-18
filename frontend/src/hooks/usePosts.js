@@ -116,7 +116,7 @@ export const usePosts = (authorAddress = null) => {
 
   useEffect(() => {
     fetchPosts();
-  }, [provider, authorAddress]);
+  }, [provider, authorAddress]); // This is correct - authorAddress changes when account changes
 
   const refetch = () => {
     fetchPosts();

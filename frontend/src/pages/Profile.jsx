@@ -31,10 +31,20 @@ const Profile = () => {
     if (profileAddress && provider) {
       loadUserProfile();
     }
-  }, [profileAddress, provider]);
+  }, [profileAddress, provider, account]); // Add account as dependency
+
+  // Reset profile state when account changes (for own profile)
+  useEffect(() => {
+    if (isOwnProfile) {
+      setUserProfile(null);
+      setProfileLoading(true);
+    }
+  }, [account, isOwnProfile]);
 
   const loadUserProfile = async () => {
     if (!profileAddress || !provider) return;
+    
+    console.log('Loading profile for address:', profileAddress);
     
     try {
       setProfileLoading(true);
