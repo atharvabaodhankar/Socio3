@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
+import { useUsernames } from '../hooks/useUsernames';
 
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const { account, formatAddress, isConnected } = useWeb3();
@@ -13,6 +14,10 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     toggleLike, 
     postComment 
   } = useSocialInteractions(post?.id);
+  
+  // Get usernames for post author and commenters
+  const userAddresses = [post?.author, ...comments.map(c => c.userAddress)].filter(Boolean);
+  const { getDisplayName } = useUsernames(userAddresses);
   
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
@@ -51,7 +56,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
             </span>
           </div>
           <div>
-            <p className="font-semibold text-white">{formatAddress(post.author)}</p>
+            <p className="font-semibold text-white">{getDisplayName(post.author)}</p>
             <p className="text-xs text-gray-400">
               {post.timestamp instanceof Date 
                 ? post.timestamp.toLocaleDateString() 
@@ -139,7 +144,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         {post.caption && (
           <div className="mb-3">
             <p className="text-white">
-              <span className="font-semibold mr-2">{formatAddress(post.author)}</span>
+              <span className="font-semibold mr-2">{getDisplayName(post.author)}</span>
               {post.caption}
             </p>
           </div>
@@ -162,7 +167,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               <div key={comment.id} className="flex items-start space-x-2">
                 <div className="w-6 h-6 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex-shrink-0"></div>
                 <p className="text-sm text-white">
-                  <span className="font-semibold mr-2">{formatAddress(comment.userAddress)}</span>
+                  <span className="font-semibold mr-2">{getDisplayName(comment.userAddress)}</span>
                   {comment.text}
                 </p>
               </div>
