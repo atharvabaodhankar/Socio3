@@ -57,8 +57,13 @@ const Search = () => {
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">Search Users</h1>
         <p className="text-gray-400 text-lg">
-          Find and connect with creators in the Socio3 community
+          Search for users by their wallet address
         </p>
+        <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+          <p className="text-blue-300 text-sm">
+            <strong>Note:</strong> Currently only wallet address search is supported. Enter a valid Ethereum address (starting with 0x) to find users.
+          </p>
+        </div>
       </div>
 
       {/* Search Input */}
@@ -80,7 +85,7 @@ const Search = () => {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search users by username, address, or ENS..."
+            placeholder="Search by wallet address (0x...)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full glass text-white placeholder-gray-400 pl-12 pr-12 py-4 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -165,7 +170,7 @@ const Search = () => {
               No Users Found
             </h3>
             <p className="text-gray-400">
-              Try searching by username or wallet address
+              Try searching with a valid wallet address (0x...)
             </p>
           </div>
         )}
@@ -209,10 +214,11 @@ const Search = () => {
               Search for Users
             </h3>
             <p className="text-gray-400">
-              Find users by username, display name, or wallet address
+              Enter a wallet address to find users on Socio3
             </p>
-            <div className="mt-6 text-sm text-gray-500">
+            <div className="mt-6 text-sm text-gray-500 space-y-2">
               <p>💡 Pro tip: Use Ctrl+K from anywhere to quickly open search</p>
+              <p>📝 Example: 0x1234567890123456789012345678901234567890</p>
             </div>
           </div>
         )}
