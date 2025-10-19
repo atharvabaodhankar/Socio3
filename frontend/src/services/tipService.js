@@ -17,6 +17,7 @@ const TIPS_COLLECTION = 'tips';
 // Save tip message to Firebase
 export const saveTipMessage = async (tipData) => {
   try {
+    console.log('Saving tip message with data:', tipData);
     const tipRef = collection(db, TIPS_COLLECTION);
     
     const tipDocument = {
@@ -31,6 +32,7 @@ export const saveTipMessage = async (tipData) => {
       toName: tipData.toName || ''
     };
 
+    console.log('Tip document to save:', tipDocument);
     const docRef = await addDoc(tipRef, tipDocument);
     console.log('Tip message saved with ID:', docRef.id);
     return docRef.id;
@@ -43,6 +45,7 @@ export const saveTipMessage = async (tipData) => {
 // Get tip messages received by a user
 export const getTipMessagesForUser = async (userAddress, limitCount = 20) => {
   try {
+    console.log('Querying tips for address:', userAddress.toLowerCase());
     const tipsRef = collection(db, TIPS_COLLECTION);
     const q = query(
       tipsRef,
@@ -55,12 +58,14 @@ export const getTipMessagesForUser = async (userAddress, limitCount = 20) => {
     const tips = [];
     
     querySnapshot.forEach((doc) => {
+      console.log('Found tip document:', doc.id, doc.data());
       tips.push({
         id: doc.id,
         ...doc.data()
       });
     });
 
+    console.log('Total tips found:', tips.length);
     return tips;
   } catch (error) {
     console.error('Error getting tip messages:', error);
@@ -112,6 +117,7 @@ export const markTipAsRead = async (tipId) => {
 // Get unread tip count for a user
 export const getUnreadTipCount = async (userAddress) => {
   try {
+    console.log('Querying unread tips for address:', userAddress.toLowerCase());
     const tipsRef = collection(db, TIPS_COLLECTION);
     const q = query(
       tipsRef,
@@ -120,6 +126,10 @@ export const getUnreadTipCount = async (userAddress) => {
     );
 
     const querySnapshot = await getDocs(q);
+    console.log('Unread tips query result size:', querySnapshot.size);
+    querySnapshot.forEach((doc) => {
+      console.log('Unread tip:', doc.id, doc.data());
+    });
     return querySnapshot.size;
   } catch (error) {
     console.error('Error getting unread tip count:', error);

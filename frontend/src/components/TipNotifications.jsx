@@ -5,6 +5,7 @@ import {
   markTipAsRead, 
   getUnreadTipCount 
 } from '../services/tipService';
+import { addTestTip } from '../utils/testTips';
 
 const TipNotifications = ({ isOpen, onClose }) => {
   const { account, formatAddress } = useWeb3();
@@ -24,7 +25,9 @@ const TipNotifications = ({ isOpen, onClose }) => {
     
     setLoading(true);
     try {
+      console.log('Loading tips for account:', account);
       const tipMessages = await getTipMessagesForUser(account);
+      console.log('Loaded tip messages:', tipMessages);
       setTips(tipMessages);
     } catch (error) {
       console.error('Error loading tips:', error);
@@ -37,7 +40,9 @@ const TipNotifications = ({ isOpen, onClose }) => {
     if (!account) return;
     
     try {
+      console.log('Loading unread count for account:', account);
       const count = await getUnreadTipCount(account);
+      console.log('Unread count:', count);
       setUnreadCount(count);
     } catch (error) {
       console.error('Error loading unread count:', error);
@@ -123,7 +128,25 @@ const TipNotifications = ({ isOpen, onClose }) => {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">No Tips Yet</h3>
-                <p className="text-gray-400">Tip messages from your supporters will appear here.</p>
+                <p className="text-gray-400 mb-4">Tip messages from your supporters will appear here.</p>
+                
+                {/* Debug button */}
+                <button
+                  onClick={async () => {
+                    try {
+                      console.log('Adding test tip for account:', account);
+                      await addTestTip(account);
+                      console.log('Test tip added, reloading...');
+                      await loadTips();
+                      await loadUnreadCount();
+                    } catch (error) {
+                      console.error('Error adding test tip:', error);
+                    }
+                  }}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm"
+                >
+                  Add Test Tip (Debug)
+                </button>
               </div>
             ) : (
               <div className="p-4 space-y-4">

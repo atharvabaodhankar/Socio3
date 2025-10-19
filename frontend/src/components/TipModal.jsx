@@ -66,7 +66,7 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
       // Save tip message to Firebase if there's a message
       if (message.trim() || true) { // Always save tip record
         try {
-          await saveTipMessage({
+          const tipData = {
             fromAddress: account,
             toAddress: recipientAddress,
             amount: amount,
@@ -74,8 +74,10 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
             transactionHash: receipt.hash,
             fromName: account, // We could get the sender's name from their profile
             toName: recipientName
-          });
-          console.log('Tip message saved to Firebase');
+          };
+          console.log('Saving tip message to Firebase:', tipData);
+          await saveTipMessage(tipData);
+          console.log('Tip message saved to Firebase successfully');
         } catch (firebaseError) {
           console.error('Error saving tip message:', firebaseError);
           // Don't fail the tip if Firebase fails
