@@ -12,6 +12,7 @@ import FollowButton from '../components/FollowButton';
 import { getUserProfile, getDisplayName } from '../services/profileService';
 import { getIPFSUrl } from '../config/pinata';
 import { createUserMapping } from '../services/userMappingService';
+import { getTipStats } from '../services/tipService';
 
 const Profile = () => {
   const { address } = useParams();
@@ -24,6 +25,7 @@ const Profile = () => {
   const [isTipNotificationsOpen, setIsTipNotificationsOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [tipStats, setTipStats] = useState({ totalReceived: '0', totalSent: '0', tipCount: 0, sentCount: 0 });
   
   // Determine if this is the current user's profile
   const isOwnProfile = !address || address.toLowerCase() === account?.toLowerCase();
@@ -34,10 +36,11 @@ const Profile = () => {
   const { getFollowerCount } = useContracts();
   const { followerCount: liveFollowerCount } = useFollow(profileAddress);
 
-  // Load user profile
+  // Load user profile and tip stats
   useEffect(() => {
     if (profileAddress && provider) {
       loadUserProfile();
+      loadTipStats();
     }
   }, [profileAddress, provider, account]); // Add account as dependency
 
@@ -74,6 +77,17 @@ const Profile = () => {
       });
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const loadTipStats = async () => {
+    if (!profileAddress) return;
+    
+    try {
+      const stats = await getTipStats(profileAddress);
+      setTipStats(stats);
+    } catch (error) {
+      console.error('Error loading tip stats:', error);
     }
   };
 
@@ -222,7 +236,7 @@ const Profile = () => {
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold gradient-text">
-                  {posts.reduce((total, post) => total + post.tips, 0).toFixed(3)} ETH
+                  {(parseFloat(tipStats.totalReceived) + posts.reduce((total, post) => total + post.tips, 0)).toFixed(3)} ETH
                 </div>
                 <div className="text-sm text-gray-400">Tips Earned</div>
               </div>
@@ -275,7 +289,11 @@ const Profile = () => {
                     <span>{userProfile?.exists ? 'Edit Profile' : 'Setup Profile'}</span>
                   </button>
                   <button 
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      loadUserProfile();
+                      loadTipStats();
+                      refetch(); // Refresh posts
+                    }}
                     className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
                     title="Refresh profile data"
                   >
@@ -497,7 +515,11 @@ const Profile = () => {
       {/* Tip Notifications Modal */}
       <TipNotifications
         isOpen={isTipNotificationsOpen}
-        onClose={() => setIsTipNotificationsOpen(false)}
+        onClose={() => {
+          setIsTipNotificationsOpen(false);
+          // Refresh tip stats when closing notifications
+          loadTipStats();
+        }}
       />
     </div>
   );

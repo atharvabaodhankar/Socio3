@@ -17,7 +17,6 @@ const TIPS_COLLECTION = 'tips';
 // Save tip message to Firebase
 export const saveTipMessage = async (tipData) => {
   try {
-    console.log('Saving tip message with data:', tipData);
     const tipRef = collection(db, TIPS_COLLECTION);
     
     const tipDocument = {
@@ -29,10 +28,11 @@ export const saveTipMessage = async (tipData) => {
       timestamp: serverTimestamp(),
       read: false,
       fromName: tipData.fromName || '',
-      toName: tipData.toName || ''
+      toName: tipData.toName || '',
+      postId: tipData.postId || null, // Add postId to distinguish post tips from profile tips
+      tipType: tipData.postId ? 'post' : 'profile' // Add tip type for easier filtering
     };
 
-    console.log('Tip document to save:', tipDocument);
     const docRef = await addDoc(tipRef, tipDocument);
     console.log('Tip message saved with ID:', docRef.id);
     return docRef.id;
@@ -45,12 +45,12 @@ export const saveTipMessage = async (tipData) => {
 // Get tip messages received by a user
 export const getTipMessagesForUser = async (userAddress, limitCount = 20) => {
   try {
-    console.log('Querying tips for address:', userAddress.toLowerCase());
     const tipsRef = collection(db, TIPS_COLLECTION);
+    
+    // Simplified query without orderBy to avoid index requirement
     const q = query(
       tipsRef,
       where('toAddress', '==', userAddress.toLowerCase()),
-      orderBy('timestamp', 'desc'),
       limit(limitCount)
     );
 
@@ -58,14 +58,19 @@ export const getTipMessagesForUser = async (userAddress, limitCount = 20) => {
     const tips = [];
     
     querySnapshot.forEach((doc) => {
-      console.log('Found tip document:', doc.id, doc.data());
       tips.push({
         id: doc.id,
         ...doc.data()
       });
     });
 
-    console.log('Total tips found:', tips.length);
+    // Sort by timestamp in JavaScript instead of Firebase
+    tips.sort((a, b) => {
+      const aTime = a.timestamp?.toDate?.() || new Date(a.timestamp || 0);
+      const bTime = b.timestamp?.toDate?.() || new Date(b.timestamp || 0);
+      return bTime - aTime; // Descending order (newest first)
+    });
+
     return tips;
   } catch (error) {
     console.error('Error getting tip messages:', error);
@@ -77,10 +82,11 @@ export const getTipMessagesForUser = async (userAddress, limitCount = 20) => {
 export const getTipMessagesSentByUser = async (userAddress, limitCount = 20) => {
   try {
     const tipsRef = collection(db, TIPS_COLLECTION);
+    
+    // Simplified query without orderBy to avoid index requirement
     const q = query(
       tipsRef,
       where('fromAddress', '==', userAddress.toLowerCase()),
-      orderBy('timestamp', 'desc'),
       limit(limitCount)
     );
 
@@ -92,6 +98,13 @@ export const getTipMessagesSentByUser = async (userAddress, limitCount = 20) => 
         id: doc.id,
         ...doc.data()
       });
+    });
+
+    // Sort by timestamp in JavaScript instead of Firebase
+    tips.sort((a, b) => {
+      const aTime = a.timestamp?.toDate?.() || new Date(a.timestamp || 0);
+      const bTime = b.timestamp?.toDate?.() || new Date(b.timestamp || 0);
+      return bTime - aTime; // Descending order (newest first)
     });
 
     return tips;
@@ -117,7 +130,6 @@ export const markTipAsRead = async (tipId) => {
 // Get unread tip count for a user
 export const getUnreadTipCount = async (userAddress) => {
   try {
-    console.log('Querying unread tips for address:', userAddress.toLowerCase());
     const tipsRef = collection(db, TIPS_COLLECTION);
     const q = query(
       tipsRef,
@@ -126,10 +138,6 @@ export const getUnreadTipCount = async (userAddress) => {
     );
 
     const querySnapshot = await getDocs(q);
-    console.log('Unread tips query result size:', querySnapshot.size);
-    querySnapshot.forEach((doc) => {
-      console.log('Unread tip:', doc.id, doc.data());
-    });
     return querySnapshot.size;
   } catch (error) {
     console.error('Error getting unread tip count:', error);

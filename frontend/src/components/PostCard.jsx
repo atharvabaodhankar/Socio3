@@ -4,10 +4,12 @@ import { useWeb3 } from '../context/Web3Context';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
 import { useUsernames } from '../hooks/useUsernames';
 import { useContracts } from '../hooks/useContracts';
+import { saveTipMessage } from '../services/tipService';
+import { getUserProfile, getDisplayName } from '../services/profileService';
 
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const navigate = useNavigate();
-  const { account, formatAddress, isConnected } = useWeb3();
+  const { account, formatAddress, isConnected, provider } = useWeb3();
   const { tipPost } = useContracts();
   const { 
     isLiked, 
@@ -71,7 +73,49 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     
     setIsLoading(true);
     try {
-      await tipPost(post.id, post.author, tipAmount);
+      // Send tip via smart contract
+      const tx = await tipPost(post.id, post.author, tipAmount);
+      
+      // Save tip notification to Firebase
+      try {
+        // Get sender's profile info
+        let senderName = account;
+        try {
+          const senderProfile = await getUserProfile(provider, account);
+          if (senderProfile && senderProfile.exists) {
+            senderName = getDisplayName(senderProfile, account);
+          }
+        } catch (profileError) {
+          console.log('Could not load sender profile, using address');
+        }
+
+        // Get recipient's profile info
+        let recipientName = getDisplayName(post.author);
+        try {
+          const recipientProfile = await getUserProfile(provider, post.author);
+          if (recipientProfile && recipientProfile.exists) {
+            recipientName = getDisplayName(recipientProfile, post.author);
+          }
+        } catch (profileError) {
+          console.log('Could not load recipient profile, using address');
+        }
+
+        await saveTipMessage({
+          fromAddress: account,
+          toAddress: post.author,
+          amount: tipAmount,
+          message: `Tipped your post: "${post.caption?.slice(0, 50) || 'Post'}${post.caption?.length > 50 ? '...' : ''}"`,
+          transactionHash: tx.hash,
+          fromName: senderName,
+          toName: recipientName,
+          postId: post.id // Add post ID to distinguish post tips from profile tips
+        });
+        console.log('Post tip notification saved to Firebase');
+      } catch (firebaseError) {
+        console.error('Error saving post tip notification:', firebaseError);
+        // Don't fail the tip if Firebase fails
+      }
+      
       setSuccessMessage(`Successfully sent ${tipAmount} ETH to ${getDisplayName(post.author)}! 🎉`);
       setShowSuccessModal(true);
       setTipAmount('');
