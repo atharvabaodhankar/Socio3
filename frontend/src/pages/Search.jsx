@@ -57,11 +57,11 @@ const Search = () => {
       <div className="mb-8">
         <h1 className="text-4xl font-bold gradient-text mb-2">Search Users</h1>
         <p className="text-gray-400 text-lg">
-          Search for users by their wallet address
+          Find and connect with creators in the Socio3 community
         </p>
-        <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-          <p className="text-blue-300 text-sm">
-            <strong>Note:</strong> Currently only wallet address search is supported. Enter a valid Ethereum address (starting with 0x) to find users.
+        <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+          <p className="text-green-300 text-sm">
+            <strong>Enhanced Search:</strong> Search by username, display name, bio keywords, or wallet address. Our search is powered by Firebase for fast results!
           </p>
         </div>
       </div>
@@ -85,7 +85,7 @@ const Search = () => {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search by wallet address (0x...)..."
+            placeholder="Search by username, name, or wallet address..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full glass text-white placeholder-gray-400 pl-12 pr-12 py-4 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -170,7 +170,7 @@ const Search = () => {
               No Users Found
             </h3>
             <p className="text-gray-400">
-              Try searching with a valid wallet address (0x...)
+              Try searching by username, display name, or wallet address
             </p>
           </div>
         )}
@@ -214,11 +214,11 @@ const Search = () => {
               Search for Users
             </h3>
             <p className="text-gray-400">
-              Enter a wallet address to find users on Socio3
+              Search by username, display name, bio, or wallet address
             </p>
             <div className="mt-6 text-sm text-gray-500 space-y-2">
               <p>💡 Pro tip: Use Ctrl+K from anywhere to quickly open search</p>
-              <p>📝 Example: 0x1234567890123456789012345678901234567890</p>
+              <p>🔍 Examples: "alice", "developer", "0x1234..."</p>
             </div>
           </div>
         )}

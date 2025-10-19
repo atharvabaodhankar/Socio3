@@ -6,6 +6,7 @@ import {
   getUserProfile,
   isUsernameAvailable 
 } from '../services/profileService';
+import { createUserMapping } from '../services/userMappingService';
 import LoadingModal from './LoadingModal';
 import SuccessModal from './SuccessModal';
 import ErrorModal from './ErrorModal';
@@ -160,6 +161,15 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
       // Extract transaction hash if available
       const txHash = result.transactionHash || result.hash || '';
       setTransactionHash(txHash);
+
+      // Create/update Firebase mapping for search
+      try {
+        await createUserMapping(account, result.profile || result);
+        console.log('Firebase user mapping created/updated');
+      } catch (firebaseError) {
+        console.error('Error creating Firebase mapping:', firebaseError);
+        // Don't fail the whole operation if Firebase fails
+      }
 
       // Notify parent component
       onProfileUpdate && onProfileUpdate(result.profile || result);

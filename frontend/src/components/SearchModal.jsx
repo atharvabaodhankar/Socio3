@@ -103,7 +103,7 @@ const SearchModal = ({ isOpen, onClose }) => {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search by wallet address (0x...)..."
+                placeholder="Search by username, name, or address..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -154,7 +154,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                   </svg>
                 </div>
                 <p className="text-gray-400 mb-2">No users found</p>
-                <p className="text-gray-500 text-sm">Try searching with a valid wallet address</p>
+                <p className="text-gray-500 text-sm">Try different keywords or check spelling</p>
               </div>
             )}
 
@@ -183,7 +183,7 @@ const SearchModal = ({ isOpen, onClose }) => {
                   </svg>
                 </div>
                 <p className="text-gray-400 mb-2">Search for users</p>
-                <p className="text-gray-500 text-sm">Enter a wallet address to find users</p>
+                <p className="text-gray-500 text-sm">Search by username, display name, or wallet address</p>
                 <div className="mt-4 text-xs text-gray-600">
                   <p>💡 Use ↑↓ arrows to navigate, Enter to select</p>
                 </div>
