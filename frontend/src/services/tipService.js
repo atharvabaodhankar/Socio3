@@ -17,11 +17,7 @@ const TIPS_COLLECTION = 'tips';
 // Save tip message to Firebase
 export const saveTipMessage = async (tipData) => {
   try {
-    console.log('🔥 Firebase: Starting to save tip message...');
-    console.log('🔥 Firebase: Input data:', tipData);
-    
     const tipRef = collection(db, TIPS_COLLECTION);
-    console.log('🔥 Firebase: Collection reference created');
     
     const tipDocument = {
       fromAddress: tipData.fromAddress.toLowerCase(),
@@ -33,19 +29,14 @@ export const saveTipMessage = async (tipData) => {
       read: false,
       fromName: tipData.fromName || '',
       toName: tipData.toName || '',
-      postId: tipData.postId || null, // Add postId to distinguish post tips from profile tips
-      tipType: tipData.postId ? 'post' : 'profile' // Add tip type for easier filtering
+      postId: tipData.postId || null,
+      tipType: tipData.postId ? 'post' : 'profile'
     };
 
-    console.log('🔥 Firebase: Document to save:', tipDocument);
-    
     const docRef = await addDoc(tipRef, tipDocument);
-    console.log('🔥 Firebase: Document saved successfully with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
-    console.error('🔥 Firebase: Error saving tip message:', error);
-    console.error('🔥 Firebase: Error details:', error.message);
-    console.error('🔥 Firebase: Error code:', error.code);
+    console.error('Error saving tip message:', error);
     throw error;
   }
 };
