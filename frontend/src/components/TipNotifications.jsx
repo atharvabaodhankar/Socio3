@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { 
   getTipMessagesForUser, 
   markTipAsRead, 
   getUnreadTipCount 
 } from '../services/tipService';
-import { addTestTip } from '../utils/testTips';
+import { getUserByAddress } from '../services/userMappingService';
+import { getUserProfile, getDisplayName } from '../services/profileService';
+import { getIPFSUrl } from '../config/pinata';
 
 const TipNotifications = ({ isOpen, onClose }) => {
-  const { account, formatAddress } = useWeb3();
+  const { account, formatAddress, provider } = useWeb3();
+  const navigate = useNavigate();
   const [tips, setTips] = useState([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [senderProfiles, setSenderProfiles] = useState({});
 
   useEffect(() => {
     if (isOpen && account) {
@@ -29,11 +34,42 @@ const TipNotifications = ({ isOpen, onClose }) => {
       const tipMessages = await getTipMessagesForUser(account);
       console.log('Loaded tip messages:', tipMessages);
       setTips(tipMessages);
+      
+      // Load sender profiles
+      await loadSenderProfiles(tipMessages);
     } catch (error) {
       console.error('Error loading tips:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadSenderProfiles = async (tipMessages) => {
+    const profiles = {};
+    
+    for (const tip of tipMessages) {
+      if (!profiles[tip.fromAddress]) {
+        try {
+          // First try Firebase
+          let profile = await getUserByAddress(tip.fromAddress);
+          
+          // If not in Firebase, try blockchain
+          if (!profile && provider) {
+            const blockchainProfile = await getUserProfile(provider, tip.fromAddress);
+            if (blockchainProfile && blockchainProfile.exists) {
+              profile = blockchainProfile;
+            }
+          }
+          
+          profiles[tip.fromAddress] = profile;
+        } catch (error) {
+          console.error('Error loading profile for', tip.fromAddress, error);
+          profiles[tip.fromAddress] = null;
+        }
+      }
+    }
+    
+    setSenderProfiles(profiles);
   };
 
   const loadUnreadCount = async () => {
@@ -128,91 +164,120 @@ const TipNotifications = ({ isOpen, onClose }) => {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">No Tips Yet</h3>
-                <p className="text-gray-400 mb-4">Tip messages from your supporters will appear here.</p>
-                
-                {/* Debug button */}
-                <button
-                  onClick={async () => {
-                    try {
-                      console.log('Adding test tip for account:', account);
-                      await addTestTip(account);
-                      console.log('Test tip added, reloading...');
-                      await loadTips();
-                      await loadUnreadCount();
-                    } catch (error) {
-                      console.error('Error adding test tip:', error);
-                    }
-                  }}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm"
-                >
-                  Add Test Tip (Debug)
-                </button>
+                <p className="text-gray-400">Tip messages from your supporters will appear here.</p>
               </div>
             ) : (
               <div className="p-4 space-y-4">
-                {tips.map((tip) => (
-                  <div 
-                    key={tip.id}
-                    className={`p-4 rounded-xl border transition-all ${
-                      tip.read 
-                        ? 'bg-gray-800/50 border-gray-700' 
-                        : 'bg-purple-500/10 border-purple-500/30'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold text-sm">
-                            {tip.fromAddress.slice(2, 4).toUpperCase()}
-                          </span>
+                {tips.map((tip) => {
+                  const senderProfile = senderProfiles[tip.fromAddress];
+                  const displayName = senderProfile 
+                    ? getDisplayName(senderProfile, tip.fromAddress)
+                    : formatAddress(tip.fromAddress);
+                  
+                  return (
+                    <div 
+                      key={tip.id}
+                      className={`p-4 rounded-xl border transition-all ${
+                        tip.read 
+                          ? 'bg-gray-800/50 border-gray-700' 
+                          : 'bg-purple-500/10 border-purple-500/30'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          {/* Profile Picture */}
+                          <div 
+                            className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all"
+                            onClick={() => {
+                              onClose();
+                              navigate(`/profile/${tip.fromAddress}`);
+                            }}
+                          >
+                            {senderProfile?.profileImage ? (
+                              <img
+                                src={getIPFSUrl(senderProfile.profileImage)}
+                                alt="Profile"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-white font-semibold text-sm">
+                                {displayName.slice(0, 2).toUpperCase()}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div>
+                            {/* Clickable Username/Display Name */}
+                            <button
+                              onClick={() => {
+                                onClose();
+                                navigate(`/profile/${tip.fromAddress}`);
+                              }}
+                              className="text-white font-medium hover:text-purple-300 transition-colors text-left"
+                            >
+                              {displayName}
+                            </button>
+                            
+                            {/* Show username if display name is different */}
+                            {senderProfile?.username && senderProfile.username !== displayName && (
+                              <p className="text-gray-500 text-xs">
+                                @{senderProfile.username}
+                              </p>
+                            )}
+                            
+                            <p className="text-gray-400 text-sm">
+                              {formatTimestamp(tip.timestamp)}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-white font-medium">
-                            {tip.fromName || formatAddress(tip.fromAddress)}
+                        
+                        <div className="text-right">
+                          <p className="text-green-400 font-semibold">
+                            +{tip.amount} ETH
                           </p>
-                          <p className="text-gray-400 text-sm">
-                            {formatTimestamp(tip.timestamp)}
-                          </p>
+                          {!tip.read && (
+                            <button
+                              onClick={() => handleMarkAsRead(tip.id)}
+                              className="text-xs text-purple-400 hover:text-purple-300 mt-1"
+                            >
+                              Mark as read
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-green-400 font-semibold">
-                          +{tip.amount} ETH
-                        </p>
-                        {!tip.read && (
-                          <button
-                            onClick={() => handleMarkAsRead(tip.id)}
-                            className="text-xs text-purple-400 hover:text-purple-300 mt-1"
+                      
+                      {tip.message && (
+                        <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
+                          <p className="text-gray-300 text-sm italic">
+                            "{tip.message}"
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <button
+                          onClick={() => {
+                            onClose();
+                            navigate(`/profile/${tip.fromAddress}`);
+                          }}
+                          className="text-purple-400 hover:text-purple-300 transition-colors"
+                        >
+                          View Profile
+                        </button>
+                        {tip.transactionHash && (
+                          <a
+                            href={`https://sepolia.etherscan.io/tx/${tip.transactionHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-400 hover:text-purple-300"
                           >
-                            Mark as read
-                          </button>
+                            View Transaction
+                          </a>
                         )}
                       </div>
                     </div>
-                    
-                    {tip.message && (
-                      <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
-                        <p className="text-gray-300 text-sm italic">
-                          "{tip.message}"
-                        </p>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>From: {formatAddress(tip.fromAddress)}</span>
-                      {tip.transactionHash && (
-                        <a
-                          href={`https://sepolia.etherscan.io/tx/${tip.transactionHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-purple-400 hover:text-purple-300"
-                        >
-                          View Transaction
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

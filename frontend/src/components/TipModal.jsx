@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { ethers } from 'ethers';
 import { saveTipMessage } from '../services/tipService';
-import { getDisplayName } from '../services/profileService';
+import { getUserProfile, getDisplayName } from '../services/profileService';
 
 const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
   const { account, provider, signer, isConnected } = useWeb3();
@@ -66,13 +66,24 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
       // Save tip message to Firebase if there's a message
       if (message.trim() || true) { // Always save tip record
         try {
+          // Try to get sender's profile info
+          let senderName = account;
+          try {
+            const senderProfile = await getUserProfile(provider, account);
+            if (senderProfile && senderProfile.exists) {
+              senderName = getDisplayName(senderProfile, account);
+            }
+          } catch (profileError) {
+            console.log('Could not load sender profile, using address');
+          }
+
           const tipData = {
             fromAddress: account,
             toAddress: recipientAddress,
             amount: amount,
             message: message.trim(),
             transactionHash: receipt.hash,
-            fromName: account, // We could get the sender's name from their profile
+            fromName: senderName,
             toName: recipientName
           };
           console.log('Saving tip message to Firebase:', tipData);
