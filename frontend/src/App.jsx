@@ -8,6 +8,9 @@ import Search from "./pages/Search";
 import Profile from "./pages/Profile";
 import Upload from "./pages/Upload";
 import Wallet from "./pages/Wallet";
+
+// Import test utilities for development
+import "./utils/testLikedPosts";
 import Post from "./pages/Post";
 import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";

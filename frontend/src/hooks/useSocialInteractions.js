@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import {
-  likePost as firebaseLikePost,
-  unlikePost as firebaseUnlikePost,
-  hasUserLiked,
   addComment,
   subscribeToComments,
   subscribeToPostStats
 } from '../services/firebaseService';
+import {
+  isPostLiked,
+  likePost,
+  unlikePost,
+  getPostLikeCount
+} from '../services/likedPostsService';
 
 export const useSocialInteractions = (postId) => {
   const { account, isConnected } = useWeb3();
@@ -49,24 +52,33 @@ export const useSocialInteractions = (postId) => {
     if (!postId || !account) return;
     
     try {
-      const liked = await hasUserLiked(postId, account);
+      const liked = await isPostLiked(account, postId);
       setIsLiked(liked);
+      
+      // Also get the current like count
+      const likeCount = await getPostLikeCount(postId);
+      setLikes(likeCount);
     } catch (error) {
       console.error('Error checking like status:', error);
     }
   };
 
-  const toggleLike = async () => {
+  const toggleLike = async (post) => {
     if (!isConnected || !account || !postId || loading) return;
     
     setLoading(true);
     try {
       if (isLiked) {
-        await firebaseUnlikePost(postId, account);
+        await unlikePost(account, postId);
         setIsLiked(false);
+        setLikes(prev => Math.max(0, prev - 1));
       } else {
-        await firebaseLikePost(postId, account);
+        await likePost(account, postId, post?.author || 'unknown', {
+          caption: post?.caption || '',
+          imageUrl: post?.imageUrl || ''
+        });
         setIsLiked(true);
+        setLikes(prev => prev + 1);
       }
     } catch (error) {
       console.error('Error toggling like:', error);

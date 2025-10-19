@@ -54,7 +54,7 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
     if (!isConnected || !post || socialLoading) return;
     
     try {
-      await toggleLike();
+      await toggleLike(post);
     } catch (error) {
       console.error('Error toggling like:', error);
       setErrorMessage('Failed to update like. Please try again.');

@@ -305,6 +305,7 @@ const Profile = () => {
                       loadUserProfile();
                       loadTipStats();
                       refetch(); // Refresh posts
+                      refreshLikedPosts(); // Refresh liked posts
                     }}
                     className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
                     title="Refresh profile data"
@@ -500,6 +501,12 @@ const Profile = () => {
             </div>
             <h3 className="text-2xl font-semibold mb-3 text-white">No Liked Posts</h3>
             <p className="text-gray-400">Posts you like will appear here.</p>
+            <button 
+              onClick={refreshLikedPosts}
+              className="mt-4 btn-primary px-6 py-3 rounded-xl"
+            >
+              Refresh Liked Posts
+            </button>
           </div>
         )
       ) : activeTab === 'saved' ? (

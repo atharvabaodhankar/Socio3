@@ -52,7 +52,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         setTimeout(() => setShowLikeAnimation(false), 1000);
       }
       
-      await toggleLike();
+      await toggleLike(post);
       onLike && onLike(post.id);
     } catch (error) {
       console.error('Error toggling like:', error);
