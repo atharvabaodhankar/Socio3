@@ -9,6 +9,7 @@ import {
 import { getUserByAddress } from '../services/userMappingService';
 import { getUserProfile, getDisplayName } from '../services/profileService';
 import { getIPFSUrl } from '../config/pinata';
+import { navigateToPost } from '../utils/postNavigation';
 
 const TipNotifications = ({ isOpen, onClose }) => {
   const { account, formatAddress, provider } = useWeb3();
@@ -254,12 +255,23 @@ const TipNotifications = ({ isOpen, onClose }) => {
                           <p className="text-gray-300 text-sm italic">
                             "{tip.message}"
                           </p>
-                          {tip.tipType === 'post' && (
-                            <div className="mt-2 flex items-center space-x-1 text-xs text-purple-400">
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                              <span>Post tip</span>
+                          {tip.tipType === 'post' && tip.postId && (
+                            <div className="mt-3 flex items-center justify-between">
+                              <div className="flex items-center space-x-1 text-xs text-purple-400">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>Post tip</span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  onClose();
+                                  navigateToPost(navigate, tip.postId, tip.toAddress);
+                                }}
+                                className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 text-xs rounded-lg transition-colors"
+                              >
+                                View Post
+                              </button>
                             </div>
                           )}
                         </div>
