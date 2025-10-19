@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { usePosts } from '../hooks/usePosts';
 import { useContracts } from '../hooks/useContracts';
@@ -13,9 +13,12 @@ import { getUserProfile, getDisplayName } from '../services/profileService';
 import { getIPFSUrl } from '../config/pinata';
 import { createUserMapping } from '../services/userMappingService';
 import { getTipStats } from '../services/tipService';
+import { useLikedPosts } from '../hooks/useLikedPosts';
+import { useSavedPosts } from '../hooks/useSavedPosts';
 
 const Profile = () => {
   const { address } = useParams();
+  const navigate = useNavigate();
   const { account, formatAddress, isConnected, provider } = useWeb3();
   const [activeTab, setActiveTab] = useState('posts');
   const [selectedPostIndex, setSelectedPostIndex] = useState(null);
@@ -31,6 +34,10 @@ const Profile = () => {
   const isOwnProfile = !address || address.toLowerCase() === account?.toLowerCase();
   const profileAddress = address || account;
   
+  // Hooks for liked and saved posts
+  const { likedPosts, loading: likedLoading, refreshLikedPosts } = useLikedPosts(profileAddress);
+  const { savedPosts, loading: savedLoading, loadSavedPosts } = useSavedPosts();
+  
   // Fetch posts for this profile - ensure it updates when account changes
   const { posts, loading, error, refetch } = usePosts(profileAddress);
   const { getFollowerCount } = useContracts();
@@ -41,8 +48,13 @@ const Profile = () => {
     if (profileAddress && provider) {
       loadUserProfile();
       loadTipStats();
+      
+      // Load saved posts if it's own profile
+      if (isOwnProfile && account) {
+        loadSavedPosts();
+      }
     }
-  }, [profileAddress, provider, account]); // Add account as dependency
+  }, [profileAddress, provider, account, isOwnProfile]); // Add account as dependency
 
   // Reset profile state when account changes (for own profile)
   useEffect(() => {
@@ -444,25 +456,102 @@ const Profile = () => {
           ))}
         </div>
       ) : activeTab === 'liked' ? (
-        <div className="text-center py-16">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
+        likedLoading ? (
+          <div className="flex justify-center items-center py-16">
+            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <h3 className="text-2xl font-semibold mb-3 text-white">No Liked Posts</h3>
-          <p className="text-gray-400">Posts you like will appear here.</p>
-        </div>
+        ) : likedPosts.length > 0 ? (
+          <div className="grid grid-cols-3 gap-1 md:gap-4">
+            {likedPosts.map((post, index) => (
+              <div 
+                key={post.id} 
+                onClick={() => openPostModal(index)}
+                className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
+              >
+                <img 
+                  src={post.imageUrl} 
+                  alt="Liked Post" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="w-full h-full hidden items-center justify-center">
+                  <svg className="w-8 h-8 md:w-12 md:h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                {/* Heart overlay for liked posts */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg md:rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-red-500 fill-current" viewBox="0 0 24 24">
+                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-3 text-white">No Liked Posts</h3>
+            <p className="text-gray-400">Posts you like will appear here.</p>
+          </div>
+        )
       ) : activeTab === 'saved' ? (
-        <div className="text-center py-16">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-            </svg>
+        savedLoading ? (
+          <div className="flex justify-center items-center py-16">
+            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <h3 className="text-2xl font-semibold mb-3 text-white">No Saved Posts</h3>
-          <p className="text-gray-400">Posts you save will appear here.</p>
-        </div>
+        ) : savedPosts.length > 0 ? (
+          <div className="grid grid-cols-3 gap-1 md:gap-4">
+            {savedPosts.map((savedPost, index) => (
+              <div 
+                key={savedPost.id} 
+                onClick={() => {
+                  // Navigate to the saved post
+                  navigate(`/post/${savedPost.postId}/${savedPost.postAuthor}`);
+                }}
+                className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
+              >
+                <img 
+                  src={savedPost.postImageUrl} 
+                  alt="Saved Post" 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+                <div className="w-full h-full hidden items-center justify-center">
+                  <svg className="w-8 h-8 md:w-12 md:h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                {/* Bookmark overlay for saved posts */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg md:rounded-2xl flex items-center justify-center">
+                  <svg className="w-8 h-8 text-yellow-500 fill-current" viewBox="0 0 24 24">
+                    <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-3 text-white">No Saved Posts</h3>
+            <p className="text-gray-400">Posts you save will appear here.</p>
+          </div>
+        )
       ) : null}
         
       {/* Empty state for own profile */}
