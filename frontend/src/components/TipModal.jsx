@@ -3,23 +3,55 @@ import { useWeb3 } from '../context/Web3Context';
 import { ethers } from 'ethers';
 
 const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
-  const { account, provider } = useWeb3();
+  const { account, provider, signer, isConnected } = useWeb3();
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [balance, setBalance] = useState('0');
 
   const predefinedAmounts = ['0.001', '0.005', '0.01', '0.05', '0.1'];
 
+  // Load user balance when modal opens
+  React.useEffect(() => {
+    if (isOpen && isConnected && provider && account) {
+      loadBalance();
+    }
+  }, [isOpen, isConnected, provider, account]);
+
+  const loadBalance = async () => {
+    try {
+      const balance = await provider.getBalance(account);
+      const balanceInEth = ethers.formatEther(balance);
+      setBalance(parseFloat(balanceInEth).toFixed(4));
+    } catch (error) {
+      console.error('Error loading balance:', error);
+      setBalance('0');
+    }
+  };
+
   const handleTip = async () => {
-    if (!amount || !recipientAddress || !provider) return;
+    if (!amount || !recipientAddress || !signer) return;
+
+    // Validate amount
+    const amountNum = parseFloat(amount);
+    const balanceNum = parseFloat(balance);
+    
+    if (amountNum <= 0) {
+      setError('Please enter a valid amount');
+      return;
+    }
+    
+    if (amountNum > balanceNum) {
+      setError('Insufficient balance');
+      return;
+    }
 
     try {
       setLoading(true);
       setError('');
 
-      const signer = provider.getSigner();
       const amountWei = ethers.parseEther(amount);
 
       const tx = await signer.sendTransaction({
@@ -99,16 +131,37 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
 
               {/* Content */}
               <div className="p-6">
-                {/* Recipient Info */}
-                <div className="text-center mb-6">
-                  <p className="text-gray-400 mb-1">Sending tip to</p>
-                  <p className="text-white font-semibold">{recipientName}</p>
-                  <p className="text-gray-500 text-sm">{recipientAddress?.slice(0, 6)}...{recipientAddress?.slice(-4)}</p>
-                </div>
+                {!isConnected ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Wallet Not Connected</h3>
+                    <p className="text-gray-400 mb-4">Please connect your wallet to send tips.</p>
+                    <button
+                      onClick={handleClose}
+                      className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Recipient Info */}
+                    <div className="text-center mb-6">
+                      <p className="text-gray-400 mb-1">Sending tip to</p>
+                      <p className="text-white font-semibold">{recipientName}</p>
+                      <p className="text-gray-500 text-sm">{recipientAddress?.slice(0, 6)}...{recipientAddress?.slice(-4)}</p>
+                    </div>
 
                 {/* Amount Selection */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-300 mb-3">Amount (ETH)</label>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-300">Amount (ETH)</label>
+                    <span className="text-sm text-gray-400">Balance: {balance} ETH</span>
+                  </div>
                   
                   {/* Predefined amounts */}
                   <div className="grid grid-cols-5 gap-2 mb-4">
@@ -181,7 +234,9 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
                       `Send ${amount || '0'} ETH`
                     )}
                   </button>
-                </div>
+                    </div>
+                  </>
+                )}
               </div>
             </>
           )}

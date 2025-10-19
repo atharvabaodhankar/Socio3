@@ -291,7 +291,13 @@ const Profile = () => {
                     variant="primary"
                   />
                   <button 
-                    onClick={() => setIsTipModalOpen(true)}
+                    onClick={() => {
+                      if (!isConnected) {
+                        alert('Please connect your wallet to send tips');
+                        return;
+                      }
+                      setIsTipModalOpen(true);
+                    }}
                     className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
