@@ -109,7 +109,7 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
           fromAddress: account,
           toAddress: post.author,
           amount: tipAmount,
-          message: post.caption ? `"${post.caption.slice(0, 100)}${post.caption.length > 100 ? '...' : ''}"` : 'Tipped your post',
+          message: post.caption ? `${post.caption.slice(0, 100)}${post.caption.length > 100 ? '...' : ''}` : 'Loved your post! 💖',
           transactionHash: tx.hash || tx.transactionHash || 'unknown',
           fromName: senderName,
           toName: recipientName,

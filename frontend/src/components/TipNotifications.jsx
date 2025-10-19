@@ -253,7 +253,11 @@ const TipNotifications = ({ isOpen, onClose }) => {
                       {tip.message && (
                         <div className="bg-gray-800/50 rounded-lg p-3 mb-3">
                           <p className="text-gray-300 text-sm italic">
-                            "{tip.message}"
+                            {/* Clean up old message format for post tips */}
+                            {tip.tipType === 'post' && tip.message.startsWith('Tipped your post:') 
+                              ? tip.message.replace(/^Tipped your post:\s*"?([^"]*)"?$/, '$1').trim() || 'Loved your post! 💖'
+                              : `"${tip.message}"`
+                            }
                           </p>
                           {tip.tipType === 'post' && tip.postId && (
                             <div className="mt-3 flex items-center justify-between">
