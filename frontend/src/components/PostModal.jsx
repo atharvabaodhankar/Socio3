@@ -4,13 +4,15 @@ import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
 import { useUsernames } from '../hooks/useUsernames';
+import { saveTipMessage } from '../services/tipService';
+import { getUserProfile, getDisplayName } from '../services/profileService';
 import LoadingModal from './LoadingModal';
 import SuccessModal from './SuccessModal';
 import ErrorModal from './ErrorModal';
 
 const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) => {
   const navigate = useNavigate();
-  const { account, formatAddress, isConnected } = useWeb3();
+  const { account, formatAddress, isConnected, provider } = useWeb3();
   const { tipPost } = useContracts();
   const { 
     isLiked, 
@@ -76,14 +78,63 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
     setIsLoading(true);
     setShowLoadingModal(true);
     try {
-      await tipPost(post.id, post.author, tipAmount);
+      console.log('🚀 PostModal: Starting post tip process...');
+      console.log('Post:', { id: post.id, author: post.author, caption: post.caption });
+      console.log('Tip amount:', tipAmount);
+      
+      // Send tip via smart contract
+      console.log('💰 PostModal: Sending tip via smart contract...');
+      const tx = await tipPost(post.id, post.author, tipAmount);
+      console.log('✅ PostModal: Smart contract tip successful:', tx);
+      
+      // Save tip notification to Firebase
+      console.log('💾 PostModal: Starting Firebase notification save...');
+      
+      // Get sender's profile info
+      let senderName = account;
+      try {
+        const senderProfile = await getUserProfile(provider, account);
+        if (senderProfile && senderProfile.exists) {
+          senderName = getDisplayName(senderProfile, account);
+        }
+      } catch (profileError) {
+        console.log('Could not load sender profile, using address');
+      }
+
+      // Get recipient's profile info
+      let recipientName = getDisplayName(post.author);
+      try {
+        const recipientProfile = await getUserProfile(provider, post.author);
+        if (recipientProfile && recipientProfile.exists) {
+          recipientName = getDisplayName(recipientProfile, post.author);
+        }
+      } catch (profileError) {
+        console.log('Could not load recipient profile, using address');
+      }
+
+      const tipData = {
+        fromAddress: account,
+        toAddress: post.author,
+        amount: tipAmount,
+        message: `Tipped your post: "${post.caption?.slice(0, 50) || 'Post'}${post.caption?.length > 50 ? '...' : ''}"`,
+        transactionHash: tx.hash || tx.transactionHash || 'unknown',
+        fromName: senderName,
+        toName: recipientName,
+        postId: post.id // Add post ID to distinguish post tips from profile tips
+      };
+      
+      console.log('📝 PostModal: Tip data to save:', tipData);
+      
+      const tipId = await saveTipMessage(tipData);
+      console.log('✅ PostModal: Post tip notification saved to Firebase with ID:', tipId);
+      
       setShowLoadingModal(false);
       setModalMessage(`Successfully tipped ${tipAmount} ETH to ${getDisplayName(post.author)}!`);
       setShowSuccessModal(true);
       setTipAmount('');
       setShowTipInput(false);
     } catch (error) {
-      console.error('Error sending tip:', error);
+      console.error('❌ PostModal: Error in tip process:', error);
       setShowLoadingModal(false);
       setErrorMessage('Failed to send tip. Please try again.');
       setShowErrorModal(true);

@@ -9,6 +9,7 @@ import {
 import { getUserByAddress } from '../services/userMappingService';
 import { getUserProfile, getDisplayName } from '../services/profileService';
 import { getIPFSUrl } from '../config/pinata';
+import { addTestPostTip } from '../utils/testTips';
 
 const TipNotifications = ({ isOpen, onClose }) => {
   const { account, formatAddress, provider } = useWeb3();
@@ -33,6 +34,22 @@ const TipNotifications = ({ isOpen, onClose }) => {
       console.log('Loading tips for account:', account);
       const tipMessages = await getTipMessagesForUser(account);
       console.log('Loaded tip messages:', tipMessages);
+      console.log('Number of tips found:', tipMessages.length);
+      
+      // Log each tip for debugging
+      tipMessages.forEach((tip, index) => {
+        console.log(`Tip ${index + 1}:`, {
+          id: tip.id,
+          from: tip.fromAddress,
+          to: tip.toAddress,
+          amount: tip.amount,
+          message: tip.message,
+          tipType: tip.tipType,
+          postId: tip.postId,
+          read: tip.read
+        });
+      });
+      
       setTips(tipMessages);
       
       // Load sender profiles
@@ -164,7 +181,37 @@ const TipNotifications = ({ isOpen, onClose }) => {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-2">No Tips Yet</h3>
-                <p className="text-gray-400">Tip messages from your supporters will appear here.</p>
+                <p className="text-gray-400 mb-4">Tip messages from your supporters will appear here.</p>
+                
+                {/* Debug buttons */}
+                <div className="flex space-x-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        console.log('Adding test post tip for account:', account);
+                        await addTestPostTip(account);
+                        console.log('Test post tip added, reloading...');
+                        await loadTips();
+                        await loadUnreadCount();
+                      } catch (error) {
+                        console.error('Error adding test post tip:', error);
+                      }
+                    }}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+                  >
+                    Add Test Post Tip
+                  </button>
+                  <button
+                    onClick={async () => {
+                      console.log('Refreshing tips...');
+                      await loadTips();
+                      await loadUnreadCount();
+                    }}
+                    className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm"
+                  >
+                    Refresh Tips
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="p-4 space-y-4">

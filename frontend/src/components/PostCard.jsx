@@ -73,48 +73,55 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     
     setIsLoading(true);
     try {
+      console.log('🚀 Starting post tip process...');
+      console.log('Post:', { id: post.id, author: post.author, caption: post.caption });
+      console.log('Tip amount:', tipAmount);
+      
       // Send tip via smart contract
+      console.log('💰 Sending tip via smart contract...');
       const tx = await tipPost(post.id, post.author, tipAmount);
+      console.log('✅ Smart contract tip successful:', tx);
       
       // Save tip notification to Firebase
+      console.log('💾 Starting Firebase notification save...');
+      
+      // Get sender's profile info
+      let senderName = account;
       try {
-        // Get sender's profile info
-        let senderName = account;
-        try {
-          const senderProfile = await getUserProfile(provider, account);
-          if (senderProfile && senderProfile.exists) {
-            senderName = getDisplayName(senderProfile, account);
-          }
-        } catch (profileError) {
-          console.log('Could not load sender profile, using address');
+        const senderProfile = await getUserProfile(provider, account);
+        if (senderProfile && senderProfile.exists) {
+          senderName = getDisplayName(senderProfile, account);
         }
-
-        // Get recipient's profile info
-        let recipientName = getDisplayName(post.author);
-        try {
-          const recipientProfile = await getUserProfile(provider, post.author);
-          if (recipientProfile && recipientProfile.exists) {
-            recipientName = getDisplayName(recipientProfile, post.author);
-          }
-        } catch (profileError) {
-          console.log('Could not load recipient profile, using address');
-        }
-
-        await saveTipMessage({
-          fromAddress: account,
-          toAddress: post.author,
-          amount: tipAmount,
-          message: `Tipped your post: "${post.caption?.slice(0, 50) || 'Post'}${post.caption?.length > 50 ? '...' : ''}"`,
-          transactionHash: tx.hash,
-          fromName: senderName,
-          toName: recipientName,
-          postId: post.id // Add post ID to distinguish post tips from profile tips
-        });
-        console.log('Post tip notification saved to Firebase');
-      } catch (firebaseError) {
-        console.error('Error saving post tip notification:', firebaseError);
-        // Don't fail the tip if Firebase fails
+      } catch (profileError) {
+        console.log('Could not load sender profile, using address');
       }
+
+      // Get recipient's profile info
+      let recipientName = getDisplayName(post.author);
+      try {
+        const recipientProfile = await getUserProfile(provider, post.author);
+        if (recipientProfile && recipientProfile.exists) {
+          recipientName = getDisplayName(recipientProfile, post.author);
+        }
+      } catch (profileError) {
+        console.log('Could not load recipient profile, using address');
+      }
+
+      const tipData = {
+        fromAddress: account,
+        toAddress: post.author,
+        amount: tipAmount,
+        message: `Tipped your post: "${post.caption?.slice(0, 50) || 'Post'}${post.caption?.length > 50 ? '...' : ''}"`,
+        transactionHash: tx.hash || tx.transactionHash || 'unknown',
+        fromName: senderName,
+        toName: recipientName,
+        postId: post.id // Add post ID to distinguish post tips from profile tips
+      };
+      
+      console.log('📝 Tip data to save:', tipData);
+      
+      const tipId = await saveTipMessage(tipData);
+      console.log('✅ Post tip notification saved to Firebase with ID:', tipId);
       
       setSuccessMessage(`Successfully sent ${tipAmount} ETH to ${getDisplayName(post.author)}! 🎉`);
       setShowSuccessModal(true);
@@ -122,7 +129,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
       setShowTipModal(false);
       onTip && onTip(post.id, tipAmount);
     } catch (error) {
-      console.error('Error sending tip:', error);
+      console.error('❌ Error in tip process:', error);
       setErrorMessage('Failed to send tip. Please check your wallet and try again.');
       setShowErrorModal(true);
     } finally {
