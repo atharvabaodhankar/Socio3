@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { ethers } from 'ethers';
+import { saveTipMessage } from '../services/tipService';
+import { getDisplayName } from '../services/profileService';
 
 const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
   const { account, provider, signer, isConnected } = useWeb3();
@@ -59,7 +61,26 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
         value: amountWei,
       });
 
-      await tx.wait();
+      const receipt = await tx.wait();
+      
+      // Save tip message to Firebase if there's a message
+      if (message.trim() || true) { // Always save tip record
+        try {
+          await saveTipMessage({
+            fromAddress: account,
+            toAddress: recipientAddress,
+            amount: amount,
+            message: message.trim(),
+            transactionHash: receipt.hash,
+            fromName: account, // We could get the sender's name from their profile
+            toName: recipientName
+          });
+          console.log('Tip message saved to Firebase');
+        } catch (firebaseError) {
+          console.error('Error saving tip message:', firebaseError);
+          // Don't fail the tip if Firebase fails
+        }
+      }
       
       setSuccess(true);
       setTimeout(() => {

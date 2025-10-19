@@ -7,6 +7,7 @@ import { useFollow } from '../hooks/useFollow';
 import PostModal from '../components/PostModal';
 import EditProfileModal from '../components/EditProfileModal';
 import TipModal from '../components/TipModal';
+import TipNotifications from '../components/TipNotifications';
 import FollowButton from '../components/FollowButton';
 import { getUserProfile, getDisplayName } from '../services/profileService';
 import { getIPFSUrl } from '../config/pinata';
@@ -20,6 +21,7 @@ const Profile = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isTipModalOpen, setIsTipModalOpen] = useState(false);
+  const [isTipNotificationsOpen, setIsTipNotificationsOpen] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
   
@@ -282,6 +284,16 @@ const Profile = () => {
                     </svg>
                     <span>Refresh</span>
                   </button>
+                  <button 
+                    onClick={() => setIsTipNotificationsOpen(true)}
+                    className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
+                    title="View tip messages"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    <span>Tips</span>
+                  </button>
                 </>
               ) : (
                 <>
@@ -480,6 +492,12 @@ const Profile = () => {
         onClose={() => setIsTipModalOpen(false)}
         recipientAddress={profileAddress}
         recipientName={getDisplayName(userProfile, profileAddress)}
+      />
+
+      {/* Tip Notifications Modal */}
+      <TipNotifications
+        isOpen={isTipNotificationsOpen}
+        onClose={() => setIsTipNotificationsOpen(false)}
       />
     </div>
   );

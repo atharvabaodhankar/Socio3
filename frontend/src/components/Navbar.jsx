@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
+import { useTipNotifications } from '../hooks/useTipNotifications';
 import ConnectWalletButton from './ConnectWalletButton';
 import SearchModal from './SearchModal';
 
 const Navbar = () => {
   const location = useLocation();
   const { isConnected } = useWeb3();
+  const { unreadCount } = useTipNotifications();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Keyboard shortcut for search (Ctrl+K)
@@ -77,7 +79,7 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 relative ${
                   location.pathname === item.path
                     ? 'bg-white/10 text-white shadow-lg'
                     : 'text-gray-400 hover:text-white hover:bg-white/5'
@@ -85,6 +87,11 @@ const Navbar = () => {
               >
                 {item.icon}
                 <span className="font-medium">{item.label}</span>
+                {item.path === '/profile' && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             ))}
             
@@ -115,7 +122,7 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 ${
+                className={`flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 relative ${
                   location.pathname === item.path
                     ? 'text-white bg-white/10'
                     : 'text-gray-400 hover:text-white'
@@ -123,6 +130,11 @@ const Navbar = () => {
               >
                 {item.icon}
                 <span className="text-xs mt-1 font-medium">{item.label}</span>
+                {item.path === '/profile' && unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             ))}
             
