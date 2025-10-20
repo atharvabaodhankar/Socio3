@@ -110,10 +110,12 @@ export const usePosts = (authorAddress = null) => {
             if (settings) {
               post.allowComments = settings.allowComments;
               post.showLikeCount = settings.showLikeCount;
+              console.log(`Post ${post.id} loaded settings:`, settings);
             } else {
               // Default settings
               post.allowComments = true;
               post.showLikeCount = true;
+              console.log(`Post ${post.id} using default settings (no settings found)`);
             }
           });
         } catch (error) {

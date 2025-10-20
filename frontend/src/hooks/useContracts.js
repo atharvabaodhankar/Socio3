@@ -41,8 +41,37 @@ export const useContracts = () => {
     
     try {
       const tx = await postContract.createPost(ipfsHash);
-      await tx.wait();
-      return tx;
+      const receipt = await tx.wait();
+      
+      // Extract post ID from the PostCreated event
+      let postId = null;
+      
+      for (const log of receipt.logs) {
+        try {
+          const parsed = postContract.interface.parseLog(log);
+          if (parsed && parsed.name === 'PostCreated') {
+            postId = Number(parsed.args.postId);
+            console.log('Post created with ID:', postId);
+            break;
+          }
+        } catch (error) {
+          // Skip logs that can't be parsed
+          continue;
+        }
+      }
+      
+      // Fallback: get current post count from contract
+      if (!postId) {
+        try {
+          const postCount = await postContract.postCount();
+          postId = Number(postCount);
+          console.log('Fallback: Using post count as ID:', postId);
+        } catch (error) {
+          console.error('Failed to get post count:', error);
+        }
+      }
+      
+      return { tx, receipt, postId };
     } catch (error) {
       console.error('Error creating post:', error);
       throw error;

@@ -11,6 +11,12 @@ import { getUserProfile, getDisplayName } from '../services/profileService';
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const navigate = useNavigate();
   const { account, formatAddress, isConnected, provider } = useWeb3();
+  
+  // Debug: Log post settings
+  console.log(`Post ${post.id} settings:`, {
+    allowComments: post.allowComments,
+    showLikeCount: post.showLikeCount
+  });
   const { tipPost } = useContracts();
   const { 
     isLiked, 
@@ -262,7 +268,12 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         {/* Like count and tips */}
         <div className="mb-3">
           <p className="font-semibold text-white text-sm">
-            {post.showLikeCount !== false ? `${likes} likes • ` : ''}{post.tips || '0'} ETH in tips
+            {post.showLikeCount !== false ? `${likes} likes • ` : ''}
+            {post.tips || '0'} ETH in tips
+            {/* Debug indicator */}
+            {post.showLikeCount === false && (
+              <span className="ml-2 px-2 py-1 bg-red-500 text-xs rounded">LIKES HIDDEN</span>
+            )}
           </p>
         </div>
 
@@ -345,10 +356,17 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         
         {/* Comments disabled message */}
         {post.allowComments === false && (
-          <div className="text-center py-2">
-            <p className="text-gray-500 text-sm">Comments are disabled for this post</p>
+          <div className="text-center py-2 bg-red-500/20 rounded-lg">
+            <p className="text-red-300 text-sm font-medium">🚫 Comments are disabled for this post</p>
           </div>
         )}
+        
+        {/* Debug Panel - Remove in production */}
+        <div className="mt-2 p-2 bg-gray-800/50 rounded text-xs text-gray-400">
+          <strong>Debug Post {post.id}:</strong> 
+          allowComments: {String(post.allowComments)}, 
+          showLikeCount: {String(post.showLikeCount)}
+        </div>
       </div>
 
       {/* Tip Modal */}

@@ -62,6 +62,8 @@ export const getPostSettings = async (postId, authorAddress) => {
 // Get settings for multiple posts
 export const getMultiplePostSettings = async (posts) => {
   try {
+    console.log('Getting settings for posts:', posts.map(p => ({ id: p.id, author: p.author })));
+    
     const settingsPromises = posts.map(post => 
       getPostSettings(post.id, post.author)
     );
@@ -72,6 +74,7 @@ export const getMultiplePostSettings = async (posts) => {
     const settingsMap = {};
     posts.forEach((post, index) => {
       settingsMap[post.id] = settingsArray[index];
+      console.log(`Settings for post ${post.id}:`, settingsArray[index]);
     });
     
     return settingsMap;
