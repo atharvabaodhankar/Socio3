@@ -12,6 +12,7 @@ import Wallet from "./pages/Wallet";
 // Import test utilities for development
 import "./utils/testLikedPosts";
 import "./utils/testPostSettings";
+import "./utils/testTrending";
 import Post from "./pages/Post";
 import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";
