@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
 import { uploadToPinata } from '../config/pinata';
+import { savePostSettings } from '../services/postSettingsService';
 import LoadingModal from '../components/LoadingModal';
 import SuccessModal from '../components/SuccessModal';
 import ErrorModal from '../components/ErrorModal';
@@ -17,6 +18,10 @@ const Upload = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Advanced Options State
+  const [allowComments, setAllowComments] = useState(true);
+  const [showLikeCount, setShowLikeCount] = useState(true);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -49,7 +54,24 @@ const Upload = () => {
         
         // Create post on blockchain
         console.log('Creating post on blockchain...');
-        await createPost(result.ipfsHash);
+        const postResult = await createPost(result.ipfsHash);
+        
+        // Save post settings to Firebase
+        try {
+          // Get the post ID from the transaction receipt or use a counter
+          // For now, we'll use the current timestamp as a unique identifier
+          const postId = Date.now(); // This should be replaced with actual post ID from blockchain
+          
+          await savePostSettings(postId, account, {
+            allowComments,
+            showLikeCount
+          });
+          
+          console.log('Post settings saved successfully');
+        } catch (settingsError) {
+          console.error('Failed to save post settings:', settingsError);
+          // Don't fail the entire upload if settings save fails
+        }
         
         setShowLoadingModal(false);
         setShowSuccessModal(true);
@@ -58,6 +80,8 @@ const Upload = () => {
         setSelectedFile(null);
         setCaption('');
         setPreviewUrl(null);
+        setAllowComments(true);
+        setShowLikeCount(true);
       } else {
         throw new Error(result.error);
       }
@@ -179,24 +203,66 @@ const Upload = () => {
         {/* Advanced Options */}
         <div className="mb-8">
           <details className="group">
-            <summary className="flex items-center justify-between cursor-pointer text-white font-medium mb-4">
+            <summary className="flex items-center justify-between cursor-pointer text-white font-medium mb-4 hover:text-purple-300 transition-colors">
               <span>Advanced Options</span>
               <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
-            <div className="space-y-4 pl-4 border-l-2 border-gray-700">
+            <div className="space-y-6 pl-4 border-l-2 border-gray-700">
+              {/* Allow Comments Toggle */}
               <div className="flex items-center justify-between">
-                <span className="text-gray-300">Allow comments</span>
-                <button className="w-12 h-6 bg-purple-500 rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                <div className="flex flex-col">
+                  <span className="text-gray-300 font-medium">Allow comments</span>
+                  <span className="text-sm text-gray-500">Let people comment on your post</span>
+                </div>
+                <button
+                  onClick={() => setAllowComments(!allowComments)}
+                  className={`w-12 h-6 rounded-full relative transition-all duration-300 ${
+                    allowComments 
+                      ? 'bg-purple-500 hover:bg-purple-600' 
+                      : 'bg-gray-600 hover:bg-gray-500'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all duration-300 ${
+                    allowComments ? 'right-0.5' : 'left-0.5'
+                  }`}></div>
                 </button>
               </div>
+              
+              {/* Show Like Count Toggle */}
               <div className="flex items-center justify-between">
-                <span className="text-gray-300">Show like count</span>
-                <button className="w-12 h-6 bg-purple-500 rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5"></div>
+                <div className="flex flex-col">
+                  <span className="text-gray-300 font-medium">Show like count</span>
+                  <span className="text-sm text-gray-500">Display the number of likes publicly</span>
+                </div>
+                <button
+                  onClick={() => setShowLikeCount(!showLikeCount)}
+                  className={`w-12 h-6 rounded-full relative transition-all duration-300 ${
+                    showLikeCount 
+                      ? 'bg-purple-500 hover:bg-purple-600' 
+                      : 'bg-gray-600 hover:bg-gray-500'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all duration-300 ${
+                    showLikeCount ? 'right-0.5' : 'left-0.5'
+                  }`}></div>
                 </button>
+              </div>
+              
+              {/* Settings Preview */}
+              <div className="mt-4 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
+                <h4 className="text-sm font-medium text-gray-300 mb-2">Post Settings Preview:</h4>
+                <div className="space-y-1 text-xs text-gray-400">
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${allowComments ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <span>Comments: {allowComments ? 'Enabled' : 'Disabled'}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${showLikeCount ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <span>Like count: {showLikeCount ? 'Visible' : 'Hidden'}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </details>

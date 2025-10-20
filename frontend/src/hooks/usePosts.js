@@ -4,6 +4,7 @@ import { useWeb3 } from '../context/Web3Context';
 import { getIPFSUrl } from '../config/pinata';
 import { CONTRACT_ADDRESSES, POST_CONTRACT_ABI, SOCIAL_CONTRACT_ABI } from '../config/contracts';
 import { getMultiplePostStats } from '../services/firebaseService';
+import { getMultiplePostSettings } from '../services/postSettingsService';
 
 export const usePosts = (authorAddress = null) => {
   const [posts, setPosts] = useState([]);
@@ -89,22 +90,34 @@ export const usePosts = (authorAddress = null) => {
         })
       );
 
-      // Get social data from Firebase for all posts
+      // Get social data and settings from Firebase for all posts
       if (processedPosts.length > 0) {
         try {
           const postIds = processedPosts.map(post => post.id);
           const socialStats = await getMultiplePostStats(postIds);
+          const postSettings = await getMultiplePostSettings(processedPosts);
           
-          // Merge Firebase social data with blockchain data
+          // Merge Firebase social data and settings with blockchain data
           processedPosts.forEach(post => {
             const stats = socialStats[post.id];
+            const settings = postSettings[post.id];
+            
             if (stats) {
               post.likes = stats.likes || 0;
               post.commentCount = stats.comments || 0;
             }
+            
+            if (settings) {
+              post.allowComments = settings.allowComments;
+              post.showLikeCount = settings.showLikeCount;
+            } else {
+              // Default settings
+              post.allowComments = true;
+              post.showLikeCount = true;
+            }
           });
         } catch (error) {
-          console.error('Error loading social stats from Firebase:', error);
+          console.error('Error loading social stats and settings from Firebase:', error);
         }
       }
 
