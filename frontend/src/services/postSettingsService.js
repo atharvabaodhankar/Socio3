@@ -15,18 +15,27 @@ const POST_SETTINGS_COLLECTION = 'postSettings';
 // Save post settings
 export const savePostSettings = async (postId, authorAddress, settings) => {
   try {
-    const postSettingsRef = doc(db, POST_SETTINGS_COLLECTION, `${postId}_${authorAddress.toLowerCase()}`);
+    const docId = `${postId}_${authorAddress.toLowerCase()}`;
+    const postSettingsRef = doc(db, POST_SETTINGS_COLLECTION, docId);
+    
+    console.log(`Saving to document ID: ${docId}`);
+    console.log('Settings to save:', settings);
     
     const postSettingsDocument = {
       postId: postId,
       authorAddress: authorAddress.toLowerCase(),
-      allowComments: settings.allowComments || true,
-      showLikeCount: settings.showLikeCount || true,
+      allowComments: settings.allowComments !== undefined ? settings.allowComments : true,
+      showLikeCount: settings.showLikeCount !== undefined ? settings.showLikeCount : true,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
 
+    console.log('Final document to save:', postSettingsDocument);
+    
+    // Use setDoc without merge to completely overwrite
     await setDoc(postSettingsRef, postSettingsDocument);
+    
+    console.log('Document saved successfully');
     return true;
   } catch (error) {
     console.error('Error saving post settings:', error);
