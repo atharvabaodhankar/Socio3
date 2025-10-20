@@ -33,60 +33,237 @@ const Home = () => {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
-        <div className="mb-12 max-w-4xl">
-          <div className="mb-8">
-            <h1 className="text-7xl md:text-8xl font-bold gradient-text mb-6 leading-tight">
-              Socio3
+      <div className="min-h-screen overflow-hidden">
+        {/* Hero Section */}
+        <div className="relative min-h-screen flex flex-col items-center justify-center px-4">
+          {/* Animated Background */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+          </div>
+
+          {/* Main Content */}
+          <div className="relative z-10 text-center max-w-6xl mx-auto">
+            {/* Logo Animation */}
+            <div className="mb-8 animate-fade-in">
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-3xl mb-8 animate-bounce-slow shadow-2xl">
+                <span className="text-3xl font-bold text-white">S3</span>
+              </div>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-bold mb-6 animate-slide-up">
+              <span className="gradient-text">Socio3</span>
             </h1>
-            <p className="text-2xl md:text-3xl text-gray-300 font-light mb-4">
+            
+            {/* Subtitle */}
+            <p className="text-2xl md:text-4xl text-gray-300 font-light mb-6 animate-slide-up delay-200">
               Own Your Social
             </p>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            
+            {/* Description */}
+            <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed mb-12 animate-slide-up delay-400">
               The first truly decentralized social platform. Create, share, and monetize your content 
               with complete ownership through blockchain technology.
             </p>
+
+            {/* CTA Button */}
+            <div className="animate-slide-up delay-600">
+              <button className="btn-primary px-12 py-4 text-xl font-semibold rounded-2xl hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-purple-500/25">
+                Connect Wallet to Start
+              </button>
+            </div>
+
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </div>
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mb-12">
-          <div className="glass p-8 rounded-2xl card-hover">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-              </svg>
+
+        {/* Features Section */}
+        <div className="py-24 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-6">Why Choose Socio3?</h2>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Experience the future of social media with true ownership, crypto rewards, and decentralized freedom.
+              </p>
             </div>
-            <h3 className="text-xl font-semibold mb-3 text-white">True Ownership</h3>
-            <p className="text-gray-400 leading-relaxed">Your content lives on IPFS and Ethereum. No platform can delete or censor your posts.</p>
-          </div>
-          
-          <div className="glass p-8 rounded-2xl card-hover">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-              </svg>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+              {/* Feature 1 */}
+              <div className="glass p-8 rounded-3xl card-hover group">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-semibold mb-4 text-white">True Ownership</h3>
+                <p className="text-gray-400 leading-relaxed mb-4">
+                  Your content lives on IPFS and Ethereum. No platform can delete or censor your posts. 
+                  You own your data, forever.
+                </p>
+                <ul className="text-sm text-gray-500 space-y-2">
+                  <li>• Immutable content storage</li>
+                  <li>• Censorship resistant</li>
+                  <li>• Permanent ownership</li>
+                </ul>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="glass p-8 rounded-3xl card-hover group">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-semibold mb-4 text-white">Crypto Rewards</h3>
+                <p className="text-gray-400 leading-relaxed mb-4">
+                  Earn ETH directly from your audience. No middleman, no fees, instant payments. 
+                  Monetize your creativity like never before.
+                </p>
+                <ul className="text-sm text-gray-500 space-y-2">
+                  <li>• Direct ETH tips</li>
+                  <li>• Zero platform fees</li>
+                  <li>• Instant payments</li>
+                </ul>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="glass p-8 rounded-3xl card-hover group">
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-semibold mb-4 text-white">Decentralized</h3>
+                <p className="text-gray-400 leading-relaxed mb-4">
+                  Built on Ethereum. No single point of failure, no corporate control, 
+                  just pure Web3 freedom and transparency.
+                </p>
+                <ul className="text-sm text-gray-500 space-y-2">
+                  <li>• Ethereum blockchain</li>
+                  <li>• No central authority</li>
+                  <li>• Community governed</li>
+                </ul>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold mb-3 text-white">Crypto Rewards</h3>
-            <p className="text-gray-400 leading-relaxed">Earn ETH directly from your audience. No middleman, no fees, instant payments.</p>
-          </div>
-          
-          <div className="glass p-8 rounded-2xl card-hover">
-            <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center mb-6">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-3 text-white">Decentralized</h3>
-            <p className="text-gray-400 leading-relaxed">Built on Ethereum. No single point of failure, no corporate control, just pure Web3.</p>
           </div>
         </div>
-        
-        <div className="text-center">
-          <p className="text-gray-400 mb-6 text-lg">Ready to join the future of social media?</p>
-          <div className="animate-pulse">
-            <svg className="w-6 h-6 text-gray-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
+
+        {/* How It Works Section */}
+        <div className="py-24 px-4 bg-gradient-to-b from-transparent to-purple-900/10">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-6">How It Works</h2>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Get started with Socio3 in just a few simple steps
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              {/* Step 1 */}
+              <div className="text-center group">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl font-bold text-white">1</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-white">Connect Wallet</h3>
+                <p className="text-gray-400">Connect your MetaMask or any Web3 wallet to get started</p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="text-center group">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-white">Create Profile</h3>
+                <p className="text-gray-400">Set up your decentralized profile with username and bio</p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="text-center group">
+                <div className="w-20 h-20 bg-gradient-to-br from-teal-500 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-white">Share Content</h3>
+                <p className="text-gray-400">Upload photos and videos stored permanently on IPFS</p>
+              </div>
+
+              {/* Step 4 */}
+              <div className="text-center group">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-2xl font-bold text-white">4</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-white">Earn Crypto</h3>
+                <p className="text-gray-400">Receive ETH tips directly from your followers</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="py-24 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div className="glass p-6 rounded-2xl">
+                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">100%</div>
+                <div className="text-gray-400">Decentralized</div>
+              </div>
+              <div className="glass p-6 rounded-2xl">
+                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">0%</div>
+                <div className="text-gray-400">Platform Fees</div>
+              </div>
+              <div className="glass p-6 rounded-2xl">
+                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">∞</div>
+                <div className="text-gray-400">Content Ownership</div>
+              </div>
+              <div className="glass p-6 rounded-2xl">
+                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">24/7</div>
+                <div className="text-gray-400">Always Online</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="py-24 px-4 bg-gradient-to-b from-purple-900/10 to-transparent">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-6xl font-bold gradient-text mb-6">
+              Ready to Own Your Social?
+            </h2>
+            <p className="text-xl text-gray-400 mb-12 max-w-2xl mx-auto">
+              Join the revolution of decentralized social media. Connect your wallet and start earning crypto from your content today.
+            </p>
+            <div className="space-y-4 md:space-y-0 md:space-x-6 md:flex md:justify-center">
+              <button className="btn-primary px-12 py-4 text-xl font-semibold rounded-2xl hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-purple-500/25 w-full md:w-auto">
+                🚀 Connect Wallet
+              </button>
+              <Link 
+                to="/explore" 
+                className="glass px-12 py-4 text-xl font-semibold rounded-2xl hover:bg-white/10 transition-all duration-300 inline-flex items-center justify-center space-x-2 w-full md:w-auto"
+              >
+                <span>👀 Explore Posts</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="py-12 px-4 border-t border-gray-800">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-2 mb-4 md:mb-0">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <span className="text-sm font-bold text-white">S3</span>
+              </div>
+              <span className="text-xl font-bold gradient-text">Socio3</span>
+            </div>
+            <div className="text-gray-400 text-sm">
+              Built on Ethereum • Powered by IPFS • Owned by You
+            </div>
           </div>
         </div>
       </div>
