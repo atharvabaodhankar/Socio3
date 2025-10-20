@@ -51,7 +51,6 @@ export const useContracts = () => {
           const parsed = postContract.interface.parseLog(log);
           if (parsed && parsed.name === 'PostCreated') {
             postId = Number(parsed.args.postId);
-            console.log('Post created with ID:', postId);
             break;
           }
         } catch (error) {
@@ -65,7 +64,6 @@ export const useContracts = () => {
         try {
           const postCount = await postContract.postCount();
           postId = Number(postCount);
-          console.log('Fallback: Using post count as ID:', postId);
         } catch (error) {
           console.error('Failed to get post count:', error);
         }

@@ -65,10 +65,6 @@ const Upload = () => {
               allowComments,
               showLikeCount
             });
-            
-            console.log(`Post settings saved successfully for post ID: ${postId}`);
-          } else {
-            console.warn('Could not extract post ID from transaction');
           }
         } catch (settingsError) {
           console.error('Failed to save post settings:', settingsError);
@@ -270,34 +266,7 @@ const Upload = () => {
           </details>
         </div>
 
-        {/* Test Settings Button (Development Only) */}
-        <button
-          onClick={async () => {
-            try {
-              const testPostId = 1; // Test with existing post
-              const testSettings = {
-                allowComments,
-                showLikeCount
-              };
-              console.log('Saving test settings:', testSettings);
-              await savePostSettings(testPostId, account, testSettings);
-              console.log('Test settings saved for post 1:', testSettings);
-              
-              // Immediately try to retrieve the settings to verify
-              const { getPostSettings } = await import('../services/postSettingsService');
-              const retrievedSettings = await getPostSettings(testPostId, account);
-              console.log('Retrieved settings immediately after save:', retrievedSettings);
-              
-              alert(`Test settings saved! allowComments: ${allowComments}, showLikeCount: ${showLikeCount}. Retrieved: ${JSON.stringify(retrievedSettings)}`);
-            } catch (error) {
-              console.error('Test failed:', error);
-              alert('Test failed: ' + error.message);
-            }
-          }}
-          className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded-xl font-medium mb-4 transition-colors"
-        >
-          🧪 Test Save Settings for Post 1 (Comments: {allowComments ? 'ON' : 'OFF'}, Likes: {showLikeCount ? 'ON' : 'OFF'})
-        </button>
+
 
         {/* Post Button */}
         <button

@@ -18,9 +18,6 @@ export const savePostSettings = async (postId, authorAddress, settings) => {
     const docId = `${postId}_${authorAddress.toLowerCase()}`;
     const postSettingsRef = doc(db, POST_SETTINGS_COLLECTION, docId);
     
-    console.log(`Saving to document ID: ${docId}`);
-    console.log('Settings to save:', settings);
-    
     const postSettingsDocument = {
       postId: postId,
       authorAddress: authorAddress.toLowerCase(),
@@ -29,13 +26,8 @@ export const savePostSettings = async (postId, authorAddress, settings) => {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     };
-
-    console.log('Final document to save:', postSettingsDocument);
     
-    // Use setDoc without merge to completely overwrite
     await setDoc(postSettingsRef, postSettingsDocument);
-    
-    console.log('Document saved successfully');
     return true;
   } catch (error) {
     console.error('Error saving post settings:', error);
@@ -71,8 +63,6 @@ export const getPostSettings = async (postId, authorAddress) => {
 // Get settings for multiple posts
 export const getMultiplePostSettings = async (posts) => {
   try {
-    console.log('Getting settings for posts:', posts.map(p => ({ id: p.id, author: p.author })));
-    
     const settingsPromises = posts.map(post => 
       getPostSettings(post.id, post.author)
     );
@@ -83,7 +73,6 @@ export const getMultiplePostSettings = async (posts) => {
     const settingsMap = {};
     posts.forEach((post, index) => {
       settingsMap[post.id] = settingsArray[index];
-      console.log(`Settings for post ${post.id}:`, settingsArray[index]);
     });
     
     return settingsMap;
