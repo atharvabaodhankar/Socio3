@@ -55,12 +55,12 @@ const Search = () => {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold gradient-text mb-2">Search Users</h1>
-        <p className="text-gray-400 text-lg">
+        <h1 className="text-4xl font-bold text-white mb-2">Search Users</h1>
+        <p className="text-white/60 text-lg">
           Find and connect with creators in the Socio3 community
         </p>
-        <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-          <p className="text-green-300 text-sm">
+        <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+          <p className="text-white/80 text-sm">
             <strong>Enhanced Search:</strong> Search by username, display name, bio keywords, or wallet address. Our search is powered by Firebase for fast results!
           </p>
         </div>
@@ -88,7 +88,7 @@ const Search = () => {
             placeholder="Search by username, name, or wallet address..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full glass text-white placeholder-gray-400 pl-12 pr-12 py-4 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full bg-white/5 border border-white/10 text-white placeholder-white/40 pl-12 pr-12 py-4 rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-white/20"
           />
           {query && (
             <button
@@ -96,10 +96,10 @@ const Search = () => {
                 setQuery("");
                 clearSearch();
               }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-700 rounded-full transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-white/10 rounded-full transition-colors"
             >
               <svg
-                className="w-5 h-5 text-gray-400"
+                className="w-5 h-5 text-white/40"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -120,16 +120,16 @@ const Search = () => {
       <div>
         {loading && (
           <div className="text-center py-16">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-400">Searching...</p>
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white/60">Searching...</p>
           </div>
         )}
 
         {error && (
           <div className="text-center py-16">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-8 h-8 text-red-400"
+                className="w-8 h-8 text-white/60"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -145,15 +145,15 @@ const Search = () => {
             <h3 className="text-xl font-semibold text-white mb-2">
               Search Error
             </h3>
-            <p className="text-red-400">{error}</p>
+            <p className="text-white/60">{error}</p>
           </div>
         )}
 
         {!loading && !error && query && searchResults.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-8 h-8 text-gray-400"
+                className="w-8 h-8 text-white/60"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -169,7 +169,7 @@ const Search = () => {
             <h3 className="text-xl font-semibold text-white mb-2">
               No Users Found
             </h3>
-            <p className="text-gray-400">
+            <p className="text-white/60">
               Try searching by username, display name, or wallet address
             </p>
           </div>
@@ -195,9 +195,9 @@ const Search = () => {
 
         {!query && (
           <div className="text-center py-16">
-            <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
-                className="w-8 h-8 text-purple-400"
+                className="w-8 h-8 text-white/60"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -213,10 +213,10 @@ const Search = () => {
             <h3 className="text-xl font-semibold text-white mb-2">
               Search for Users
             </h3>
-            <p className="text-gray-400">
+            <p className="text-white/60">
               Search by username, display name, bio, or wallet address
             </p>
-            <div className="mt-6 text-sm text-gray-500 space-y-2">
+            <div className="mt-6 text-sm text-white/40 space-y-2">
               <p>💡 Pro tip: Use Ctrl+K from anywhere to quickly open search</p>
               <p>🔍 Examples: "alice", "developer", "0x1234..."</p>
             </div>
@@ -234,13 +234,13 @@ const SearchResultCard = ({ result, onClick, formatAddress }) => {
   const displayName = getDisplayName(result.profile, result.address);
 
   return (
-    <div className="glass rounded-2xl p-6 hover:bg-white/5 transition-colors">
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors">
       <div className="flex items-center justify-between">
         <div
           className="flex items-center space-x-4 flex-1 cursor-pointer"
           onClick={onClick}
         >
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center overflow-hidden">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center overflow-hidden">
             {result.profile?.profileImage ? (
               <img
                 src={getIPFSUrl(result.profile.profileImage)}
@@ -248,7 +248,7 @@ const SearchResultCard = ({ result, onClick, formatAddress }) => {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-white font-semibold text-lg">
+              <span className="text-black font-semibold text-lg">
                 {displayName.slice(0, 2).toUpperCase()}
               </span>
             )}
@@ -260,21 +260,21 @@ const SearchResultCard = ({ result, onClick, formatAddress }) => {
                 {displayName}
               </h3>
               {result.matchType === "username" && (
-                <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                <span className="text-xs bg-white/10 text-white/80 px-2 py-1 rounded-full">
                   Username Match
                 </span>
               )}
               {result.matchType === "displayName" && (
-                <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">
+                <span className="text-xs bg-white/10 text-white/80 px-2 py-1 rounded-full">
                   Display Name Match
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-400 truncate mb-2">
+            <p className="text-sm text-white/60 truncate mb-2">
               {formatAddress(result.address)}
             </p>
             {result.profile?.bio && (
-              <p className="text-sm text-gray-300 line-clamp-2">
+              <p className="text-sm text-white/80 line-clamp-2">
                 {result.profile.bio}
               </p>
             )}

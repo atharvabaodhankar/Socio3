@@ -36,7 +36,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
   border-radius: 24px 24px 0 0;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .modal-content.loading::before {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
   animation: shimmer 2s infinite;
 }
 
@@ -146,14 +146,15 @@
 }
 
 .modal-button.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: 1px solid rgba(102, 126, 234, 0.3);
-  color: #ffffff;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #000000;
 }
 
 .modal-button.primary:hover {
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 @keyframes modalSlideIn {
@@ -201,8 +202,8 @@
   width: 80px;
   height: 80px;
   border: 3px solid transparent;
-  border-top: 3px solid #667eea;
-  border-right: 3px solid #764ba2;
+  border-top: 3px solid #ffffff;
+  border-right: 3px solid rgba(255, 255, 255, 0.6);
   border-radius: 50%;
   animation: modernSpin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
 }
@@ -211,7 +212,7 @@
   width: 50px;
   height: 50px;
   border: 2px solid transparent;
-  border-top: 2px solid rgba(102, 126, 234, 0.6);
+  border-top: 2px solid rgba(255, 255, 255, 0.6);
   border-radius: 50%;
   animation: modernSpin 1s linear infinite reverse;
 }
@@ -219,7 +220,7 @@
 .spinner-dot {
   width: 12px;
   height: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -294,8 +295,8 @@
 .loading-tip {
   margin-top: 20px;
   padding: 16px;
-  background: rgba(102, 126, 234, 0.1);
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.9);

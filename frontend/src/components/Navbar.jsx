@@ -60,15 +60,15 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-black/80 backdrop-blur-xl border-b border-gray-800/50 sticky top-0 z-40">
+    <nav className="bg-black/90 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-lg">S3</span>
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-black font-bold text-lg">S3</span>
             </div>
-            <span className="text-2xl font-bold gradient-text hidden sm:block">
+            <span className="text-2xl font-bold text-white hidden sm:block">
               Socio3
             </span>
           </Link>
@@ -82,7 +82,7 @@ const Navbar = () => {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 relative ${
                   location.pathname === item.path
                     ? 'bg-white/10 text-white shadow-lg'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
                 }`}
               >
                 {item.icon}
@@ -99,7 +99,7 @@ const Navbar = () => {
             {isConnected && (
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 text-gray-400 hover:text-white hover:bg-white/5"
+                className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5"
                 title="Search users"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +116,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {isConnected && (
-        <div className="md:hidden border-t border-gray-800/50 bg-black/90 backdrop-blur-xl">
+        <div className="md:hidden border-t border-white/10 bg-black/90 backdrop-blur-xl">
           <div className="flex justify-around py-2">
             {navItems.map((item) => (
               <Link
@@ -125,7 +125,7 @@ const Navbar = () => {
                 className={`flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 relative ${
                   location.pathname === item.path
                     ? 'text-white bg-white/10'
-                    : 'text-gray-400 hover:text-white'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 {item.icon}
@@ -141,7 +141,7 @@ const Navbar = () => {
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 text-gray-400 hover:text-white"
+              className="flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 text-white/60 hover:text-white"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

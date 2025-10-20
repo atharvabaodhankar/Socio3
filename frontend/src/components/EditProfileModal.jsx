@@ -231,15 +231,15 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-black border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h2 className="text-2xl font-bold text-white">
             {profileData.exists ? 'Edit Profile' : 'Setup Your Profile'}
           </h2>
           <button
             onClick={onClose}
-            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center text-white transition-colors"
+            className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -249,14 +249,14 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="p-6 space-y-6">
             {/* Cover Image */}
             <div>
               <label className="block text-lg font-medium mb-4 text-white">Cover Image</label>
-              <div className="relative h-32 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl overflow-hidden">
+              <div className="relative h-32 bg-white/10 rounded-xl overflow-hidden">
                 {coverImagePreview && (
                   <img
                     src={coverImagePreview}
@@ -287,7 +287,7 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
               <label className="block text-lg font-medium mb-4 text-white">Profile Picture</label>
               <div className="flex items-center space-x-6">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-white flex items-center justify-center">
                     {profileImagePreview ? (
                       <img
                         src={profileImagePreview}
@@ -295,7 +295,7 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-white font-bold text-2xl">
+                      <span className="text-black font-bold text-2xl">
                         {account?.slice(2, 4).toUpperCase()}
                       </span>
                     )}
@@ -309,16 +309,16 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                   />
                   <label
                     htmlFor="profile-upload"
-                    className="absolute -bottom-2 -right-2 w-8 h-8 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center cursor-pointer transition-colors"
+                    className="absolute -bottom-2 -right-2 w-8 h-8 bg-white hover:bg-white/80 rounded-full flex items-center justify-center cursor-pointer transition-colors"
                   >
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </label>
                 </div>
                 <div>
                   <p className="text-white font-medium">{formatAddress(account)}</p>
-                  <p className="text-gray-400 text-sm">Click the + button to change your profile picture</p>
+                  <p className="text-white/60 text-sm">Click the + button to change your profile picture</p>
                 </div>
               </div>
             </div>
@@ -332,27 +332,27 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                   value={profileData.username}
                   onChange={(e) => handleInputChange('username', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   placeholder="Enter your username"
-                  className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-gray-700 transition-all"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
                   maxLength={20}
                 />
                 {checkingUsername && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 )}
               </div>
               {profileData.username.length >= 3 && (
                 <div className="mt-1 text-sm">
                   {checkingUsername ? (
-                    <span className="text-gray-400">Checking availability...</span>
+                    <span className="text-white/60">Checking availability...</span>
                   ) : usernameAvailable === true ? (
-                    <span className="text-green-400">✓ Username available</span>
+                    <span className="text-white/80">✓ Username available</span>
                   ) : usernameAvailable === false ? (
-                    <span className="text-red-400">✗ Username not available</span>
+                    <span className="text-white/60">✗ Username not available</span>
                   ) : null}
                 </div>
               )}
-              <p className="text-gray-400 text-sm mt-1">3-20 characters, letters, numbers, and underscores only</p>
+              <p className="text-white/60 text-sm mt-1">3-20 characters, letters, numbers, and underscores only</p>
             </div>
 
             {/* Display Name */}
@@ -363,7 +363,7 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                 value={profileData.displayName}
                 onChange={(e) => handleInputChange('displayName', e.target.value)}
                 placeholder="Enter your display name"
-                className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-gray-700 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
                 maxLength={50}
               />
             </div>
@@ -375,11 +375,11 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                 value={profileData.bio}
                 onChange={(e) => handleInputChange('bio', e.target.value)}
                 placeholder="Tell us about yourself..."
-                className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-gray-700 resize-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 resize-none transition-all"
                 rows={4}
                 maxLength={200}
               />
-              <div className="text-right text-sm text-gray-400 mt-1">
+              <div className="text-right text-sm text-white/60 mt-1">
                 {profileData.bio.length}/200
               </div>
             </div>
@@ -392,7 +392,7 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                 value={profileData.website}
                 onChange={(e) => handleInputChange('website', e.target.value)}
                 placeholder="https://yourwebsite.com"
-                className="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-gray-700 transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
               />
             </div>
 
@@ -400,13 +400,13 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
             <div>
               <label className="block text-lg font-medium mb-2 text-white">Twitter</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">@</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60">@</span>
                 <input
                   type="text"
                   value={profileData.twitter}
                   onChange={(e) => handleInputChange('twitter', e.target.value)}
                   placeholder="username"
-                  className="w-full bg-gray-800 border border-gray-600 rounded-xl pl-8 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-gray-700 transition-all"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all"
                 />
               </div>
             </div>
@@ -414,17 +414,17 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end space-x-4 p-6 border-t border-gray-700">
+        <div className="flex items-center justify-end space-x-4 p-6 border-t border-white/10">
           <button
             onClick={onClose}
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-colors"
+            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={uploading}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 bg-white hover:bg-white/80 text-black rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {uploading ? (
               <div className="flex items-center space-x-2">

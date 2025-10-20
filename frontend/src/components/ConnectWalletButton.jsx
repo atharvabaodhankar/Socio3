@@ -15,17 +15,17 @@ const ConnectWalletButton = () => {
     return (
       <div className="flex items-center space-x-3">
         {!isCorrectNetwork && (
-          <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-1 rounded-full text-sm font-medium">
+          <div className="bg-white/10 border border-white/20 text-white/80 px-3 py-1 rounded-full text-sm font-medium">
             Wrong Network
           </div>
         )}
-        <div className="glass px-4 py-2 rounded-xl flex items-center space-x-3">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <span className="text-sm font-mono text-gray-300">{formatAddress(account)}</span>
+        <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl flex items-center space-x-3">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+          <span className="text-sm font-mono text-white/80">{formatAddress(account)}</span>
         </div>
         <button
           onClick={disconnectWallet}
-          className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+          className="p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all duration-200"
           title="Disconnect Wallet"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@ const ConnectWalletButton = () => {
     >
       {isConnecting ? (
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
           <span>Connecting...</span>
         </div>
       ) : (
