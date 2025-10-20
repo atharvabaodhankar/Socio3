@@ -12,7 +12,7 @@ import {
 import { getUserProfile } from './profileService';
 
 // Get trending creators based on follower count and recent activity
-export const getTrendingCreators = async (provider, posts = [], limitCount = 10) => {
+export const getTrendingCreators = async (provider, posts = [], currentUserAddress = null, limitCount = 10) => {
   try {
     if (!posts || posts.length === 0) {
       return [];
@@ -24,7 +24,8 @@ export const getTrendingCreators = async (provider, posts = [], limitCount = 10)
     
     posts.forEach((post) => {
       const author = post.author?.toLowerCase();
-      if (author) {
+      // Exclude current user from trending creators
+      if (author && (!currentUserAddress || author !== currentUserAddress.toLowerCase())) {
         uniqueAuthors.add(author);
         authorStats[author] = (authorStats[author] || 0) + 1;
       }

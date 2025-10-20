@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { getTrendingCreators, getTopPosts } from '../services/trendingService';
 
-export const useTrendingCreators = (posts = [], limit = 5) => {
+export const useTrendingCreators = (posts = [], currentUserAddress = null, limit = 5) => {
   const { provider } = useWeb3();
   const [trendingCreators, setTrendingCreators] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,14 +14,14 @@ export const useTrendingCreators = (posts = [], limit = 5) => {
     } else {
       setLoading(false);
     }
-  }, [provider, posts, limit]);
+  }, [provider, posts, currentUserAddress, limit]);
 
   const loadTrendingCreators = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const creators = await getTrendingCreators(provider, posts, limit);
+      const creators = await getTrendingCreators(provider, posts, currentUserAddress, limit);
       setTrendingCreators(creators);
     } catch (err) {
       console.error('Error loading trending creators:', err);

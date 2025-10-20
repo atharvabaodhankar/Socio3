@@ -11,14 +11,14 @@ import AutoScrollButton from '../components/AutoScrollButton';
 
 const Explore = () => {
   const navigate = useNavigate();
-  const { isConnected, formatAddress } = useWeb3();
+  const { isConnected, formatAddress, account } = useWeb3();
   const [activeTab, setActiveTab] = useState('trending');
   const [selectedPostIndex, setSelectedPostIndex] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { posts, loading, error } = usePosts(); // Fetch all posts
   
-  // Fetch trending data
-  const { trendingCreators, loading: creatorsLoading } = useTrendingCreators(posts, 5);
+  // Fetch trending data (exclude current user from trending creators)
+  const { trendingCreators, loading: creatorsLoading } = useTrendingCreators(posts, account, 5);
   const { topPosts, loading: topPostsLoading } = useTopPosts(posts, 9);
 
   // Users can browse posts without connecting wallet

@@ -28,8 +28,8 @@ const Home = () => {
     loading: feedLoading 
   } = useFeed(posts);
   
-  // Get suggested creators to follow
-  const { trendingCreators } = useTrendingCreators(posts, 3);
+  // Get suggested creators to follow (exclude current user)
+  const { trendingCreators } = useTrendingCreators(posts, account, 3);
 
   if (!isConnected) {
     return (
