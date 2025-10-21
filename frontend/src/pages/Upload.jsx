@@ -47,7 +47,7 @@ const Upload = () => {
     try {
       // Upload to IPFS via Pinata
       console.log('Uploading to IPFS...');
-      const result = await uploadToPinata(selectedFile);
+      const result = await uploadToPinata(selectedFile, caption);
       
       if (result.success) {
         console.log('File uploaded to IPFS:', result.ipfsHash);

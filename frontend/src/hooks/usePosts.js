@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { useWeb3 } from '../context/Web3Context';
-import { getIPFSUrl } from '../config/pinata';
+import { getIPFSUrl, fetchPostMetadata } from '../config/pinata';
 import { CONTRACT_ADDRESSES, POST_CONTRACT_ABI, SOCIAL_CONTRACT_ABI } from '../config/contracts';
 import { getMultiplePostStats } from '../services/firebaseService';
 import { getMultiplePostSettings } from '../services/postSettingsService';
@@ -56,7 +56,27 @@ export const usePosts = (authorAddress = null) => {
             const ipfsHash = post[1];
             const timestamp = Number(post[2]);
 
-
+            // Fetch metadata from IPFS to get caption and image URL
+            let caption = '';
+            let imageUrl = getIPFSUrl(ipfsHash); // Fallback to direct hash
+            
+            try {
+              const metadata = await fetchPostMetadata(ipfsHash);
+              if (metadata) {
+                if (metadata.isDirectImage) {
+                  // Old format: direct image file
+                  caption = '';
+                  imageUrl = metadata.imageUrl;
+                } else {
+                  // New format: metadata JSON
+                  caption = metadata.caption || metadata.description || '';
+                  imageUrl = metadata.imageUrl || getIPFSUrl(metadata.image?.replace('ipfs://', '') || ipfsHash);
+                }
+              }
+            } catch (metadataError) {
+              console.warn('Could not fetch metadata for post', postId, metadataError);
+              // Use fallback values
+            }
 
             // Get tips from blockchain (financial data stays on-chain)
             const tipsAmount = await socialContract.getTipsAmount(postId);
@@ -65,12 +85,12 @@ export const usePosts = (authorAddress = null) => {
               id: postId,
               author: author,
               ipfsHash: ipfsHash,
-              imageUrl: getIPFSUrl(ipfsHash),
+              imageUrl: imageUrl,
               timestamp: new Date(timestamp * 1000),
               likes: 0, // Will be loaded from Firebase
               tips: parseFloat(ethers.formatEther(tipsAmount)),
               commentCount: 0, // Will be loaded from Firebase
-              caption: '' // TODO: Add caption support to smart contract
+              caption: caption
             };
           } catch (err) {
             console.error('Error processing post:', err);
