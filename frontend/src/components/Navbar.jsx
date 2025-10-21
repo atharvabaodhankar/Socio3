@@ -65,9 +65,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-black font-bold text-lg">S3</span>
-            </div>
+            <img 
+              src="/socio3.png" 
+              alt="Socio3 Logo" 
+              className="w-10 h-10 rounded-xl shadow-lg"
+            />
             <span className="text-2xl font-bold text-white hidden sm:block">
               Socio3
             </span>
