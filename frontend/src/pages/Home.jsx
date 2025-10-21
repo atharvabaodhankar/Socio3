@@ -44,9 +44,18 @@ const Home = () => {
 
           {/* Main Content */}
           <div className="relative z-10 text-center max-w-5xl mx-auto">
+            {/* Logo with Animation */}
+            <div className="mb-8 flex justify-center">
+              <img 
+                src="/socio3.png" 
+                alt="Socio3 Logo" 
+                className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 animate-float"
+              />
+            </div>
+            
             {/* Title */}
-            <h1 className="text-7xl md:text-8xl lg:text-9xl font-bold mb-8 tracking-tight">
-              <span className="gradient-text">Socio3</span>
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight text-white">
+              Socio3
             </h1>
             
             {/* Subtitle */}
@@ -62,12 +71,12 @@ const Home = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-              <button className="btn-primary px-8 py-4 text-lg font-semibold rounded-xl">
+              <button className="bg-white hover:bg-white/90 text-black px-8 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105">
                 Connect Wallet
               </button>
               <Link 
                 to="/explore" 
-                className="btn-secondary px-8 py-4 text-lg font-medium rounded-xl inline-flex items-center"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-8 py-4 text-lg font-medium rounded-xl inline-flex items-center transition-all duration-200 hover:scale-105"
               >
                 Explore Posts
               </Link>
@@ -83,7 +92,7 @@ const Home = () => {
         </div>
 
         {/* Features Section */}
-        <div className="py-32 px-4 bg-zinc-950">
+        <div className="py-32 px-4 bg-black">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-24">
               <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
@@ -96,7 +105,7 @@ const Home = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Feature 1 */}
-              <div className="glass p-8 rounded-2xl card-hover group">
+              <div className="bg-white/5 border border-white/10 p-8 rounded-2xl card-hover group">
                 <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-6">
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -109,7 +118,7 @@ const Home = () => {
               </div>
 
               {/* Feature 2 */}
-              <div className="glass p-8 rounded-2xl card-hover group">
+              <div className="bg-white/5 border border-white/10 p-8 rounded-2xl card-hover group">
                 <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-6">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
@@ -122,7 +131,7 @@ const Home = () => {
               </div>
 
               {/* Feature 3 */}
-              <div className="glass p-8 rounded-2xl card-hover group">
+              <div className="bg-white/5 border border-white/10 p-8 rounded-2xl card-hover group">
                 <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-6">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
@@ -138,7 +147,7 @@ const Home = () => {
         </div>
 
         {/* How It Works Section */}
-        <div className="py-32 px-4 bg-zinc-900">
+        <div className="py-32 px-4 bg-black/50">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-24">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 tracking-tight">
@@ -214,7 +223,7 @@ const Home = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="py-32 px-4 bg-zinc-950">
+        <div className="py-32 px-4 bg-black">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
               Ready to get started?
@@ -223,12 +232,12 @@ const Home = () => {
               Join the future of social media. Connect your wallet and start sharing.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="btn-primary px-10 py-4 text-lg font-semibold rounded-xl">
+              <button className="bg-white hover:bg-white/90 text-black px-10 py-4 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105">
                 Connect Wallet
               </button>
               <Link 
                 to="/explore" 
-                className="btn-secondary px-10 py-4 text-lg font-medium rounded-xl inline-flex items-center justify-center"
+                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-10 py-4 text-lg font-medium rounded-xl inline-flex items-center justify-center transition-all duration-200 hover:scale-105"
               >
                 Explore Posts
               </Link>
@@ -237,16 +246,18 @@ const Home = () => {
         </div>
 
         {/* Footer */}
-        <div className="py-12 px-4 border-t border-slate-800">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center">
-                <span className="text-sm font-bold text-white">S3</span>
-              </div>
-              <span className="text-xl font-bold gradient-text">Socio3</span>
+        <div className="py-16 px-4 border-t border-white/10 bg-black">
+          <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center space-x-3 mb-6 md:mb-0">
+              <img 
+                src="/socio3.png" 
+                alt="Socio3 Logo" 
+                className="w-8 h-8 rounded-lg"
+              />
+              <span className="text-xl font-bold text-white">Socio3</span>
             </div>
-            <div className="text-slate-400 text-sm">
-              Built on Ethereum • Powered by IPFS • Owned by You
+            <div className="text-white/40 text-sm font-light">
+              Built on Ethereum • Powered by IPFS
             </div>
           </div>
         </div>
