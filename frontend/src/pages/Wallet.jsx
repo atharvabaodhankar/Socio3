@@ -47,7 +47,9 @@ const Wallet = () => {
         <div className="bg-white/10 border border-white/20 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">ETH Balance</h3>
-            <div className="text-2xl">💰</div>
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+            </svg>
           </div>
           {loading ? (
             <div className="animate-pulse">
@@ -66,7 +68,9 @@ const Wallet = () => {
         <div className="bg-white/5 border border-white/10 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Wallet Address</h3>
-            <div className="text-2xl">🔑</div>
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
           </div>
           <div className="font-mono text-sm bg-white/5 border border-white/10 p-3 rounded-lg mb-4 text-white">
             {account}
@@ -83,19 +87,25 @@ const Wallet = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
-          <div className="text-2xl mb-2">📤</div>
+          <svg className="w-8 h-8 text-white mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+          </svg>
           <div className="text-2xl font-bold text-white">2.5 ETH</div>
           <div className="text-sm text-white/60">Tips Received</div>
         </div>
         
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
-          <div className="text-2xl mb-2">📥</div>
+          <svg className="w-8 h-8 text-white mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
           <div className="text-2xl font-bold text-white">0.8 ETH</div>
           <div className="text-sm text-white/60">Tips Sent</div>
         </div>
         
         <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
-          <div className="text-2xl mb-2">📊</div>
+          <svg className="w-8 h-8 text-white mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
           <div className="text-2xl font-bold text-white">42</div>
           <div className="text-sm text-white/60">Total Transactions</div>
         </div>
@@ -117,7 +127,15 @@ const Wallet = () => {
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   tx.type === 'received' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
                 }`}>
-                  {tx.type === 'received' ? '↓' : '↑'}
+                  {tx.type === 'received' ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                  )}
                 </div>
                 <div>
                   <div className="font-medium">
