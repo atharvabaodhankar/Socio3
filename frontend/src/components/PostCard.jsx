@@ -142,26 +142,26 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   };
 
   return (
-    <div className="glass rounded-2xl overflow-hidden card-hover mb-8">
+    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden card-hover mb-8">
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div 
-            className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
             onClick={handleProfileClick}
           >
-            <span className="text-white font-semibold text-sm">
+            <span className="text-black font-semibold text-sm">
               {post.author?.slice(2, 4).toUpperCase()}
             </span>
           </div>
           <div>
             <p 
-              className="font-semibold text-white cursor-pointer hover:text-purple-300 transition-colors"
+              className="font-semibold text-white cursor-pointer hover:text-white/80 transition-colors"
               onClick={handleProfileClick}
             >
               {getDisplayName(post.author)}
             </p>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-white/60">
               {post.timestamp instanceof Date 
                 ? post.timestamp.toLocaleDateString() 
                 : post.timestamp
@@ -170,7 +170,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           </div>
         </div>
         <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-          <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-5 h-5 text-white/60" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
           </svg>
         </button>
@@ -178,7 +178,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
 
       {/* Post Image */}
       <div 
-        className="relative aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer"
+        className="relative aspect-square bg-white/10 cursor-pointer"
         onDoubleClick={(e) => {
           e.stopPropagation();
           if (!isLiked) handleLike();
@@ -193,7 +193,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <svg className="w-20 h-20 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-20 h-20 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
@@ -253,7 +253,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           <button 
             onClick={() => setShowTipModal(true)}
             disabled={!isConnected}
-            className="btn-primary px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50"
+            className="bg-white hover:bg-white/80 text-black px-4 py-2 rounded-xl text-sm font-medium disabled:opacity-50 transition-colors"
           >
             💰 Tip
           </button>
@@ -298,7 +298,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
             {comments.map((comment) => (
               <div key={comment.id} className="flex items-start space-x-2">
                 <div 
-                  className="w-6 h-6 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                  className="w-6 h-6 bg-white rounded-full flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(`/profile/${comment.userAddress}`);
@@ -306,7 +306,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
                 ></div>
                 <p className="text-sm text-white">
                   <span 
-                    className="font-semibold mr-2 cursor-pointer hover:text-purple-300 transition-colors"
+                    className="font-semibold mr-2 cursor-pointer hover:text-white/80 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/profile/${comment.userAddress}`);
@@ -324,19 +324,19 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         {/* Add comment - only show if comments are allowed */}
         {post.allowComments !== false && (
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex-shrink-0"></div>
+            <div className="w-8 h-8 bg-white rounded-full flex-shrink-0"></div>
             <input
               type="text"
               placeholder="Add a comment..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleComment()}
-              className="flex-1 bg-transparent text-white placeholder-gray-400 text-sm focus:outline-none"
+              className="flex-1 bg-transparent text-white placeholder-white/40 text-sm focus:outline-none"
             />
             {comment.trim() && (
               <button 
                 onClick={handleComment}
-                className="text-blue-400 font-semibold text-sm hover:text-blue-300 transition-colors"
+                className="text-white font-semibold text-sm hover:text-white/80 transition-colors"
               >
                 Post
               </button>
@@ -347,7 +347,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         {/* Comments disabled message */}
         {post.allowComments === false && (
           <div className="text-center py-2">
-            <p className="text-gray-500 text-sm">Comments are disabled for this post</p>
+            <p className="text-white/40 text-sm">Comments are disabled for this post</p>
           </div>
         )}
       </div>
@@ -355,14 +355,14 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
       {/* Tip Modal */}
       {showTipModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass rounded-2xl p-6 w-full max-w-md">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Tip Creator</h3>
               <button 
                 onClick={() => setShowTipModal(false)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
               >
-                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -370,26 +370,26 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
             
             <div className="flex items-center space-x-3 mb-4">
               <div 
-                className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                className="w-12 h-12 bg-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
                 onClick={handleProfileClick}
               >
-                <span className="text-white font-semibold">
+                <span className="text-black font-semibold">
                   {post.author?.slice(2, 4).toUpperCase()}
                 </span>
               </div>
               <div>
                 <p 
-                  className="font-semibold text-white cursor-pointer hover:text-purple-300 transition-colors"
+                  className="font-semibold text-white cursor-pointer hover:text-white/80 transition-colors"
                   onClick={handleProfileClick}
                 >
                   {getDisplayName(post.author)}
                 </p>
-                <p className="text-sm text-gray-400">Send a tip to support this creator</p>
+                <p className="text-sm text-white/60">Send a tip to support this creator</p>
               </div>
             </div>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-white/80 mb-2">
                 Tip Amount (ETH)
               </label>
               <div className="flex items-center space-x-2">
@@ -399,16 +399,16 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
                   placeholder="0.001"
                   value={tipAmount}
                   onChange={(e) => setTipAmount(e.target.value)}
-                  className="flex-1 bg-gray-800 text-white placeholder-gray-400 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 bg-white/5 border border-white/10 text-white placeholder-white/40 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-white/30"
                 />
-                <span className="text-gray-400 font-medium">ETH</span>
+                <span className="text-white/60 font-medium">ETH</span>
               </div>
               <div className="flex space-x-2 mt-2">
                 {['0.001', '0.01', '0.1'].map((amount) => (
                   <button
                     key={amount}
                     onClick={() => setTipAmount(amount)}
-                    className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors"
+                    className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
                   >
                     {amount} ETH
                   </button>
@@ -419,14 +419,14 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowTipModal(false)}
-                className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors"
+                className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleTip}
                 disabled={!tipAmount || isLoading}
-                className="flex-1 btn-primary px-4 py-3 rounded-xl disabled:opacity-50"
+                className="flex-1 bg-white hover:bg-white/80 text-black px-4 py-3 rounded-xl disabled:opacity-50 transition-colors"
               >
                 {isLoading ? 'Sending...' : `Send ${tipAmount || '0'} ETH`}
               </button>

@@ -72,12 +72,12 @@ const Explore = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold gradient-text mb-2">Explore</h1>
-        <p className="text-gray-400 text-lg">Discover trending posts and new creators</p>
+        <h1 className="text-4xl font-bold text-white mb-2">Explore</h1>
+        <p className="text-white/60 text-lg">Discover trending posts and new creators</p>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex space-x-2 mb-8 p-1 glass rounded-2xl w-fit">
+      <div className="flex space-x-2 mb-8 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -85,7 +85,7 @@ const Explore = () => {
             className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
               activeTab === tab.id
                 ? 'bg-white/20 text-white shadow-lg'
-                : 'text-gray-400 hover:text-white hover:bg-white/10'
+                : 'text-white/60 hover:text-white hover:bg-white/10'
             }`}
           >
             <span>{tab.icon}</span>
@@ -101,14 +101,14 @@ const Explore = () => {
           <div className="col-span-2 space-y-8">
             {loading ? (
               <div className="flex justify-center items-center py-16">
-                <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : error ? (
               <div className="text-center py-16">
-                <p className="text-red-400 mb-4">Error loading posts: {error}</p>
+                <p className="text-white/60 mb-4">Error loading posts: {error}</p>
                 <button 
                   onClick={() => window.location.reload()} 
-                  className="btn-primary px-6 py-3 rounded-xl"
+                  className="bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
                 >
                   Retry
                 </button>
@@ -123,13 +123,13 @@ const Explore = () => {
               ))
             ) : (
               <div className="text-center py-16">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
                 <h3 className="text-2xl font-semibold mb-3 text-white">No Posts Yet</h3>
-                <p className="text-gray-400">Be the first to share something amazing!</p>
+                <p className="text-white/60">Be the first to share something amazing!</p>
               </div>
             )}
           </div>
@@ -137,7 +137,7 @@ const Explore = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Trending Creators */}
-            <div className="glass p-6 rounded-2xl">
+            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
               <h3 className="text-lg font-semibold mb-4 text-white">Trending Creators</h3>
               <div className="space-y-4">
                 {creatorsLoading ? (
@@ -145,13 +145,13 @@ const Explore = () => {
                   Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-700 rounded-full animate-pulse"></div>
+                        <div className="w-10 h-10 bg-white/10 rounded-full animate-pulse"></div>
                         <div>
-                          <div className="w-20 h-4 bg-gray-700 rounded animate-pulse mb-1"></div>
-                          <div className="w-16 h-3 bg-gray-700 rounded animate-pulse"></div>
+                          <div className="w-20 h-4 bg-white/10 rounded animate-pulse mb-1"></div>
+                          <div className="w-16 h-3 bg-white/10 rounded animate-pulse"></div>
                         </div>
                       </div>
-                      <div className="w-16 h-8 bg-gray-700 rounded animate-pulse"></div>
+                      <div className="w-16 h-8 bg-white/10 rounded animate-pulse"></div>
                     </div>
                   ))
                 ) : trendingCreators.length > 0 ? (
@@ -162,8 +162,8 @@ const Explore = () => {
                         onClick={() => navigate(`/profile/${creator.address}`)}
                       >
                         <div className="relative">
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">{index + 1}</span>
+                          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                            <span className="text-black font-semibold text-sm">{index + 1}</span>
                           </div>
                           {/* Trending badge */}
                           <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
@@ -171,13 +171,13 @@ const Explore = () => {
                           </div>
                         </div>
                         <div>
-                          <p className="font-medium text-white text-sm hover:text-purple-300 transition-colors">
+                          <p className="font-medium text-white text-sm hover:text-white/80 transition-colors">
                             {creator.profile?.exists 
                               ? getDisplayName(creator.profile, creator.address)
                               : formatAddress(creator.address)
                             }
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-white/60">
                             {creator.followerCount} followers • {creator.postCount} posts
                           </p>
                         </div>
@@ -191,26 +191,26 @@ const Explore = () => {
                   ))
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-gray-400 text-sm">No trending creators yet</p>
+                    <p className="text-white/60 text-sm">No trending creators yet</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Top Posts Grid */}
-            <div className="glass p-6 rounded-2xl">
+            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
               <h3 className="text-lg font-semibold mb-4 text-white">Top Posts</h3>
               <div className="grid grid-cols-3 gap-2">
                 {topPostsLoading ? (
                   // Loading skeleton
                   Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-gray-700 rounded-lg animate-pulse"></div>
+                    <div key={i} className="aspect-square bg-white/10 rounded-lg animate-pulse"></div>
                   ))
                 ) : topPosts.length > 0 ? (
                   topPosts.map((post, index) => (
                     <div 
                       key={post.id} 
-                      className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg cursor-pointer hover:scale-105 transition-transform relative group overflow-hidden"
+                      className="aspect-square bg-white/10 rounded-lg cursor-pointer hover:scale-105 transition-transform relative group overflow-hidden"
                       onClick={() => {
                         // Find the post in the main posts array and open modal
                         const postIndex = sortedPosts.findIndex(p => p.id === post.id);
@@ -231,14 +231,14 @@ const Explore = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-8 h-8 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         </div>
                       )}
                       
                       {/* Top post indicator */}
-                      <div className="absolute top-2 left-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-2 py-1 rounded-full">
+                      <div className="absolute top-2 left-2 bg-white text-black text-xs font-bold px-2 py-1 rounded-full">
                         #{index + 1}
                       </div>
                       
@@ -265,8 +265,8 @@ const Explore = () => {
                   ))
                 ) : (
                   Array.from({ length: 9 }).map((_, i) => (
-                    <div key={i} className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-500 text-xs">No posts</span>
+                    <div key={i} className="aspect-square bg-white/10 rounded-lg flex items-center justify-center">
+                      <span className="text-white/40 text-xs">No posts</span>
                     </div>
                   ))
                 )}
@@ -280,7 +280,7 @@ const Explore = () => {
       <div className="lg:hidden">
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : sortedPosts.length > 0 ? (
           <>
@@ -290,7 +290,7 @@ const Explore = () => {
                 <div 
                   key={post.id} 
                   onClick={() => openPostModal(index)}
-                  className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                  className="aspect-square bg-white/10 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
                 >
                   <img 
                     src={post.imageUrl} 
@@ -302,7 +302,7 @@ const Explore = () => {
                     }}
                   />
                   <div className="w-full h-full hidden items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-8 h-8 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
@@ -312,27 +312,27 @@ const Explore = () => {
 
             {/* Feed View Toggle */}
             <div className="text-center mb-8">
-              <button className="btn-primary px-6 py-3 rounded-xl font-medium">
+              <button className="bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors">
                 Switch to Feed View
               </button>
             </div>
           </>
         ) : (
           <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
             <h3 className="text-2xl font-semibold mb-3 text-white">No Posts Yet</h3>
-            <p className="text-gray-400">Be the first to share something amazing!</p>
+            <p className="text-white/60">Be the first to share something amazing!</p>
           </div>
         )}
       </div>
 
       {/* Load more */}
       <div className="text-center mt-12">
-        <button className="glass px-8 py-4 rounded-xl font-medium hover:bg-white/10 transition-all duration-200">
+        <button className="bg-white/5 border border-white/10 px-8 py-4 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 text-white">
           Load More Posts
         </button>
       </div>

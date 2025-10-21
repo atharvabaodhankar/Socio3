@@ -122,16 +122,16 @@ const Upload = () => {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold gradient-text mb-2">Create New Post</h1>
-        <p className="text-gray-400 text-lg">Share your content with the Socio3 community</p>
+        <h1 className="text-4xl font-bold text-white mb-2">Create New Post</h1>
+        <p className="text-white/60 text-lg">Share your content with the Socio3 community</p>
       </div>
 
-      <div className="glass rounded-2xl p-8">
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
         {/* File Upload Area */}
         <div className="mb-8">
           <label className="block text-lg font-medium mb-4 text-white">Upload Media</label>
           {!previewUrl ? (
-            <div className="border-2 border-dashed border-gray-600 rounded-2xl p-12 text-center hover:border-purple-500 transition-all duration-300 hover:bg-white/5">
+            <div className="border-2 border-dashed border-white/20 rounded-2xl p-12 text-center hover:border-white/40 transition-all duration-300 hover:bg-white/5">
               <input
                 type="file"
                 accept="image/*,video/*"
@@ -140,14 +140,14 @@ const Upload = () => {
                 id="file-upload"
               />
               <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                 </div>
                 <p className="text-xl text-white mb-2">Drop your files here</p>
-                <p className="text-gray-400 mb-4">or click to browse</p>
-                <p className="text-sm text-gray-500">Supports PNG, JPG, GIF, MP4 up to 10MB</p>
+                <p className="text-white/60 mb-4">or click to browse</p>
+                <p className="text-sm text-white/40">Supports PNG, JPG, GIF, MP4 up to 10MB</p>
               </label>
             </div>
           ) : (
@@ -188,11 +188,11 @@ const Upload = () => {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Write a caption for your post... #hashtags #web3"
-              className="w-full bg-white/5 border border-gray-600 rounded-2xl px-6 py-4 text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 focus:bg-white/10 resize-none transition-all duration-200"
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white placeholder-white/40 focus:outline-none focus:border-white/30 focus:bg-white/10 resize-none transition-all duration-200"
               rows={4}
               maxLength={500}
             />
-            <div className="absolute bottom-4 right-6 text-sm text-gray-400">
+            <div className="absolute bottom-4 right-6 text-sm text-white/60">
               {caption.length}/500
             </div>
           </div>
@@ -201,28 +201,28 @@ const Upload = () => {
         {/* Advanced Options */}
         <div className="mb-8">
           <details className="group">
-            <summary className="flex items-center justify-between cursor-pointer text-white font-medium mb-4 hover:text-purple-300 transition-colors">
+            <summary className="flex items-center justify-between cursor-pointer text-white font-medium mb-4 hover:text-white/80 transition-colors">
               <span>Advanced Options</span>
               <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
-            <div className="space-y-6 pl-4 border-l-2 border-gray-700">
+            <div className="space-y-6 pl-4 border-l-2 border-white/20">
               {/* Allow Comments Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-gray-300 font-medium">Allow comments</span>
-                  <span className="text-sm text-gray-500">Let people comment on your post</span>
+                  <span className="text-white/80 font-medium">Allow comments</span>
+                  <span className="text-sm text-white/60">Let people comment on your post</span>
                 </div>
                 <button
                   onClick={() => setAllowComments(!allowComments)}
                   className={`w-12 h-6 rounded-full relative transition-all duration-300 ${
                     allowComments 
-                      ? 'bg-purple-500 hover:bg-purple-600' 
-                      : 'bg-gray-600 hover:bg-gray-500'
+                      ? 'bg-white hover:bg-white/80' 
+                      : 'bg-white/20 hover:bg-white/30'
                   }`}
                 >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all duration-300 ${
+                  <div className={`w-5 h-5 ${allowComments ? 'bg-black' : 'bg-white'} rounded-full absolute top-0.5 transition-all duration-300 ${
                     allowComments ? 'right-0.5' : 'left-0.5'
                   }`}></div>
                 </button>
@@ -231,33 +231,33 @@ const Upload = () => {
               {/* Show Like Count Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-gray-300 font-medium">Show like count</span>
-                  <span className="text-sm text-gray-500">Display the number of likes publicly</span>
+                  <span className="text-white/80 font-medium">Show like count</span>
+                  <span className="text-sm text-white/60">Display the number of likes publicly</span>
                 </div>
                 <button
                   onClick={() => setShowLikeCount(!showLikeCount)}
                   className={`w-12 h-6 rounded-full relative transition-all duration-300 ${
                     showLikeCount 
-                      ? 'bg-purple-500 hover:bg-purple-600' 
-                      : 'bg-gray-600 hover:bg-gray-500'
+                      ? 'bg-white hover:bg-white/80' 
+                      : 'bg-white/20 hover:bg-white/30'
                   }`}
                 >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all duration-300 ${
+                  <div className={`w-5 h-5 ${showLikeCount ? 'bg-black' : 'bg-white'} rounded-full absolute top-0.5 transition-all duration-300 ${
                     showLikeCount ? 'right-0.5' : 'left-0.5'
                   }`}></div>
                 </button>
               </div>
               
               {/* Settings Preview */}
-              <div className="mt-4 p-3 bg-gray-800/50 rounded-xl border border-gray-700">
-                <h4 className="text-sm font-medium text-gray-300 mb-2">Post Settings Preview:</h4>
-                <div className="space-y-1 text-xs text-gray-400">
+              <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                <h4 className="text-sm font-medium text-white/80 mb-2">Post Settings Preview:</h4>
+                <div className="space-y-1 text-xs text-white/60">
                   <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${allowComments ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${allowComments ? 'bg-white' : 'bg-white/40'}`}></div>
                     <span>Comments: {allowComments ? 'Enabled' : 'Disabled'}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${showLikeCount ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${showLikeCount ? 'bg-white' : 'bg-white/40'}`}></div>
                     <span>Like count: {showLikeCount ? 'Visible' : 'Hidden'}</span>
                   </div>
                 </div>
@@ -272,11 +272,11 @@ const Upload = () => {
         <button
           onClick={handleUpload}
           disabled={!selectedFile || !caption.trim() || isUploading}
-          className="w-full btn-primary py-4 rounded-2xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="w-full bg-white hover:bg-white/80 text-black py-4 rounded-2xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-colors"
         >
           {isUploading ? (
             <div className="flex items-center justify-center space-x-3">
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
               <span>Publishing to Blockchain...</span>
             </div>
           ) : (

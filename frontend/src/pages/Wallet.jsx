@@ -29,7 +29,7 @@ const Wallet = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <h2 className="text-2xl font-bold mb-4">Connect Wallet to View Details</h2>
-        <p className="text-gray-400">Connect your wallet to view your balance and transaction history.</p>
+        <p className="text-white/60">Connect your wallet to view your balance and transaction history.</p>
       </div>
     );
   }
@@ -38,13 +38,13 @@ const Wallet = () => {
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Wallet</h1>
-        <p className="text-gray-400">Manage your crypto assets and view transaction history</p>
+        <p className="text-white/60">Manage your crypto assets and view transaction history</p>
       </div>
 
       {/* Wallet Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {/* Balance Card */}
-        <div className="bg-gradient-to-br from-violet-600 to-pink-600 rounded-xl p-6 text-white">
+        <div className="bg-white/10 border border-white/20 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">ETH Balance</h3>
             <div className="text-2xl">💰</div>
@@ -63,17 +63,17 @@ const Wallet = () => {
         </div>
 
         {/* Wallet Info Card */}
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Wallet Address</h3>
             <div className="text-2xl">🔑</div>
           </div>
-          <div className="font-mono text-sm bg-slate-700 p-3 rounded-lg mb-4">
+          <div className="font-mono text-sm bg-white/5 border border-white/10 p-3 rounded-lg mb-4 text-white">
             {account}
           </div>
           <button
             onClick={() => navigator.clipboard.writeText(account)}
-            className="bg-violet-600 hover:bg-violet-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="bg-white hover:bg-white/80 text-black px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             Copy Address
           </button>
@@ -82,27 +82,27 @@ const Wallet = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
           <div className="text-2xl mb-2">📤</div>
-          <div className="text-2xl font-bold text-green-400">2.5 ETH</div>
-          <div className="text-sm text-gray-400">Tips Received</div>
+          <div className="text-2xl font-bold text-white">2.5 ETH</div>
+          <div className="text-sm text-white/60">Tips Received</div>
         </div>
         
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
           <div className="text-2xl mb-2">📥</div>
-          <div className="text-2xl font-bold text-blue-400">0.8 ETH</div>
-          <div className="text-sm text-gray-400">Tips Sent</div>
+          <div className="text-2xl font-bold text-white">0.8 ETH</div>
+          <div className="text-sm text-white/60">Tips Sent</div>
         </div>
         
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
           <div className="text-2xl mb-2">📊</div>
-          <div className="text-2xl font-bold text-purple-400">42</div>
-          <div className="text-sm text-gray-400">Total Transactions</div>
+          <div className="text-2xl font-bold text-white">42</div>
+          <div className="text-sm text-white/60">Total Transactions</div>
         </div>
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6">
         <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
         
         <div className="space-y-4">
@@ -112,10 +112,10 @@ const Wallet = () => {
             { type: 'sent', amount: '0.02', to: '0x9876...4321', time: '1 day ago' },
             { type: 'received', amount: '0.1', from: '0x5555...9999', time: '3 days ago' },
           ].map((tx, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-slate-700 rounded-lg">
+            <div key={index} className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-lg">
               <div className="flex items-center space-x-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  tx.type === 'received' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                  tx.type === 'received' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
                 }`}>
                   {tx.type === 'received' ? '↓' : '↑'}
                 </div>
@@ -123,25 +123,25 @@ const Wallet = () => {
                   <div className="font-medium">
                     {tx.type === 'received' ? 'Tip Received' : 'Tip Sent'}
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-white/60">
                     {tx.type === 'received' ? `From ${formatAddress(tx.from)}` : `To ${formatAddress(tx.to)}`}
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div className={`font-medium ${
-                  tx.type === 'received' ? 'text-green-400' : 'text-red-400'
+                  tx.type === 'received' ? 'text-white' : 'text-white/80'
                 }`}>
                   {tx.type === 'received' ? '+' : '-'}{tx.amount} ETH
                 </div>
-                <div className="text-sm text-gray-400">{tx.time}</div>
+                <div className="text-sm text-white/60">{tx.time}</div>
               </div>
             </div>
           ))}
         </div>
         
         <div className="text-center mt-6">
-          <button className="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-lg font-medium transition-colors">
+          <button className="bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-2 rounded-lg font-medium transition-colors text-white">
             View All Transactions
           </button>
         </div>

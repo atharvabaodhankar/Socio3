@@ -59,7 +59,7 @@ const Post = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -68,10 +68,10 @@ const Post = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="text-2xl font-bold text-white mb-4">Error Loading Post</h2>
-        <p className="text-gray-400 mb-6">{error}</p>
+        <p className="text-white/60 mb-6">{error}</p>
         <button 
           onClick={() => navigate('/')}
-          className="btn-primary px-6 py-3 rounded-xl"
+          className="bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
         >
           Go Home
         </button>
@@ -83,10 +83,10 @@ const Post = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <h2 className="text-2xl font-bold text-white mb-4">Post Not Found</h2>
-        <p className="text-gray-400 mb-6">The post you're looking for doesn't exist or has been removed.</p>
+        <p className="text-white/60 mb-6">The post you're looking for doesn't exist or has been removed.</p>
         <button 
           onClick={() => navigate(`/profile/${parsedAuthorAddress}`)}
-          className="btn-primary px-6 py-3 rounded-xl"
+          className="bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
         >
           View Profile
         </button>

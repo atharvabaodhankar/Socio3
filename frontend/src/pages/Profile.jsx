@@ -143,7 +143,7 @@ const Profile = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <h2 className="text-2xl font-bold mb-4">Connect Wallet to View Your Profile</h2>
-        <p className="text-gray-400">Connect your wallet to view your profile and interact with the community.</p>
+        <p className="text-white/60">Connect your wallet to view your profile and interact with the community.</p>
       </div>
     );
   }
@@ -152,11 +152,11 @@ const Profile = () => {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Setup Profile Banner */}
       {isOwnProfile && userProfile && !userProfile.exists && !profileLoading && (
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 mb-6">
+        <div className="bg-white/10 border border-white/20 rounded-2xl p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-white mb-2">Complete Your Web3 Profile</h3>
-              <p className="text-purple-100">
+              <p className="text-white/80">
                 Set up your username, profile picture, and bio to get the full Socio3 experience!
               </p>
             </div>
@@ -171,11 +171,11 @@ const Profile = () => {
       )}
 
       {/* Profile Header */}
-      <div className="glass rounded-2xl p-8 mb-8">
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-8">
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-32 h-32 bg-gradient-to-br from-purple-500 via-violet-500 to-blue-500 rounded-full flex items-center justify-center text-4xl shadow-2xl overflow-hidden">
+            <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center text-4xl shadow-2xl overflow-hidden">
               {userProfile?.profileImage ? (
                 <img
                   src={getIPFSUrl(userProfile.profileImage)}
@@ -183,7 +183,7 @@ const Profile = () => {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <span className="text-white font-bold">
+                <span className="text-black font-bold">
                   {(userProfile?.username || profileAddress)?.slice(0, 2).toUpperCase()}
                 </span>
               )}
@@ -205,7 +205,7 @@ const Profile = () => {
             <div className="mb-4">
               <h1 className="text-3xl font-bold mb-2 text-white">
                 {profileLoading ? (
-                  <div className="w-48 h-8 bg-gray-700 rounded animate-pulse"></div>
+                  <div className="w-48 h-8 bg-white/10 rounded animate-pulse"></div>
                 ) : userProfile?.exists ? (
                   getDisplayName(userProfile, profileAddress)
                 ) : (
@@ -213,14 +213,14 @@ const Profile = () => {
                 )}
               </h1>
               {!profileLoading && profileAddress && (
-                <p className="text-gray-400 text-sm mb-2">
+                <p className="text-white/60 text-sm mb-2">
                   {formatAddress(profileAddress)}
                 </p>
               )}
               {profileLoading ? (
-                <div className="w-64 h-6 bg-gray-700 rounded animate-pulse"></div>
+                <div className="w-64 h-6 bg-white/10 rounded animate-pulse"></div>
               ) : (
-                <p className="text-gray-400 text-lg">
+                <p className="text-white/60 text-lg">
                   {userProfile?.bio ? (
                     userProfile.bio
                   ) : userProfile?.exists ? (
@@ -236,27 +236,27 @@ const Profile = () => {
             <div className="flex justify-center md:justify-start space-x-8 mb-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{posts.length}</div>
-                <div className="text-sm text-gray-400">Posts</div>
+                <div className="text-sm text-white/60">Posts</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">{liveFollowerCount}</div>
-                <div className="text-sm text-gray-400">Followers</div>
+                <div className="text-sm text-white/60">Followers</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-white">0</div>
-                <div className="text-sm text-gray-400">Following</div>
+                <div className="text-sm text-white/60">Following</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold gradient-text">
+                <div className="text-2xl font-bold text-white">
                   {(parseFloat(tipStats.totalReceived) + posts.reduce((total, post) => total + post.tips, 0)).toFixed(3)} ETH
                 </div>
-                <div className="text-sm text-gray-400">Tips Earned</div>
+                <div className="text-sm text-white/60">Tips Earned</div>
               </div>
             </div>
             
             {/* Bio */}
             {userProfile?.bio && (
-              <p className="text-gray-300 mb-6 max-w-md">
+              <p className="text-white/80 mb-6 max-w-md">
                 {userProfile.bio}
               </p>
             )}
@@ -269,7 +269,7 @@ const Profile = () => {
                     href={userProfile.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                    className="text-white/80 hover:text-white transition-colors"
                   >
                     🌐 Website
                   </a>
@@ -279,7 +279,7 @@ const Profile = () => {
                     href={`https://twitter.com/${userProfile.twitter}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                    className="text-white/80 hover:text-white transition-colors"
                   >
                     🐦 @{userProfile.twitter}
                   </a>
@@ -293,7 +293,7 @@ const Profile = () => {
                 <>
                   <button 
                     onClick={() => setIsEditModalOpen(true)}
-                    className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
+                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -307,7 +307,7 @@ const Profile = () => {
                       refetch(); // Refresh posts
                       refreshLikedPosts(); // Refresh liked posts
                     }}
-                    className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
+                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
                     title="Refresh profile data"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,7 +317,7 @@ const Profile = () => {
                   </button>
                   <button 
                     onClick={() => setIsTipNotificationsOpen(true)}
-                    className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
+                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
                     title="View tip messages"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -341,14 +341,14 @@ const Profile = () => {
                       }
                       setIsTipModalOpen(true);
                     }}
-                    className="glass px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2"
+                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
                     <span>Tip</span>
                   </button>
-                  <button className="glass px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200">
+                  <button className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 text-white">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
@@ -362,11 +362,11 @@ const Profile = () => {
 
       {/* Content Tabs */}
       <div className="flex justify-center mb-8">
-        <div className="flex space-x-1 glass rounded-2xl p-1">
+        <div className="flex space-x-1 bg-white/5 border border-white/10 rounded-2xl p-1">
           <button 
             onClick={() => setActiveTab('posts')}
             className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${
-              activeTab === 'posts' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
+              activeTab === 'posts' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -377,7 +377,7 @@ const Profile = () => {
           <button 
             onClick={() => setActiveTab('liked')}
             className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${
-              activeTab === 'liked' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
+              activeTab === 'liked' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -388,7 +388,7 @@ const Profile = () => {
           <button 
             onClick={() => setActiveTab('saved')}
             className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${
-              activeTab === 'saved' ? 'bg-white/20 text-white' : 'text-gray-400 hover:text-white'
+              activeTab === 'saved' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
             }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,14 +402,14 @@ const Profile = () => {
       {/* Posts Content */}
       {loading ? (
         <div className="flex justify-center items-center py-16">
-          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : error ? (
         <div className="text-center py-16">
-          <p className="text-red-400 mb-4">Error loading posts: {error}</p>
+          <p className="text-white/60 mb-4">Error loading posts: {error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="btn-primary px-6 py-3 rounded-xl"
+            className="bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
           >
             Retry
           </button>
@@ -420,7 +420,7 @@ const Profile = () => {
             <div 
               key={post.id} 
               onClick={() => openPostModal(index)}
-              className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
+              className="aspect-square bg-white/10 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
             >
               <img 
                 src={post.imageUrl} 
@@ -432,7 +432,7 @@ const Profile = () => {
                 }}
               />
               <div className="w-full h-full hidden items-center justify-center">
-                <svg className="w-8 h-8 md:w-12 md:h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 md:w-12 md:h-12 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
@@ -459,7 +459,7 @@ const Profile = () => {
       ) : activeTab === 'liked' ? (
         likedLoading ? (
           <div className="flex justify-center items-center py-16">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : likedPosts.length > 0 ? (
           <div className="grid grid-cols-3 gap-1 md:gap-4">
@@ -467,7 +467,7 @@ const Profile = () => {
               <div 
                 key={post.id} 
                 onClick={() => openPostModal(index)}
-                className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
+                className="aspect-square bg-white/10 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
               >
                 <img 
                   src={post.imageUrl} 
@@ -494,16 +494,16 @@ const Profile = () => {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </div>
             <h3 className="text-2xl font-semibold mb-3 text-white">No Liked Posts</h3>
-            <p className="text-gray-400">Posts you like will appear here.</p>
+            <p className="text-white/60">Posts you like will appear here.</p>
             <button 
               onClick={refreshLikedPosts}
-              className="mt-4 btn-primary px-6 py-3 rounded-xl"
+              className="mt-4 bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
             >
               Refresh Liked Posts
             </button>
@@ -512,7 +512,7 @@ const Profile = () => {
       ) : activeTab === 'saved' ? (
         savedLoading ? (
           <div className="flex justify-center items-center py-16">
-            <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : savedPosts.length > 0 ? (
           <div className="grid grid-cols-3 gap-1 md:gap-4">
@@ -550,13 +550,13 @@ const Profile = () => {
           </div>
         ) : (
           <div className="text-center py-16">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
               </svg>
             </div>
             <h3 className="text-2xl font-semibold mb-3 text-white">No Saved Posts</h3>
-            <p className="text-gray-400">Posts you save will appear here.</p>
+            <p className="text-white/60">Posts you save will appear here.</p>
           </div>
         )
       ) : null}
@@ -564,18 +564,18 @@ const Profile = () => {
       {/* Empty state for own profile */}
       {isOwnProfile && posts.length === 0 && !loading && (
         <div className="text-center py-16">
-          <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </div>
           <h3 className="text-2xl font-semibold mb-3 text-white">Share Your First Post</h3>
-          <p className="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+          <p className="text-white/60 mb-8 max-w-md mx-auto leading-relaxed">
             Start your Web3 social journey by sharing your first post with the community.
           </p>
           <button 
             onClick={() => window.location.href = '/upload'} 
-            className="btn-primary px-8 py-3 rounded-xl font-medium"
+            className="bg-white hover:bg-white/80 text-black px-8 py-3 rounded-xl font-medium transition-colors"
           >
             Create Post
           </button>

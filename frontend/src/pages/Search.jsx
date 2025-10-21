@@ -61,7 +61,9 @@ const Search = () => {
         </p>
         <div className="mt-4 p-4 bg-white/5 border border-white/10 rounded-xl">
           <p className="text-white/80 text-sm">
-            <strong>Enhanced Search:</strong> Search by username, display name, bio keywords, or wallet address. Our search is powered by Firebase for fast results!
+            <strong>Enhanced Search:</strong> Search by username, display name,
+            bio keywords, or wallet address. Our search is powered by Firebase
+            for fast results!
           </p>
         </div>
       </div>
