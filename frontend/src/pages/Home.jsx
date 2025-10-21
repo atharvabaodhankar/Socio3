@@ -299,12 +299,12 @@ const Home = () => {
           <div className="mb-8">
             <div className="flex space-x-4 overflow-x-auto pb-4">
               <Link to="/upload" className="flex-shrink-0 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-2 cursor-pointer hover:scale-105 transition-transform">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-2 cursor-pointer hover:scale-105 transition-transform">
+                  <svg className="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
-                <span className="text-xs text-gray-400">Your story</span>
+                <span className="text-xs text-white/60">Your story</span>
               </Link>
               {trendingCreators.slice(0, 5).map((creator, i) => (
                 <div 
@@ -312,10 +312,10 @@ const Home = () => {
                   className="flex-shrink-0 text-center cursor-pointer"
                   onClick={() => navigate(`/profile/${creator.address}`)}
                 >
-                  <div className="w-16 h-16 bg-gradient-to-br from-gray-600 to-gray-700 rounded-full flex items-center justify-center mb-2 hover:scale-105 transition-transform">
+                  <div className="w-16 h-16 bg-white/10 border border-white/20 rounded-full flex items-center justify-center mb-2 hover:scale-105 transition-transform">
                     <span className="text-white font-semibold text-sm">{i + 1}</span>
                   </div>
-                  <span className="text-xs text-gray-400 hover:text-purple-300 transition-colors">
+                  <span className="text-xs text-white/60 hover:text-white transition-colors">
                     {creator.profile?.exists 
                       ? getDisplayName(creator.profile, creator.address).slice(0, 8)
                       : formatAddress(creator.address).slice(0, 8)
@@ -330,7 +330,7 @@ const Home = () => {
           {isConnected && hasFollowingUsers && (
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Your Feed</h2>
-              <p className="text-gray-400">Recent posts from people you follow ({followingFeed.length} posts)</p>
+              <p className="text-white/60">Recent posts from people you follow ({followingFeed.length} posts)</p>
             </div>
           )}
           
@@ -340,14 +340,14 @@ const Home = () => {
           <div className="space-y-8">
             {postsLoading || feedLoading ? (
               <div className="flex justify-center items-center py-16">
-                <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : postsError ? (
               <div className="text-center py-16">
-                <p className="text-red-400 mb-4">Error loading posts: {postsError}</p>
+                <p className="text-white/60 mb-4">Error loading posts: {postsError}</p>
                 <button 
                   onClick={() => window.location.reload()} 
-                  className="btn-primary px-6 py-3 rounded-xl"
+                  className="bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
                 >
                   Retry
                 </button>
@@ -363,19 +363,19 @@ const Home = () => {
             ) : !hasFollowingUsers ? (
               // No following users state - show recent posts from all users
               <>
-                <div className="glass rounded-2xl p-8 text-center mb-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-8 text-center mb-8">
+                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-semibold mb-2 text-white">Follow creators for a personalized feed</h3>
-                  <p className="text-gray-400 mb-4">
+                  <p className="text-white/60 mb-4">
                     Here are some recent posts to get you started
                   </p>
                   <Link 
                     to="/explore" 
-                    className="btn-primary px-6 py-2 rounded-xl font-medium inline-flex items-center justify-center space-x-2"
+                    className="bg-white hover:bg-white/80 text-black px-6 py-2 rounded-xl font-medium inline-flex items-center justify-center space-x-2 transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -395,19 +395,19 @@ const Home = () => {
               </>
             ) : followingFeed.length === 0 ? (
               // Following users but no posts
-              <div className="glass rounded-2xl p-12 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
                 <h3 className="text-2xl font-semibold mb-3 text-white">No Recent Posts</h3>
-                <p className="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+                <p className="text-white/60 mb-8 max-w-md mx-auto leading-relaxed">
                   The creators you follow haven't posted recently. Try following more creators or check back later.
                 </p>
                 <Link 
                   to="/explore" 
-                  className="btn-primary px-8 py-3 rounded-xl font-medium inline-flex items-center justify-center space-x-2"
+                  className="bg-white hover:bg-white/80 text-black px-8 py-3 rounded-xl font-medium inline-flex items-center justify-center space-x-2 transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -417,20 +417,20 @@ const Home = () => {
               </div>
             ) : (
               // General empty state
-              <div className="glass rounded-2xl p-12 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
+                <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
                 <h3 className="text-2xl font-semibold mb-3 text-white">Welcome to Socio3</h3>
-                <p className="text-gray-400 mb-8 max-w-md mx-auto leading-relaxed">
+                <p className="text-white/60 mb-8 max-w-md mx-auto leading-relaxed">
                   Start your decentralized social journey. Follow creators, share content, and earn crypto rewards.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link 
                     to="/explore" 
-                    className="btn-primary px-8 py-3 rounded-xl font-medium inline-flex items-center justify-center space-x-2"
+                    className="bg-white hover:bg-white/80 text-black px-8 py-3 rounded-xl font-medium inline-flex items-center justify-center space-x-2 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -439,7 +439,7 @@ const Home = () => {
                   </Link>
                   <Link 
                     to="/upload" 
-                    className="glass px-8 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 inline-flex items-center justify-center space-x-2"
+                    className="bg-white/5 border border-white/10 px-8 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 inline-flex items-center justify-center space-x-2 text-white"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -456,7 +456,7 @@ const Home = () => {
         {isConnected && (
           <div className="hidden lg:block space-y-6">
             {/* Suggested Creators */}
-            <div className="glass p-6 rounded-2xl">
+            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
               <h3 className="text-lg font-semibold mb-4 text-white">Suggested for You</h3>
               <div className="space-y-4">
                 {trendingCreators.slice(0, 3).map((creator) => (
@@ -465,8 +465,8 @@ const Home = () => {
                       className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 -m-2 transition-colors"
                       onClick={() => navigate(`/profile/${creator.address}`)}
                     >
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
+                      <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span className="text-black font-semibold text-sm">
                           {creator.profile?.exists 
                             ? getDisplayName(creator.profile, creator.address).slice(0, 2).toUpperCase()
                             : formatAddress(creator.address).slice(2, 4).toUpperCase()
@@ -474,13 +474,13 @@ const Home = () => {
                         </span>
                       </div>
                       <div>
-                        <p className="font-medium text-white text-sm hover:text-purple-300 transition-colors">
+                        <p className="font-medium text-white text-sm hover:text-white/80 transition-colors">
                           {creator.profile?.exists 
                             ? getDisplayName(creator.profile, creator.address)
                             : formatAddress(creator.address)
                           }
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-white/60">
                           {creator.followerCount} followers
                         </p>
                       </div>
@@ -495,22 +495,22 @@ const Home = () => {
               </div>
               <Link 
                 to="/explore" 
-                className="block text-center text-purple-400 hover:text-purple-300 text-sm mt-4 transition-colors"
+                className="block text-center text-white/80 hover:text-white text-sm mt-4 transition-colors"
               >
                 See all suggestions
               </Link>
             </div>
 
             {/* Quick Actions */}
-            <div className="glass p-6 rounded-2xl">
+            <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
               <h3 className="text-lg font-semibold mb-4 text-white">Quick Actions</h3>
               <div className="space-y-3">
                 <Link 
                   to="/upload" 
                   className="flex items-center space-x-3 p-3 hover:bg-white/5 rounded-lg transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
@@ -520,8 +520,8 @@ const Home = () => {
                   to="/profile" 
                   className="flex items-center space-x-3 p-3 hover:bg-white/5 rounded-lg transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
@@ -531,8 +531,8 @@ const Home = () => {
                   to="/explore" 
                   className="flex items-center space-x-3 p-3 hover:bg-white/5 rounded-lg transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
