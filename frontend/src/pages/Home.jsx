@@ -5,6 +5,7 @@ import { usePosts } from '../hooks/usePosts';
 import { useFeed } from '../hooks/useFeed';
 import { useTrendingCreators } from '../hooks/useTrending';
 import { getDisplayName } from '../services/profileService';
+import { getIPFSUrl } from '../config/pinata';
 import PostCard from '../components/PostCard';
 import PostModal from '../components/PostModal';
 import FollowButton from '../components/FollowButton';
@@ -457,24 +458,34 @@ const Home = () => {
           <div className="hidden lg:block space-y-6">
             {/* Suggested Creators */}
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-              <h3 className="text-lg font-semibold mb-4 text-white">Suggested for You</h3>
-              <div className="space-y-4">
+              <h3 className="text-lg font-semibold mb-6 text-white">Suggested for You</h3>
+              <div className="space-y-3">
                 {trendingCreators.slice(0, 3).map((creator) => (
-                  <div key={creator.address} className="flex items-center justify-between">
+                  <div key={creator.address} className="flex items-center gap-3">
                     <div 
-                      className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 -m-2 transition-colors"
+                      className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 rounded-lg p-2 -m-2 transition-colors flex-1 min-w-0"
                       onClick={() => navigate(`/profile/${creator.address}`)}
                     >
-                      <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                        <span className="text-black font-semibold text-sm">
-                          {creator.profile?.exists 
-                            ? getDisplayName(creator.profile, creator.address).slice(0, 2).toUpperCase()
-                            : formatAddress(creator.address).slice(2, 4).toUpperCase()
-                          }
-                        </span>
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                          {creator.profile?.profileImage ? (
+                            <img
+                              src={getIPFSUrl(creator.profile.profileImage)}
+                              alt="Profile"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-black font-semibold text-xs">
+                              {creator.profile?.exists 
+                                ? getDisplayName(creator.profile, creator.address).slice(0, 2).toUpperCase()
+                                : formatAddress(creator.address).slice(2, 4).toUpperCase()
+                              }
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-white text-sm hover:text-white/80 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-white text-sm hover:text-white/80 transition-colors truncate">
                           {creator.profile?.exists 
                             ? getDisplayName(creator.profile, creator.address)
                             : formatAddress(creator.address)
@@ -485,17 +496,19 @@ const Home = () => {
                         </p>
                       </div>
                     </div>
-                    <FollowButton 
-                      userAddress={creator.address}
-                      size="small"
-                      variant="primary"
-                    />
+                    <div className="flex-shrink-0">
+                      <FollowButton 
+                        userAddress={creator.address}
+                        size="small"
+                        variant="primary"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
               <Link 
                 to="/explore" 
-                className="block text-center text-white/80 hover:text-white text-sm mt-4 transition-colors"
+                className="block text-center text-white/80 hover:text-white text-sm mt-6 py-2 transition-colors"
               >
                 See all suggestions
               </Link>
@@ -503,40 +516,40 @@ const Home = () => {
 
             {/* Quick Actions */}
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
-              <h3 className="text-lg font-semibold mb-4 text-white">Quick Actions</h3>
-              <div className="space-y-3">
+              <h3 className="text-lg font-semibold mb-6 text-white">Quick Actions</h3>
+              <div className="space-y-4">
                 <Link 
                   to="/upload" 
-                  className="flex items-center space-x-3 p-3 hover:bg-white/5 rounded-lg transition-colors"
+                  className="flex items-center space-x-4 p-3 hover:bg-white/5 rounded-xl transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
-                  <span className="text-white text-sm">Create Post</span>
+                  <span className="text-white text-sm font-medium">Create Post</span>
                 </Link>
                 <Link 
                   to="/profile" 
-                  className="flex items-center space-x-3 p-3 hover:bg-white/5 rounded-lg transition-colors"
+                  className="flex items-center space-x-4 p-3 hover:bg-white/5 rounded-xl transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
-                  <span className="text-white text-sm">My Profile</span>
+                  <span className="text-white text-sm font-medium">My Profile</span>
                 </Link>
                 <Link 
                   to="/explore" 
-                  className="flex items-center space-x-3 p-3 hover:bg-white/5 rounded-lg transition-colors"
+                  className="flex items-center space-x-4 p-3 hover:bg-white/5 rounded-xl transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <svg className="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-white text-sm">Explore</span>
+                  <span className="text-white text-sm font-medium">Explore</span>
                 </Link>
               </div>
             </div>
