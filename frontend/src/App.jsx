@@ -9,6 +9,7 @@ import Profile from "./pages/Profile";
 import Upload from "./pages/Upload";
 import Wallet from "./pages/Wallet";
 import Admin from "./pages/Admin";
+import ContractStatus from "./components/ContractStatus";
 
 // Import test utilities for development
 import "./utils/testLikedPosts";
@@ -50,6 +51,7 @@ function App() {
             <AppRoutes />
           </main>
           <ScrollToTop />
+          <ContractStatus />
         </div>
       </Router>
     </Web3Provider>

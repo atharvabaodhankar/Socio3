@@ -194,7 +194,10 @@ export const useContracts = () => {
   };
 
   const hasUserReported = async (postId, userAddress) => {
-    if (!postContract) throw new Error('Post contract not initialized');
+    if (!postContract) {
+      console.log('Post contract not ready yet for report check');
+      return false; // Return default value instead of throwing
+    }
     
     try {
       const hasReported = await postContract.hasReported(postId, userAddress);
@@ -272,6 +275,8 @@ export const useContracts = () => {
   return {
     postContract,
     socialContract,
+    // Contract readiness
+    contractsReady: !!(postContract && socialContract),
     // Post functions
     createPost,
     getAllPosts,

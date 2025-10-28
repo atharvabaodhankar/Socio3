@@ -12,7 +12,7 @@ import { saveReportNotification, getReportTypeName } from "../services/reportSer
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const navigate = useNavigate();
   const { account, formatAddress, isConnected, provider } = useWeb3();
-  const { tipPost, reportPost, getReportCount, hasUserReported } = useContracts();
+  const { tipPost, reportPost, getReportCount, hasUserReported, contractsReady } = useContracts();
   const {
     isLiked,
     likes,
@@ -272,21 +272,27 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   // Check if user has already reported this post
   useEffect(() => {
     const checkReportStatus = async () => {
-      if (post?.id && account && isConnected) {
+      if (post?.id && account && isConnected && contractsReady && hasUserReported) {
         try {
           setCheckingReportStatus(true);
           const reported = await hasUserReported(post.id, account);
           setHasReported(reported);
         } catch (error) {
           console.error('Error checking report status:', error);
+          // Set to false on error so user can still try to report
+          setHasReported(false);
         } finally {
           setCheckingReportStatus(false);
         }
+      } else {
+        // Reset state if conditions aren't met
+        setHasReported(false);
+        setCheckingReportStatus(false);
       }
     };
 
     checkReportStatus();
-  }, [post?.id, account, isConnected, hasUserReported]);
+  }, [post?.id, account, isConnected, contractsReady, hasUserReported]);
 
   // Close options menu when clicking outside
   useEffect(() => {
@@ -349,7 +355,12 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           {/* Options Menu */}
           {showOptionsMenu && (
             <div className="absolute right-0 top-full mt-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl py-2 min-w-[150px] z-10">
-              {post.author && account && post.author.toLowerCase() !== account.toLowerCase() ? (
+              {!contractsReady ? (
+                <div className="px-4 py-2 text-white/60 text-sm flex items-center space-x-2">
+                  <div className="w-3 h-3 border border-white/40 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Loading contracts...</span>
+                </div>
+              ) : post.author && account && post.author.toLowerCase() !== account.toLowerCase() ? (
                 checkingReportStatus ? (
                   <div className="px-4 py-2 text-white/60 text-sm flex items-center space-x-2">
                     <div className="w-3 h-3 border border-white/40 border-t-transparent rounded-full animate-spin"></div>
