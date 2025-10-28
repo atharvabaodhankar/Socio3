@@ -8,6 +8,7 @@ import Search from "./pages/Search";
 import Profile from "./pages/Profile";
 import Upload from "./pages/Upload";
 import Wallet from "./pages/Wallet";
+import Admin from "./pages/Admin";
 
 // Import test utilities for development
 import "./utils/testLikedPosts";
@@ -32,6 +33,7 @@ const AppRoutes = () => {
         element={<Profile key={account || "no-account"} />}
       />
       <Route path="/wallet" element={<Wallet />} />
+      <Route path="/admin" element={<Admin />} />
       <Route path="/post/:postId/:authorAddress" element={<Post />} />
     </Routes>
   );

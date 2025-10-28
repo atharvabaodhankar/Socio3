@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import { useSocialInteractions } from "../hooks/useSocialInteractions";
@@ -7,11 +7,12 @@ import { useContracts } from "../hooks/useContracts";
 import { useSavedPosts } from "../hooks/useSavedPosts";
 import { saveTipMessage } from "../services/tipService";
 import { getUserProfile, getDisplayName } from "../services/profileService";
+import { saveReportNotification, getReportTypeName } from "../services/reportService";
 
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const navigate = useNavigate();
   const { account, formatAddress, isConnected, provider } = useWeb3();
-  const { tipPost } = useContracts();
+  const { tipPost, reportPost } = useContracts();
   const {
     isLiked,
     likes,
@@ -40,6 +41,8 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [tipAmount, setTipAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -198,12 +201,66 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     }
   };
 
+  const handleReport = async (reportType, reason) => {
+    if (!isConnected || !post) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Call smart contract reportPost function
+      console.log('Reporting post:', post.id, 'Type:', reportType, 'Reason:', reason);
+      const tx = await reportPost(post.id, reportType, reason);
+      
+      // Save report to Firebase for tracking
+      try {
+        await saveReportNotification({
+          postId: post.id,
+          postAuthor: post.author,
+          reporterAddress: account,
+          reportType: reportType,
+          reportTypeName: getReportTypeName(reportType),
+          reason: reason,
+          transactionHash: tx.hash || tx.transactionHash || 'unknown',
+          postCaption: post.caption ? post.caption.slice(0, 100) : ''
+        });
+      } catch (firebaseError) {
+        console.error('Error saving report to Firebase:', firebaseError);
+        // Don't fail the report if Firebase fails
+      }
+      
+      setSuccessMessage('Post reported successfully. Thank you for helping keep our community safe.');
+      setShowReportModal(false);
+      setShowOptionsMenu(false);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Error reporting post:', error);
+      setErrorMessage('Failed to report post. Please try again.');
+      setShowErrorModal(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleProfileClick = (e) => {
     e.stopPropagation(); // Prevent triggering post click
     if (post?.author) {
       navigate(`/profile/${post.author}`);
     }
   };
+
+  // Close options menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showOptionsMenu && !event.target.closest('.relative')) {
+        setShowOptionsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showOptionsMenu]);
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden card-hover mb-8">
@@ -232,15 +289,63 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
             </p>
           </div>
         </div>
-        <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-          <svg
-            className="w-5 h-5 text-white/60"
-            fill="currentColor"
-            viewBox="0 0 20 20"
+        <div className="relative">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowOptionsMenu(!showOptionsMenu);
+            }}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
           >
-            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-          </svg>
-        </button>
+            <svg
+              className="w-5 h-5 text-white/60"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+            </svg>
+          </button>
+          
+          {/* Options Menu */}
+          {showOptionsMenu && (
+            <div className="absolute right-0 top-full mt-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl py-2 min-w-[150px] z-10">
+              {/* Debug info - remove in production */}
+              <div className="px-4 py-1 text-xs text-white/40 border-b border-white/10">
+                Debug: {post.author?.slice(0, 6)}...{post.author?.slice(-4)} vs {account?.slice(0, 6)}...{account?.slice(-4)}
+              </div>
+              
+              {post.author && account && post.author.toLowerCase() !== account.toLowerCase() ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowReportModal(true);
+                    setShowOptionsMenu(false);
+                  }}
+                  className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors flex items-center space-x-2"
+                >
+                  <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <span className="text-red-400">Report Post</span>
+                </button>
+              ) : (
+                <div className="px-4 py-2 text-white/40 text-sm">
+                  {!post.author || !account ? 'Loading...' : 'Cannot report your own post'}
+                </div>
+              )}
+              
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowOptionsMenu(false);
+                }}
+                className="w-full px-4 py-2 text-left text-white/60 hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Post Image */}
@@ -782,6 +887,112 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
                 </svg>
                 <span className="text-white">Share on Telegram</span>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Report Post</h3>
+              <button 
+                onClick={() => setShowReportModal(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <p className="text-white/80 mb-4 text-sm">
+              Help us keep the community safe. What's wrong with this post?
+            </p>
+            
+            <div className="space-y-2">
+              {/* Spam */}
+              <button
+                onClick={() => handleReport(1, 'Spam')}
+                disabled={isLoading}
+                className="w-full flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
+              >
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                </svg>
+                <div className="text-left">
+                  <p className="text-white font-medium">Spam</p>
+                  <p className="text-white/60 text-sm">Repetitive or unwanted content</p>
+                </div>
+              </button>
+
+              {/* Inappropriate Content */}
+              <button
+                onClick={() => handleReport(2, 'Inappropriate Content')}
+                disabled={isLoading}
+                className="w-full flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
+              >
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div className="text-left">
+                  <p className="text-white font-medium">Inappropriate Content</p>
+                  <p className="text-white/60 text-sm">Offensive or harmful material</p>
+                </div>
+              </button>
+
+              {/* Harassment */}
+              <button
+                onClick={() => handleReport(3, 'Harassment')}
+                disabled={isLoading}
+                className="w-full flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
+              >
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <div className="text-left">
+                  <p className="text-white font-medium">Harassment</p>
+                  <p className="text-white/60 text-sm">Bullying or targeting individuals</p>
+                </div>
+              </button>
+
+              {/* Copyright */}
+              <button
+                onClick={() => handleReport(4, 'Copyright Violation')}
+                disabled={isLoading}
+                className="w-full flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
+              >
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-left">
+                  <p className="text-white font-medium">Copyright Violation</p>
+                  <p className="text-white/60 text-sm">Unauthorized use of copyrighted content</p>
+                </div>
+              </button>
+
+              {/* Other */}
+              <button
+                onClick={() => handleReport(5, 'Other')}
+                disabled={isLoading}
+                className="w-full flex items-center space-x-3 p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
+              >
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-left">
+                  <p className="text-white font-medium">Other</p>
+                  <p className="text-white/60 text-sm">Something else that violates our guidelines</p>
+                </div>
+              </button>
+            </div>
+
+            <div className="mt-4 p-3 bg-white/5 rounded-xl">
+              <p className="text-white/60 text-xs">
+                Reports are reviewed by our community moderation system. False reports may result in account restrictions.
+              </p>
             </div>
           </div>
         </div>

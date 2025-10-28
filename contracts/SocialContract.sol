@@ -104,4 +104,17 @@ contract SocialContract {
     function getTotalTipsReceived(address _user) public view returns (uint256) {
         return totalTipsReceived[_user];
     }
+
+    // Function to check if a post should be removed based on report-to-like ratio
+    function shouldRemovePost(uint256 _postId, uint256 _reportCount, uint256 _reportToLikeRatio) public view returns (bool) {
+        uint256 likes = likesCount[_postId];
+        
+        // If no likes, use a minimum threshold
+        if (likes == 0) {
+            return _reportCount >= 3; // Remove if 3+ reports and no likes
+        }
+        
+        // Check if reports exceed the ratio threshold
+        return _reportCount >= (likes * _reportToLikeRatio);
+    }
 }

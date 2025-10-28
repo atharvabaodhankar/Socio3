@@ -168,6 +168,31 @@ export const useContracts = () => {
     }
   };
 
+  const reportPost = async (postId, reportType, reason) => {
+    if (!postContract || !signer) throw new Error('Post contract not initialized');
+    
+    try {
+      const tx = await postContract.reportPost(postId, reportType, reason);
+      await tx.wait();
+      return tx;
+    } catch (error) {
+      console.error('Error reporting post:', error);
+      throw error;
+    }
+  };
+
+  const getReportCount = async (postId) => {
+    if (!postContract) throw new Error('Post contract not initialized');
+    
+    try {
+      const count = await postContract.getReportCount(postId);
+      return Number(count);
+    } catch (error) {
+      console.error('Error getting report count:', error);
+      return 0;
+    }
+  };
+
   const isFollowing = async (followerAddress, followedAddress) => {
     if (!socialContract) {
       console.log('Social contract not ready yet');
@@ -239,6 +264,8 @@ export const useContracts = () => {
     createPost,
     getAllPosts,
     getPostsByAuthor,
+    reportPost,
+    getReportCount,
     // Social functions
     followUser,
     unfollowUser,
