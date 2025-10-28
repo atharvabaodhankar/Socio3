@@ -12,7 +12,7 @@ import { saveReportNotification, getReportTypeName } from "../services/reportSer
 const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const navigate = useNavigate();
   const { account, formatAddress, isConnected, provider } = useWeb3();
-  const { tipPost, reportPost } = useContracts();
+  const { tipPost, reportPost, getReportCount, hasUserReported } = useContracts();
   const {
     isLiked,
     likes,
@@ -43,6 +43,8 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+  const [checkingReportStatus, setCheckingReportStatus] = useState(false);
   const [tipAmount, setTipAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -228,13 +230,32 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
         // Don't fail the report if Firebase fails
       }
       
+      // Update the hasReported state
+      setHasReported(true);
+      
       setSuccessMessage('Post reported successfully. Thank you for helping keep our community safe.');
       setShowReportModal(false);
       setShowOptionsMenu(false);
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error reporting post:', error);
-      setErrorMessage('Failed to report post. Please try again.');
+      
+      // Check if the error is because user already reported this post
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('already reported') || errorMessage.includes('You have already reported this post')) {
+        setErrorMessage('You have already reported this post. Thank you for helping keep our community safe.');
+      } else if (errorMessage.includes('Cannot report your own post')) {
+        setErrorMessage('You cannot report your own posts.');
+      } else if (errorMessage.includes('Post is already removed')) {
+        setErrorMessage('This post has already been removed.');
+      } else if (errorMessage.includes('Post does not exist')) {
+        setErrorMessage('This post no longer exists.');
+      } else {
+        setErrorMessage('Failed to report post. Please try again.');
+      }
+      
+      setShowReportModal(false);
+      setShowOptionsMenu(false);
       setShowErrorModal(true);
     } finally {
       setIsLoading(false);
@@ -247,6 +268,25 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
       navigate(`/profile/${post.author}`);
     }
   };
+
+  // Check if user has already reported this post
+  useEffect(() => {
+    const checkReportStatus = async () => {
+      if (post?.id && account && isConnected) {
+        try {
+          setCheckingReportStatus(true);
+          const reported = await hasUserReported(post.id, account);
+          setHasReported(reported);
+        } catch (error) {
+          console.error('Error checking report status:', error);
+        } finally {
+          setCheckingReportStatus(false);
+        }
+      }
+    };
+
+    checkReportStatus();
+  }, [post?.id, account, isConnected, hasUserReported]);
 
   // Close options menu when clicking outside
   useEffect(() => {
@@ -309,25 +349,34 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           {/* Options Menu */}
           {showOptionsMenu && (
             <div className="absolute right-0 top-full mt-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl py-2 min-w-[150px] z-10">
-              {/* Debug info - remove in production */}
-              <div className="px-4 py-1 text-xs text-white/40 border-b border-white/10">
-                Debug: {post.author?.slice(0, 6)}...{post.author?.slice(-4)} vs {account?.slice(0, 6)}...{account?.slice(-4)}
-              </div>
-              
               {post.author && account && post.author.toLowerCase() !== account.toLowerCase() ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowReportModal(true);
-                    setShowOptionsMenu(false);
-                  }}
-                  className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors flex items-center space-x-2"
-                >
-                  <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                  <span className="text-red-400">Report Post</span>
-                </button>
+                checkingReportStatus ? (
+                  <div className="px-4 py-2 text-white/60 text-sm flex items-center space-x-2">
+                    <div className="w-3 h-3 border border-white/40 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Checking...</span>
+                  </div>
+                ) : hasReported ? (
+                  <div className="px-4 py-2 text-white/60 text-sm flex items-center space-x-2">
+                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Already Reported</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowReportModal(true);
+                      setShowOptionsMenu(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors flex items-center space-x-2"
+                  >
+                    <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span className="text-red-400">Report Post</span>
+                  </button>
+                )
               ) : (
                 <div className="px-4 py-2 text-white/40 text-sm">
                   {!post.author || !account ? 'Loading...' : 'Cannot report your own post'}
@@ -510,6 +559,11 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           <p className="font-semibold text-white text-sm">
             {post.showLikeCount !== false ? `${likes} likes • ` : ""}
             {post.tips || "0"} ETH in tips
+            {hasReported && (
+              <span className="ml-2 text-xs text-yellow-400">
+                • You reported this
+              </span>
+            )}
           </p>
         </div>
 

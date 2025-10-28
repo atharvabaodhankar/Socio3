@@ -193,6 +193,18 @@ export const useContracts = () => {
     }
   };
 
+  const hasUserReported = async (postId, userAddress) => {
+    if (!postContract) throw new Error('Post contract not initialized');
+    
+    try {
+      const hasReported = await postContract.hasReported(postId, userAddress);
+      return hasReported;
+    } catch (error) {
+      console.error('Error checking if user has reported:', error);
+      return false;
+    }
+  };
+
   const isFollowing = async (followerAddress, followedAddress) => {
     if (!socialContract) {
       console.log('Social contract not ready yet');
@@ -266,6 +278,7 @@ export const useContracts = () => {
     getPostsByAuthor,
     reportPost,
     getReportCount,
+    hasUserReported,
     // Social functions
     followUser,
     unfollowUser,

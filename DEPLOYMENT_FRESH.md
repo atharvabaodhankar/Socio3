@@ -8,26 +8,29 @@
 
 ### 📍 Contract Addresses
 
-| Contract | Address | Etherscan |
-|----------|---------|-----------|
-| **PostContract** | `0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067` | [View](https://sepolia.etherscan.io/address/0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067) |
+| Contract           | Address                                      | Etherscan                                                                               |
+| ------------------ | -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **PostContract**   | `0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067` | [View](https://sepolia.etherscan.io/address/0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067) |
 | **SocialContract** | `0x9CE41910E2d80D4e33a64bc295e6C953450C0D41` | [View](https://sepolia.etherscan.io/address/0x9CE41910E2d80D4e33a64bc295e6C953450C0D41) |
 
 ## 🎯 New Features Deployed
 
 ### 🛡️ Advanced Reporting System
+
 - **5 Report Categories**: Spam, Inappropriate Content, Harassment, Copyright, Other
 - **Smart Contract Integration**: All reports stored on blockchain
 - **Auto-Moderation**: Posts automatically removed when report threshold reached
 - **Admin Controls**: Manual post removal and threshold management
 
 ### 📊 Moderation Features
+
 - **Report Threshold**: 5 reports trigger auto-removal
 - **Duplicate Prevention**: Users can only report each post once
 - **Transparency**: All actions logged on blockchain
 - **Firebase Integration**: Reports also tracked in Firebase for analytics
 
 ### 👨‍💼 Admin Dashboard
+
 - **Access URL**: `/admin` (restricted to contract owner)
 - **Features**: View reports, monitor stats, track removed posts
 - **Real-time Data**: Live updates from blockchain and Firebase
@@ -37,6 +40,7 @@
 ### Smart Contract Features
 
 #### PostContract
+
 ```solidity
 // Core Functions
 createPost(string _ipfsHash)
@@ -51,6 +55,7 @@ getRemovedPosts() // Admin only
 ```
 
 #### SocialContract
+
 ```solidity
 // Social Functions
 followUser(address _user)
@@ -64,6 +69,7 @@ shouldRemovePost(uint256 _postId, uint256 _reportCount, uint256 _reportToLikeRat
 ### Frontend Integration
 
 #### Report Flow
+
 1. User clicks three dots menu on post
 2. Selects "Report Post" (only for others' posts)
 3. Chooses from 5 report categories
@@ -72,6 +78,7 @@ shouldRemovePost(uint256 _postId, uint256 _reportCount, uint256 _reportToLikeRat
 6. Auto-removal triggered if threshold reached
 
 #### Admin Features
+
 - Real-time report monitoring
 - Post removal statistics
 - Report type analytics
@@ -80,12 +87,14 @@ shouldRemovePost(uint256 _postId, uint256 _reportCount, uint256 _reportToLikeRat
 ## 🎮 How to Use
 
 ### For Users
+
 1. **Create Posts**: Upload images with captions via `/upload`
 2. **Social Features**: Like, follow, tip other users
 3. **Report Content**: Use three dots menu to report inappropriate posts
 4. **Share Posts**: Use native sharing or copy links
 
 ### For Admins
+
 1. **Access Dashboard**: Visit `/admin` (requires contract owner wallet)
 2. **Monitor Reports**: View all reports in real-time
 3. **Manual Actions**: Remove posts manually if needed
@@ -94,12 +103,14 @@ shouldRemovePost(uint256 _postId, uint256 _reportCount, uint256 _reportToLikeRat
 ## 🔒 Security Features
 
 ### Report System Security
+
 - **Blockchain Verification**: All reports verified on-chain
 - **Duplicate Prevention**: Smart contract prevents spam reporting
 - **Transparent Process**: All actions publicly auditable
 - **Admin Controls**: Owner can manually intervene when needed
 
 ### Auto-Moderation Logic
+
 ```javascript
 // Automatic removal conditions:
 if (reportCount >= 5) {
@@ -107,7 +118,7 @@ if (reportCount >= 5) {
 }
 
 // Future: Report-to-like ratio
-if (reportCount >= (likesCount * 2)) {
+if (reportCount >= likesCount * 2) {
   removePost("High report-to-like ratio");
 }
 ```
@@ -120,19 +131,21 @@ The frontend is automatically configured with the new contract addresses:
 // frontend/src/config/contracts.js
 export const CONTRACT_ADDRESSES = {
   POST_CONTRACT: "0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067",
-  SOCIAL_CONTRACT: "0x9CE41910E2d80D4e33a64bc295e6C953450C0D41"
+  SOCIAL_CONTRACT: "0x9CE41910E2d80D4e33a64bc295e6C953450C0D41",
 };
 ```
 
 ## 🧪 Testing
 
 ### Contract Testing
+
 ```bash
 # Test deployed contracts
 npx hardhat run scripts/testContracts.js --network sepolia
 ```
 
 ### Frontend Testing
+
 1. Connect wallet to Sepolia testnet
 2. Create a test post
 3. Try reporting someone else's post
@@ -141,12 +154,14 @@ npx hardhat run scripts/testContracts.js --network sepolia
 ## 🚀 Next Steps
 
 ### Immediate Actions
+
 1. ✅ **Contracts Deployed** - Fresh deployment complete
 2. 🔄 **Clear Pinata** - Remove old IPFS content
 3. 🔄 **Clear Firebase** - Reset database for fresh start
 4. ✅ **Update Frontend** - Configuration automatically updated
 
 ### Recommended Actions
+
 1. **Test All Features**: Create posts, report content, check admin panel
 2. **Monitor Performance**: Watch for any issues with new reporting system
 3. **User Education**: Inform users about new reporting features
@@ -155,11 +170,13 @@ npx hardhat run scripts/testContracts.js --network sepolia
 ## 📞 Support
 
 ### Contract Owner Functions
+
 - **Set Report Threshold**: `setReportThreshold(uint256 _threshold)`
 - **Manual Post Removal**: `manuallyRemovePost(uint256 _postId, string _reason)`
 - **View Removed Posts**: `getRemovedPosts()`
 
 ### Troubleshooting
+
 - **Reports Not Working**: Check wallet connection and gas fees
 - **Admin Access Denied**: Ensure you're using the contract owner wallet
 - **Posts Not Loading**: Verify contract addresses in frontend config
@@ -169,6 +186,7 @@ npx hardhat run scripts/testContracts.js --network sepolia
 ## 🎊 Deployment Complete!
 
 Your Socio3 platform is now deployed with:
+
 - ✅ Fresh smart contracts with reporting system
 - ✅ Automatic content moderation
 - ✅ Admin dashboard for monitoring
