@@ -1,4 +1,5 @@
 {
-  "Socio3Module#PostContract": "0x4B46eb810A5A039940f74480a22d5097162653ba",
-  "Socio3Module#SocialContract": "0xCf579B8dAb40F5C886ccfFCB1F548AABB38bbE49"
+  "ProfileContract#ProfileContract": "0x039Bc06F795a78f823c59863A844b41886dEe7F3",
+  "PostContractModule#PostContract": "0xde7D700547aAE7467ccCbAEd614310601fd7ca1C",
+  "SocialContractModule#SocialContract": "0x338dDFcBf71B5327b955b3780161e04fB85D0787"
 }

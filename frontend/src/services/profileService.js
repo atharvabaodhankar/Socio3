@@ -1,22 +1,6 @@
 import { ethers } from "ethers";
 import { uploadToPinata, getIPFSUrl } from "../config/pinata";
-
-// Profile contract ABI (will be updated after deployment)
-const PROFILE_CONTRACT_ABI = [
-  "function createProfile(string memory ipfsHash, string memory username) external",
-  "function updateProfile(string memory ipfsHash) external",
-  "function updateUsername(string memory newUsername) external",
-  "function getProfile(address user) external view returns (string memory ipfsHash, uint256 timestamp, bool exists)",
-  "function getUsername(address user) external view returns (string memory)",
-  "function getUserByUsername(string memory username) external view returns (address)",
-  "function hasProfile(address user) external view returns (bool)",
-  "function isUsernameAvailable(string memory username) external view returns (bool)",
-  "event ProfileCreated(address indexed user, string ipfsHash, string username, uint256 timestamp)",
-  "event ProfileUpdated(address indexed user, string ipfsHash, uint256 timestamp)",
-];
-
-// Contract address
-const PROFILE_CONTRACT_ADDRESS = "0x08A915445A77Fe63aD1c57a8A6034F3159A7fcD2";
+import { CONTRACT_ADDRESSES, PROFILE_CONTRACT_ABI } from "../config/contracts";
 
 // Save user profile to blockchain + IPFS
 export const saveUserProfile = async (signer, profileData) => {
@@ -41,7 +25,7 @@ export const saveUserProfile = async (signer, profileData) => {
 
     // Get contract instance
     const contract = new ethers.Contract(
-      PROFILE_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESSES.PROFILE_CONTRACT,
       PROFILE_CONTRACT_ABI,
       signer
     );
@@ -101,7 +85,7 @@ export const getUserProfile = async (provider, userAddress) => {
   try {
     // Get contract instance
     const contract = new ethers.Contract(
-      PROFILE_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESSES.PROFILE_CONTRACT,
       PROFILE_CONTRACT_ABI,
       provider
     );
@@ -142,7 +126,7 @@ export const getUserProfile = async (provider, userAddress) => {
 export const getUsername = async (provider, userAddress) => {
   try {
     const contract = new ethers.Contract(
-      PROFILE_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESSES.PROFILE_CONTRACT,
       PROFILE_CONTRACT_ABI,
       provider
     );
@@ -180,7 +164,7 @@ export const getMultipleUsernames = async (provider, userAddresses) => {
 export const isUsernameAvailable = async (provider, username) => {
   try {
     const contract = new ethers.Contract(
-      PROFILE_CONTRACT_ADDRESS,
+      CONTRACT_ADDRESSES.PROFILE_CONTRACT,
       PROFILE_CONTRACT_ABI,
       provider
     );

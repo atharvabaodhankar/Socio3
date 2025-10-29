@@ -2,16 +2,17 @@
 
 ## 📋 Deployment Summary
 
-**Deployment Date:** October 28, 2025  
+**Deployment Date:** October 29, 2025  
 **Network:** Sepolia Testnet  
 **Deployer:** 0xF5CaF845421A21D2326f3bA04Fb99eD0F75B8465
 
 ### 📍 Contract Addresses
 
-| Contract           | Address                                      | Etherscan                                                                               |
-| ------------------ | -------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **PostContract**   | `0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067` | [View](https://sepolia.etherscan.io/address/0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067) |
-| **SocialContract** | `0x9CE41910E2d80D4e33a64bc295e6C953450C0D41` | [View](https://sepolia.etherscan.io/address/0x9CE41910E2d80D4e33a64bc295e6C953450C0D41) |
+| Contract            | Address                                      | Etherscan                                                                               |
+| ------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **PostContract**    | `0xde7D700547aAE7467ccCbAEd614310601fd7ca1C` | [View](https://sepolia.etherscan.io/address/0xde7D700547aAE7467ccCbAEd614310601fd7ca1C) |
+| **SocialContract**  | `0x338dDFcBf71B5327b955b3780161e04fB85D0787` | [View](https://sepolia.etherscan.io/address/0x338dDFcBf71B5327b955b3780161e04fB85D0787) |
+| **ProfileContract** | `0x039Bc06F795a78f823c59863A844b41886dEe7F3` | [View](https://sepolia.etherscan.io/address/0x039Bc06F795a78f823c59863A844b41886dEe7F3) |
 
 ## 🎯 New Features Deployed
 
