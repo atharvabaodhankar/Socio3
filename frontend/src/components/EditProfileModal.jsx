@@ -24,7 +24,8 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
     website: '',
     twitter: '',
     profileImage: '',
-    coverImage: ''
+    coverImage: '',
+    userAddress: ''
   });
   const [selectedProfileImage, setSelectedProfileImage] = useState(null);
   const [selectedCoverImage, setSelectedCoverImage] = useState(null);
@@ -51,7 +52,18 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
       setLoading(true);
       const profile = await getUserProfile(provider, account);
       if (profile && profile.exists) {
-        setProfileData(profile);
+        // Merge with default values to ensure all properties exist
+        setProfileData({
+          username: profile.username || '',
+          displayName: profile.displayName || '',
+          bio: profile.bio || '',
+          website: profile.website || '',
+          twitter: profile.twitter || '',
+          profileImage: profile.profileImage || '',
+          coverImage: profile.coverImage || '',
+          userAddress: profile.userAddress || account,
+          exists: profile.exists
+        });
         if (profile.profileImage) {
           setProfileImagePreview(getIPFSUrl(profile.profileImage));
         }
@@ -341,7 +353,7 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                   </div>
                 )}
               </div>
-              {profileData.username.length >= 3 && (
+              {profileData.username && profileData.username.length >= 3 && (
                 <div className="mt-1 text-sm">
                   {checkingUsername ? (
                     <span className="text-white/60">Checking availability...</span>
@@ -380,7 +392,7 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
                 maxLength={200}
               />
               <div className="text-right text-sm text-white/60 mt-1">
-                {profileData.bio.length}/200
+                {(profileData.bio || '').length}/200
               </div>
             </div>
 
