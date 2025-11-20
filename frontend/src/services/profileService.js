@@ -5,7 +5,9 @@ import { CONTRACT_ADDRESSES, PROFILE_CONTRACT_ABI } from "../config/contracts";
 // Save user profile to blockchain + IPFS
 export const saveUserProfile = async (signer, profileData) => {
   try {
+    console.log("=== SAVE USER PROFILE CALLED ===");
     console.log("Saving profile to blockchain...", profileData);
+    console.log("Stack trace:", new Error().stack);
 
     // Upload profile data to IPFS
     const profileBlob = new Blob([JSON.stringify(profileData)], {
@@ -16,12 +18,43 @@ export const saveUserProfile = async (signer, profileData) => {
     });
 
     console.log("Uploading profile data to IPFS...");
-    const uploadResult = await uploadToPinata(profileFile);
-    if (!uploadResult.success) {
-      throw new Error(uploadResult.error || "Failed to upload to IPFS");
+    
+    // Upload profile JSON directly to IPFS (NOT using the post upload function)
+    const formData = new FormData();
+    formData.append('file', profileFile);
+
+    const metadata = JSON.stringify({
+      name: `socio3-profile-${Date.now()}`,
+      keyvalues: {
+        app: 'socio3',
+        type: 'profile',
+        address: profileData.userAddress || '',
+        timestamp: Date.now().toString()
+      }
+    });
+    formData.append('pinataMetadata', metadata);
+
+    const options = JSON.stringify({
+      cidVersion: 0,
+    });
+    formData.append('pinataOptions', options);
+
+    const { PINATA_CONFIG } = await import("../config/pinata");
+    const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+      method: 'POST',
+      headers: {
+        'pinata_api_key': PINATA_CONFIG.apiKey,
+        'pinata_secret_api_key': PINATA_CONFIG.apiSecret
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error(`IPFS upload failed: ${response.status}`);
     }
 
-    console.log("Profile data uploaded to IPFS:", uploadResult.ipfsHash);
+    const uploadResult = await response.json();
+    console.log("Profile data uploaded to IPFS:", uploadResult.IpfsHash);
 
     // Get contract instance
     const contract = new ethers.Contract(
@@ -43,24 +76,72 @@ export const saveUserProfile = async (signer, profileData) => {
     console.log("Profile exists:", hasProfile);
 
     let tx;
+    let receipt;
+    const ipfsHash = uploadResult.IpfsHash;
+    
     if (hasProfile) {
       // Update existing profile
-      console.log("Updating existing profile...");
-      tx = await contract.updateProfile(uploadResult.ipfsHash);
+      console.log("Updating existing profile with IPFS hash:", ipfsHash);
+      tx = await contract.updateProfile(ipfsHash);
+      console.log("Profile update transaction sent:", tx.hash);
+      receipt = await tx.wait();
+      console.log("Profile update transaction confirmed:", receipt);
+      console.log("Transaction status:", receipt.status); // 1 = success, 0 = failed
+      
+      if (receipt.status === 0) {
+        throw new Error("Transaction failed - profile was not updated");
+      }
+      
+      // Verify the update by reading back from blockchain
+      const [newIpfsHash] = await contract.getProfile(userAddress);
+      console.log("Verified IPFS hash on blockchain:", newIpfsHash);
+      
+      if (newIpfsHash !== ipfsHash) {
+        console.error("MISMATCH! Expected:", ipfsHash, "Got:", newIpfsHash);
+        throw new Error("Profile update verification failed - IPFS hash mismatch");
+      }
+      
+      // Check if username needs to be updated
+      if (profileData.username) {
+        try {
+          const currentUsername = await contract.getUsername(userAddress);
+          console.log("Current username:", currentUsername);
+          console.log("New username:", profileData.username);
+          
+          if (currentUsername !== profileData.username) {
+            console.log("Updating username...");
+            const usernameTx = await contract.updateUsername(profileData.username);
+            console.log("Username update transaction:", usernameTx.hash);
+            const usernameReceipt = await usernameTx.wait();
+            console.log("Username updated successfully, status:", usernameReceipt.status);
+          } else {
+            console.log("Username unchanged, skipping update");
+          }
+        } catch (usernameError) {
+          console.error("Error updating username:", usernameError);
+          // Don't fail the whole operation if username update fails
+        }
+      }
     } else {
       // Create new profile
-      console.log("Creating new profile...");
+      console.log("Creating new profile with IPFS hash:", ipfsHash);
       const username = profileData.username || "";
-      tx = await contract.createProfile(uploadResult.ipfsHash, username);
+      tx = await contract.createProfile(ipfsHash, username);
+      console.log("Profile creation transaction sent:", tx.hash);
+      receipt = await tx.wait();
+      console.log("Profile creation transaction confirmed:", receipt);
+      console.log("Transaction status:", receipt.status);
+      
+      if (receipt.status === 0) {
+        throw new Error("Transaction failed - profile was not created");
+      }
     }
 
-    console.log("Transaction sent:", tx.hash);
-    const receipt = await tx.wait();
-    console.log("Transaction confirmed:", receipt.transactionHash);
+    console.log("✅ Profile save completed successfully!");
 
     return {
       ...profileData,
-      ipfsHash: uploadResult.ipfsHash,
+      ipfsHash: ipfsHash,
       exists: true,
       timestamp: Date.now(),
     };
@@ -83,6 +164,8 @@ export const saveUserProfile = async (signer, profileData) => {
 // Get user profile from blockchain + IPFS
 export const getUserProfile = async (provider, userAddress) => {
   try {
+    console.log('[getUserProfile] Fetching profile for:', userAddress);
+    
     // Get contract instance
     const contract = new ethers.Contract(
       CONTRACT_ADDRESSES.PROFILE_CONTRACT,
@@ -95,29 +178,40 @@ export const getUserProfile = async (provider, userAddress) => {
       userAddress
     );
 
+    console.log('[getUserProfile] Blockchain data:', { ipfsHash, timestamp: Number(timestamp), exists });
+
     if (!exists || !ipfsHash) {
+      console.log('[getUserProfile] Profile does not exist, returning default');
       return getDefaultProfile(userAddress);
     }
 
-    // Fetch profile data from IPFS
+    // Fetch profile data from IPFS with cache-busting via query parameter
     const ipfsUrl = getIPFSUrl(ipfsHash);
-    const response = await fetch(ipfsUrl);
+    const cacheBustedUrl = `${ipfsUrl}?t=${Date.now()}`;
+    console.log('[getUserProfile] Fetching from IPFS:', cacheBustedUrl);
+    
+    const response = await fetch(cacheBustedUrl);
 
     if (!response.ok) {
+      console.error('[getUserProfile] IPFS fetch failed:', response.status, response.statusText);
       throw new Error("Failed to fetch profile from IPFS");
     }
 
     const profileData = await response.json();
+    console.log('[getUserProfile] Profile data from IPFS:', profileData);
 
-    return {
+    const finalProfile = {
       ...profileData,
       userAddress: userAddress.toLowerCase(),
       ipfsHash,
       timestamp: Number(timestamp),
       exists,
     };
+    
+    console.log('[getUserProfile] Final profile:', finalProfile);
+    return finalProfile;
   } catch (error) {
-    console.error("Error getting profile:", error);
+    console.error("[getUserProfile] Error getting profile:", error);
     return getDefaultProfile(userAddress);
   }
 };

@@ -50,11 +50,22 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
     
     try {
       setLoading(true);
+      
+      // Load profile data from IPFS
       const profile = await getUserProfile(provider, account);
+      
+      // IMPORTANT: Also load username directly from blockchain
+      // because the IPFS data might be corrupted or contain post data
+      const { getUsername } = await import('../services/profileService');
+      const blockchainUsername = await getUsername(provider, account);
+      
+      console.log('[EditProfileModal] Profile from IPFS:', profile);
+      console.log('[EditProfileModal] Username from blockchain:', blockchainUsername);
+      
       if (profile && profile.exists) {
-        // Merge with default values to ensure all properties exist
+        // Merge with default values, prioritizing blockchain username
         setProfileData({
-          username: profile.username || '',
+          username: blockchainUsername || profile.username || '',
           displayName: profile.displayName || '',
           bio: profile.bio || '',
           website: profile.website || '',
@@ -70,6 +81,19 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
         if (profile.coverImage) {
           setCoverImagePreview(getIPFSUrl(profile.coverImage));
         }
+      } else {
+        // Profile doesn't exist yet, but check for username
+        setProfileData({
+          username: blockchainUsername || '',
+          displayName: '',
+          bio: '',
+          website: '',
+          twitter: '',
+          profileImage: '',
+          coverImage: '',
+          userAddress: account,
+          exists: false
+        });
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -122,12 +146,41 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
 
   const uploadImage = async (file) => {
     try {
-      const result = await uploadToPinata(file);
-      if (result.success) {
-        return result.ipfsHash;
-      } else {
-        throw new Error(result.error);
+      // Upload image directly to IPFS (not using post upload function)
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const metadata = JSON.stringify({
+        name: `socio3-profile-image-${Date.now()}`,
+        keyvalues: {
+          app: 'socio3',
+          type: 'profile-image',
+          timestamp: Date.now().toString()
+        }
+      });
+      formData.append('pinataMetadata', metadata);
+
+      const options = JSON.stringify({
+        cidVersion: 0,
+      });
+      formData.append('pinataOptions', options);
+
+      const { PINATA_CONFIG } = await import('../config/pinata');
+      const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+        method: 'POST',
+        headers: {
+          'pinata_api_key': PINATA_CONFIG.apiKey,
+          'pinata_secret_api_key': PINATA_CONFIG.apiSecret
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Image upload failed: ${response.status}`);
       }
+
+      const result = await response.json();
+      return result.IpfsHash;
     } catch (error) {
       console.error('Error uploading image:', error);
       throw error;

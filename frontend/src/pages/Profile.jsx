@@ -46,6 +46,10 @@ const Profile = () => {
   // Load user profile and tip stats
   useEffect(() => {
     if (profileAddress && provider) {
+      // Reset profile state before loading
+      setUserProfile(null);
+      setProfileLoading(true);
+      
       loadUserProfile();
       loadTipStats();
       
@@ -56,27 +60,23 @@ const Profile = () => {
     }
   }, [profileAddress, provider, account, isOwnProfile]); // Add account as dependency
 
-  // Reset profile state when account changes (for own profile)
-  useEffect(() => {
-    if (isOwnProfile) {
-      setUserProfile(null);
-      setProfileLoading(true);
-    }
-  }, [account, isOwnProfile]);
-
   const loadUserProfile = async () => {
-    if (!profileAddress || !provider) return;
+    if (!profileAddress || !provider) {
+      console.log('[Profile] Cannot load profile - missing address or provider');
+      return;
+    }
     
-    console.log('Loading profile for address:', profileAddress);
+    console.log('[Profile] Loading profile for address:', profileAddress);
     
     try {
       setProfileLoading(true);
       const profile = await getUserProfile(provider, profileAddress);
+      console.log('[Profile] Profile loaded:', profile);
       setUserProfile(profile);
     } catch (error) {
-      console.error('Error loading user profile:', error);
+      console.error('[Profile] Error loading user profile:', error);
       // Set default profile on error (for accounts created before ProfileContract)
-      setUserProfile({
+      const defaultProfile = {
         userAddress: profileAddress.toLowerCase(),
         username: '',
         displayName: '',
@@ -86,7 +86,9 @@ const Profile = () => {
         profileImage: '',
         coverImage: '',
         exists: false
-      });
+      };
+      console.log('[Profile] Setting default profile:', defaultProfile);
+      setUserProfile(defaultProfile);
     } finally {
       setProfileLoading(false);
     }
@@ -104,7 +106,10 @@ const Profile = () => {
   };
 
   const handleProfileUpdate = async (updatedProfile) => {
-    setUserProfile(updatedProfile);
+    console.log('[Profile] Profile updated, reloading from blockchain...');
+    
+    // Reload profile from blockchain to get fresh data
+    await loadUserProfile();
     
     // Update Firebase mapping when profile is updated
     try {
@@ -206,10 +211,8 @@ const Profile = () => {
               <h1 className="text-3xl font-bold mb-2 text-white">
                 {profileLoading ? (
                   <div className="w-48 h-8 bg-white/10 rounded animate-pulse"></div>
-                ) : userProfile?.exists ? (
-                  getDisplayName(userProfile, profileAddress)
                 ) : (
-                  formatAddress(profileAddress)
+                  getDisplayName(userProfile, profileAddress)
                 )}
               </h1>
               {!profileLoading && profileAddress && (
