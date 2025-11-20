@@ -292,7 +292,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
     };
 
     checkReportStatus();
-  }, [post?.id, account, isConnected, contractsReady, hasUserReported]);
+  }, [post?.id, account, isConnected, contractsReady]); // Removed hasUserReported from dependencies
 
   // Close options menu when clicking outside
   useEffect(() => {
