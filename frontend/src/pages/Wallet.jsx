@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useWeb3 } from "../context/Web3Context";
 import { ethers } from "ethers";
 
