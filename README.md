@@ -1,271 +1,167 @@
 # 🎨 Socio3 - Decentralized Social Media Platform
 
-A Web3-powered social media dApp inspired by Instagram, built with React, Ethereum smart contracts, and IPFS storage. Features advanced content moderation, automatic post removal, and comprehensive reporting system.
+A production-ready Web3 social media dApp that combines the familiar experience of Instagram with the power of blockchain technology. Built with React, Ethereum smart contracts, and IPFS storage, featuring advanced content moderation, automatic ETH gifting for new users, and true content ownership.
 
-## 🚀 Features
+## 🚀 Live Platform
 
-### 🔐 Core Features
-- **Decentralized Content**: Posts stored on IPFS with metadata on Ethereum
-- **Wallet-based Authentication**: No passwords, just connect your wallet
-- **Crypto Tipping**: Support creators with ETH tips
-- **True Ownership**: Users own their content permanently
-- **Social Features**: Follow, like, and interact with creators
+**🌐 Platform**: [socio3.vercel.app](https://socio3.vercel.app)  
+**🔗 Network**: Sepolia Testnet  
+**📅 Last Deployment**: January 20, 2026  
 
-### 🛡️ Advanced Moderation System
-- **5-Category Reporting**: Spam, Inappropriate Content, Harassment, Copyright, Other
-- **Automatic Post Removal**: Smart contract-based content moderation
-- **Report-to-Like Ratio**: Intelligent removal based on community feedback
-- **Admin Dashboard**: Real-time monitoring and manual controls
-- **Blockchain Transparency**: All moderation actions recorded on-chain
+## ✨ Key Features
 
-### 🎁 Welcome Gift System
-- **Automatic ETH Gifting**: New users receive free Sepolia ETH for onboarding
-- **Pre-funding Profile Setup**: ETH sent before profile creation to cover gas fees
-- **Firebase Tracking**: Prevents duplicate gifts across devices and browsers
-- **Seamless Onboarding**: Users get ETH exactly when they need it
-### 📊 Auto-Deletion Logic
-- **Low Engagement**: 0 likes + 3 reports = removal
-- **Report Ratio**: Reports ≥ (Likes × 2) = removal
-- **User Notifications**: Authors notified when posts are removed
+### 🔐 Core Social Features
+- **Decentralized Content**: Posts stored on IPFS with metadata secured on Ethereum
+- **Wallet-Based Authentication**: No passwords or emails - just connect your wallet
+- **Social Interactions**: Like, comment, follow, and tip creators with ETH
+- **True Content Ownership**: Users permanently own their posts and profiles
+- **Real-Time Experience**: Instant comments and notifications via Firebase
 
-## 🛠️ Tech Stack
+### 🛡️ Advanced Content Moderation
+- **5-Category Reporting System**: Spam, Inappropriate Content, Harassment, Copyright, Other
+- **Intelligent Auto-Removal**: Smart contract-based content moderation with configurable thresholds
+- **Community-Driven**: Report-to-like ratio system for fair content evaluation
+- **Admin Dashboard**: Real-time monitoring and manual moderation controls
+- **Blockchain Transparency**: All moderation actions permanently recorded on-chain
 
-### Frontend
-- React 19 with Vite
-- Tailwind CSS for styling
-- Framer Motion for animations
-- Ethers.js for Web3 integration
-- React Router for navigation
+### 🎁 Seamless Onboarding System
+- **Automatic ETH Gifting**: New users receive free Sepolia ETH (0.005 ETH) automatically
+- **Pre-Funding Profile Setup**: ETH sent before profile creation to cover gas fees
+- **Cross-Device Tracking**: Firebase prevents duplicate gifts across browsers and devices
+- **Zero Barriers**: Users can start interacting immediately without external faucets
 
-### Backend
-- Firebase Firestore for real-time data
-- IPFS via Pinata for media storage
-- Ethereum smart contracts (Solidity)
-- **Sepolia Faucet Service** for automated ETH distribution
+### 🔍 Discovery & Search
+- **Advanced User Search**: Find users by username, display name, bio, or wallet address
+- **Trending Creators**: Discover popular creators based on followers and engagement
+- **Top Posts**: Explore most-liked and most-tipped content
+- **Smart Feed**: Personalized home feed from followed creators
 
-### Blockchain
-- Hardhat development framework
-- Sepolia testnet deployment
-- MetaMask wallet integration
+## 🏗️ Architecture
 
-## 📦 Installation
+### Smart Contracts (Sepolia Testnet)
+| Contract | Address | Purpose |
+|----------|---------|---------|
+| **PostContract** | `0x5d5C1d313f580027204e04E8D4E3162f37A661CF` | Post creation, reporting, and moderation |
+| **SocialContract** | `0xedb788eb4c9D5B0919C9e9c81947B8417FF57788` | Likes, follows, tips, and social interactions |
+| **ProfileContract** | `0x314FBc86715eD6a8f07C775e775CD4E61CF903Df` | User profiles and username management |
+
+### Technology Stack
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 19, Vite, Tailwind CSS | Modern, responsive UI |
+| **Web3** | Ethers.js 6.15, MetaMask | Blockchain interactions |
+| **Smart Contracts** | Solidity 0.8.28, Hardhat | On-chain logic |
+| **Backend** | Firebase Firestore | Real-time data and notifications |
+| **Storage** | IPFS (Pinata) | Decentralized media storage |
+| **Faucet** | [Sepolia Faucet Service](https://github.com/atharvabaodhankar/sepolia-faucet-service) | Automated ETH distribution |
+| **Hosting** | Vercel | Frontend deployment |
+
+## 🛠️ Installation & Setup
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
+- Node.js 18+ and npm
 - MetaMask browser extension
+- Git
 
-### Setup
+### Quick Start
 
-1. **Clone the repository**
+1. **Clone and Install**
 ```bash
-git clone <repository-url>
+git clone https://github.com/atharvabaodhankar/socio3.git
 cd socio3
+npm install
+cd frontend && npm install && cd ..
 ```
 
-2. **Install dependencies**
+2. **Environment Configuration**
 ```bash
-# Root dependencies (Hardhat)
-npm install
-
-# Frontend dependencies
-cd frontend
-npm install
-cd ..
-```
-
-3. **Environment Setup**
-Create environment files from examples:
-```bash
-# Root .env for blockchain and backend services
+# Copy environment templates
 cp .env.example .env
-
-# Frontend .env for client-side environment variables
 cp frontend/.env.example frontend/.env
 ```
 
-Then update both `.env` files with your actual credentials:
-- **Root .env**: Infura Project ID, Private Key, Pinata credentials, Firebase config
-- **Frontend .env**: Same credentials but with `VITE_` prefix for Vite
+3. **Configure Environment Variables**
 
-⚠️ **Security Note**: Never commit `.env` files to version control. They contain sensitive credentials.
-
-## 🔧 Development
-
-### Smart Contracts
-
-1. **Compile contracts**
+**Root `.env` (Blockchain & Services):**
 ```bash
-npx hardhat compile
+# Blockchain
+PRIVATE_KEY=your_deployer_private_key
+INFURA_PROJECT_ID=your_infura_project_id
+
+# IPFS/Pinata
+VITE_PINATA_API_KEY=your_pinata_api_key
+VITE_PINATA_API_SECRET=your_pinata_secret
+VITE_PINATA_JWT=your_pinata_jwt
+VITE_PINATA_GATEWAY_URL=your_pinata_gateway
+VITE_PINATA_GATEWAY_TOKEN=your_gateway_token
+
+# Firebase
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+
+# Faucet Service
+VITE_FAUCET_API_URL=https://sepolia-faucet-service.vercel.app/api/faucet
+VITE_FAUCET_MASTER_PASSWORD=your_master_password
 ```
 
-2. **Run tests**
+**Frontend `.env` (Same variables with VITE_ prefix for client-side access)**
+
+4. **Development**
 ```bash
+# Start frontend development server
+cd frontend
+npm run dev
+
+# In another terminal - compile contracts
+npx hardhat compile
+
+# Run tests
 npx hardhat test
 ```
 
-3. **Fresh deployment with reporting system**
-```bash
-npx hardhat run scripts/deployFresh.js --network sepolia
-```
+## 🎮 How to Use
 
-## 📍 Current Deployment (Sepolia Testnet)
+### For New Users
+1. **Connect Wallet** → Click "Connect Wallet" and approve MetaMask
+2. **Get Free ETH** → System automatically detects new users and offers free Sepolia ETH
+3. **Create Profile** → Set up username, bio, profile picture, and cover image
+4. **Start Exploring** → Browse trending creators and posts
+5. **Create Content** → Upload images with captions to share with the community
+6. **Engage** → Like posts, follow creators, and tip with your gifted ETH
 
-**Deployment Date:** October 28, 2025  
-**Network:** Sepolia Testnet  
+### For Existing Users
+1. **Connect Wallet** → Standard connection, no ETH gift needed
+2. **Create Posts** → Go to `/upload`, select image, add caption, and publish
+3. **Social Interactions** → Like, comment, follow, and tip other creators
+4. **Discover Content** → Use search and explore pages to find new creators
+5. **Moderate Content** → Report inappropriate posts using the 5-category system
 
-### Contract Addresses
-| Contract | Address | Etherscan |
-|----------|---------|-----------|
-| **PostContract** | `0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067` | [View](https://sepolia.etherscan.io/address/0x1C4C0Eff199Af5C97d3DC723E91a56382fD52067) |
-| **SocialContract** | `0x9CE41910E2d80D4e33a64bc295e6C953450C0D41` | [View](https://sepolia.etherscan.io/address/0x9CE41910E2d80D4e33a64bc295e6C953450C0D41) |
-
-### New Features Deployed
-- ✅ Advanced reporting system with 5 categories
-- ✅ Automatic post removal based on community reports
-- ✅ Admin dashboard for content moderation
-- ✅ Blockchain-based transparency for all actions
-- ✅ User notifications for removed content
-- ✅ **Welcome gift system** with automatic ETH distribution
-- ✅ **Pre-funding profile setup** for seamless onboarding
-
-## 🎁 Welcome Gift & Faucet System
-
-Socio3 features an intelligent welcome gift system that automatically provides new users with free Sepolia ETH to get started on their Web3 journey.
-
-### 🚀 How It Works
-
-#### Pre-Funding Profile Setup
-1. **User connects wallet** → Standard MetaMask connection
-2. **Clicks "Setup Profile"** → Profile creation modal opens
-3. **System checks ETH balance** → Detects if user has < 0.001 ETH
-4. **Shows ETH requirement screen** → Clean UI explaining the need for gas fees
-5. **User clicks "Get Free ETH"** → Automatic 0.005 ETH transfer
-6. **Success confirmation** → "Great! You can now create your profile!"
-7. **Profile form appears** → User can now complete profile creation
-8. **Transaction succeeds** → Profile created with gifted ETH
-
-#### Smart Detection
-- **Balance checking**: Automatically detects users who need ETH
-- **One-time gifts**: Firebase tracking prevents duplicate gifts
-- **Cross-device consistency**: Works across browsers and devices
-- **Error handling**: Graceful fallbacks if faucet service is unavailable
-
-### 🛠️ Technical Implementation
-
-#### Faucet Service Integration
-- **API Endpoint**: `https://sepolia-faucet-service.vercel.app/api/faucet`
-- **Admin Mode**: Uses master password for bypassing rate limits
-- **Gift Amount**: 0.005 ETH per new user
-- **Network**: Sepolia Testnet only
-
-#### Firebase Tracking
-```javascript
-// Welcome gift tracking in Firestore
-{
-  userAddress: "0x123...abc",
-  welcomedAt: serverTimestamp(),
-  giftSent: true,
-  transactionHash: "0xdef...",
-  amount: "0.005 ETH",
-  explorerUrl: "https://sepolia.etherscan.io/tx/...",
-  trigger: "pre_funding"
-}
-```
-
-#### Frontend Integration
-- **EditProfileModal.jsx**: Pre-funding step before profile creation
-- **Balance checking**: `checkUserNeedsETH()` function
-- **Automatic gifting**: `requestTestETHAdmin()` with master password
-- **UI consistency**: Matches website's sleek black theme
-
-### 🔧 Configuration
-
-#### Environment Variables
-```bash
-# Faucet service configuration
-VITE_FAUCET_API_URL=https://sepolia-faucet-service.vercel.app/api/faucet
-VITE_FAUCET_MASTER_PASSWORD=web3byatharva
-```
-
-#### Firebase Collection
-- **Collection**: `welcomeGifts`
-- **Document ID**: User's wallet address (lowercase)
-- **Purpose**: Prevent duplicate gifts and track success rates
-
-### 🎯 User Experience Benefits
-
-#### For New Users
-- **No barriers**: Get ETH before needing to pay gas fees
-- **Clear explanation**: Understand why ETH is needed
-- **Instant gratification**: Receive ETH immediately
-- **Seamless flow**: Natural progression from ETH → Profile → Interactions
-
-#### For Developers
-- **Reduced support**: Fewer "I can't create profile" issues
-- **Higher conversion**: More users complete onboarding
-- **Better analytics**: Track gift success rates and user progression
-- **Scalable solution**: Handles thousands of new users
-
-### 🔗 Faucet Service Repository
-
-The faucet functionality is powered by a dedicated Sepolia faucet service:
-
-**Repository**: [sepolia-faucet-service](https://github.com/atharvabaodhankar/sepolia-faucet-service)
-- ⚡ **Fast API**: Vercel-hosted serverless functions
-- 🔐 **Admin mode**: Master password for bypassing rate limits
-- 📊 **Rate limiting**: Prevents abuse while allowing legitimate use
-- 🛡️ **Security**: Input validation and error handling
-- 📈 **Monitoring**: Built-in analytics and logging
-
-### 🧪 Testing the Faucet System
-
-#### Manual Testing
-1. **Create fresh wallet** → Should have 0 ETH on Sepolia
-2. **Connect to Socio3** → Normal wallet connection
-3. **Click "Setup Profile"** → Should show ETH requirement screen
-4. **Click "Get Free ETH"** → Should receive 0.005 ETH
-5. **Verify transaction** → Check Sepolia Etherscan
-6. **Complete profile** → Should work with gifted ETH
-
-#### Test Functions (Development)
-```javascript
-// Available in browser console during development
-testFaucetService()           // Test faucet API functionality
-testFirebaseWelcomeSystem()   // Test Firebase welcome tracking
-testWelcomeGiftSystem()       // Test legacy localStorage system
-```
-
-### 📊 Analytics & Monitoring
-
-#### Gift Statistics
-- **Total gifts sent**: Track successful ETH distributions
-- **Success rate**: Monitor faucet service reliability
-- **User progression**: Measure onboarding completion rates
-- **Error tracking**: Identify and fix common issues
-
-#### Admin Dashboard Integration
-Future enhancement: Add faucet statistics to the admin dashboard at `/admin`
-- 📈 **Gift metrics**: Daily/weekly gift distribution charts
-- 👥 **User onboarding**: Track new user conversion rates
-- 🔧 **Service health**: Monitor faucet service uptime
-- 💰 **ETH balance**: Track faucet wallet balance
+### For Moderators/Admins
+1. **Access Dashboard** → Visit `/admin` (requires contract owner wallet)
+2. **Monitor Reports** → View real-time report statistics and details
+3. **Review Content** → Check reported posts and removal history
+4. **Manual Actions** → Remove posts manually when needed
+5. **Adjust Settings** → Modify report thresholds via smart contract functions
 
 ## 🛡️ Content Moderation System
 
 ### Reporting Categories
-1. **🚫 Spam** - Repetitive or unwanted content
-2. **⚠️ Inappropriate Content** - Offensive or harmful material
-3. **👤 Harassment** - Bullying or targeting individuals
+1. **🚫 Spam** - Repetitive, promotional, or unwanted content
+2. **⚠️ Inappropriate Content** - Offensive, harmful, or NSFW material
+3. **👤 Harassment** - Bullying, threats, or targeting individuals
 4. **©️ Copyright Violation** - Unauthorized use of copyrighted content
 5. **❓ Other** - Violations not covered by other categories
 
-### Auto-Deletion Logic
+### Automatic Removal Logic
 
 #### Scenario 1: High Report Threshold
 - **Condition**: `reports >= 5`
-- **Action**: Immediate removal
-- **Example**: Any post with 5+ reports gets removed regardless of likes
+- **Action**: Immediate removal regardless of likes
+- **Example**: Any post with 5+ reports gets removed
 
 #### Scenario 2: Low Engagement + Reports
 - **Condition**: `likes == 0 && reports >= 3`
@@ -274,199 +170,179 @@ Future enhancement: Add faucet statistics to the admin dashboard at `/admin`
 
 #### Scenario 3: Report-to-Like Ratio
 - **Condition**: `reports >= (likes × 2)`
-- **Action**: Removal when reports significantly exceed likes
+- **Action**: Removal when reports significantly exceed engagement
 - **Examples**:
   - 1 like + 2 reports = REMOVED
-  - 2 likes + 4 reports = REMOVED
-  - 10 likes + 20 reports = REMOVED
+  - 5 likes + 10 reports = REMOVED
+  - 20 likes + 40 reports = REMOVED
 
-### User Notifications
-When a post is removed, the author receives:
-- 📧 **Notification** explaining the removal reason
-- 📊 **Report Statistics** showing report count and types
-- 🔗 **Appeal Process** (future feature)
-- 📋 **Community Guidelines** reminder
-
-### Admin Features
-Access the admin dashboard at `/admin` (contract owner only):
-- 📊 **Real-time Statistics** - Total reports, pending reviews, removed posts
-- 📋 **Report Management** - View all reports with details
-- 🔧 **Manual Controls** - Remove posts manually if needed
+### Admin Dashboard Features
+Access at `/admin` (contract owner only):
+- 📊 **Real-time Statistics** - Report counts, removal rates, trending issues
+- 📋 **Report Management** - View all reports with user details and reasons
+- 🔧 **Manual Controls** - Remove posts manually with custom reasons
 - ⚙️ **Threshold Settings** - Adjust auto-removal parameters
+- 📈 **Analytics** - Track moderation effectiveness over time
 
-3. **Start local blockchain**
-```bash
-npx hardhat node
-```
+## 🎁 Welcome Gift & Faucet System
 
-4. **Deploy to local network**
-```bash
-npx hardhat ignition deploy ./ignition/modules/Socio3.js --network localhost
-```
+### How It Works
+1. **New User Detection** → System checks if user has < 0.001 ETH when creating profile
+2. **Automatic ETH Gift** → Sends 0.005 ETH using admin faucet service
+3. **Firebase Tracking** → Prevents duplicate gifts across devices and browsers
+4. **Seamless Experience** → Users get ETH exactly when they need it for transactions
 
-5. **Deploy to Sepolia testnet**
-```bash
-npx hardhat ignition deploy ./ignition/modules/Socio3.js --network sepolia
-```
+### Faucet Service Integration
+- **Repository**: [sepolia-faucet-service](https://github.com/atharvabaodhankar/sepolia-faucet-service)
+- **API Endpoint**: `https://sepolia-faucet-service.vercel.app/api/faucet`
+- **Features**: Rate limiting, admin mode, transaction tracking, error handling
+- **Security**: Master password authentication, input validation, abuse prevention
 
-### Frontend
+### Benefits
+- **Zero Onboarding Friction** → New users can start immediately
+- **No External Dependencies** → No need to find external faucets
+- **Cross-Device Consistency** → Works across browsers and devices
+- **Intelligent Distribution** → Only sends ETH to users who actually need it
 
-1. **Start development server**
-```bash
-cd frontend
-npm run dev
-```
-
-2. **Build for production**
-```bash
-cd frontend
-npm run build
-```
-
-## 📋 Configuration
-
-### Firebase Setup
-1. Create a Firebase project
-2. Enable Firestore Database
-3. Update `frontend/src/config/firebase.js` with your config
-4. Deploy Firestore rules: `firebase deploy --only firestore:rules`
-
-### Pinata IPFS Setup
-1. Create a Pinata account
-2. Generate API keys
-3. Update `frontend/src/config/pinata.js` with your credentials
-
-### MetaMask Setup
-1. Install MetaMask extension
-2. Add Sepolia testnet
-3. Get test ETH from Sepolia faucet
-
-## 🎮 How to Use
-
-### For New Users (First Time)
-1. **Connect Wallet** - Click "Connect Wallet" and approve MetaMask connection
-2. **Get Free ETH** - When setting up profile, system will offer free Sepolia ETH
-3. **Create Profile** - Complete profile setup with username, bio, and images
-4. **Start Exploring** - Browse posts, follow creators, and engage with content
-5. **Create Posts** - Go to `/upload`, select image, add caption, and publish
-6. **Social Interactions** - Like posts, follow users, send tips with your gifted ETH
-
-### For Existing Users
-1. **Connect Wallet** - Standard wallet connection, no ETH gift needed
-2. **Create Posts** - Go to `/upload`, select image, add caption, and publish
-3. **Social Interactions** - Like posts, follow users, send tips
-4. **Report Content** - Click three dots (⋮) on any post → "Report Post" → Select category
-5. **Share Posts** - Use share button to copy links or share on social media
-
-### For Content Creators
-1. **Upload Content** - High-quality images with engaging captions perform best
-2. **Build Following** - Engage with community, follow others, create consistently
-3. **Earn Tips** - Quality content attracts tips from supporters
-4. **Monitor Performance** - Check your profile for likes, follows, and tips received
-
-### For Moderators/Admins
-1. **Access Dashboard** - Visit `/admin` (requires contract owner wallet)
-2. **Monitor Reports** - View real-time report statistics and details
-3. **Manual Actions** - Remove posts manually when needed
-4. **Adjust Settings** - Modify report thresholds via smart contract functions
-
-### Reporting Process
-1. **Find Problematic Content** - Navigate to the post you want to report
-2. **Open Options Menu** - Click the three dots (⋮) in the top-right of the post
-3. **Select Report** - Choose "Report Post" (only available for others' posts)
-4. **Choose Category** - Select from 5 report types with descriptions
-5. **Confirm Report** - Transaction sent to blockchain, report logged
-6. **Automatic Review** - System checks if post should be auto-removed
-
-## 🏗️ Project Structure
+## 📊 Project Structure
 
 ```
 socio3/
-├── contracts/              # Smart contracts
-│   ├── PostContract.sol    # Post creation and retrieval
-│   └── SocialContract.sol  # Social interactions (likes, follows, tips)
-├── frontend/               # React frontend
+├── contracts/                    # Smart contracts
+│   ├── PostContract.sol         # Post creation, reporting, moderation
+│   ├── SocialContract.sol       # Likes, follows, tips
+│   └── ProfileContract.sol      # User profiles, usernames
+├── frontend/                     # React frontend
 │   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── pages/          # Page components
-│   │   ├── context/        # React contexts
-│   │   └── config/         # Configuration files
-├── test/                   # Contract tests
-├── ignition/modules/       # Deployment scripts
-└── firestore.rules         # Firebase security rules
+│   │   ├── pages/               # Route pages (Home, Explore, Profile, etc.)
+│   │   ├── components/          # Reusable UI components
+│   │   ├── services/            # Business logic (Firebase, blockchain, IPFS)
+│   │   ├── hooks/               # Custom React hooks
+│   │   ├── context/             # React Context (Web3Context)
+│   │   ├── config/              # Configuration files
+│   │   └── utils/               # Utility functions
+├── ignition/modules/            # Hardhat deployment scripts
+├── test/                        # Smart contract tests
+├── scripts/                     # Deployment and utility scripts
+└── firestore.rules             # Firebase security rules
 ```
 
-## 🔐 Security
+## 🧪 Testing
 
-- Wallet-based authentication
-- Firebase security rules
-- Smart contract access controls
-- IPFS content addressing
-- Input validation and sanitization
+### Smart Contract Tests
+```bash
+# Run all tests
+npx hardhat test
+
+# Test specific contract
+npx hardhat test test/Socio3.js
+
+# Test with gas reporting
+REPORT_GAS=true npx hardhat test
+```
+
+### Frontend Testing
+```bash
+cd frontend
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Test build locally
+npm run preview
+```
+
+### Manual Testing Checklist
+- [ ] Connect wallet with MetaMask
+- [ ] Create profile (should trigger ETH gift for new users)
+- [ ] Upload post with image and caption
+- [ ] Like, comment, and tip on posts
+- [ ] Follow/unfollow other users
+- [ ] Search for users by username
+- [ ] Report inappropriate content
+- [ ] Check admin dashboard (if owner)
 
 ## 🚀 Deployment
 
 ### Smart Contracts
-1. Update `hardhat.config.js` with your Infura project ID
-2. Add your private key to `.env`
-3. Deploy to Sepolia: `npx hardhat ignition deploy ./ignition/modules/Socio3.js --network sepolia`
-4. Update contract addresses in `frontend/src/config/contracts.js`
+```bash
+# Deploy to Sepolia testnet
+npx hardhat run scripts/deploy-all.js --network sepolia
+
+# Verify deployment
+npx hardhat run scripts/verify-fresh-deployment.js --network sepolia
+
+# Update frontend contract addresses
+# (Addresses are auto-updated in frontend/src/config/contracts.js)
+```
 
 ### Frontend
-1. Build the frontend: `cd frontend && npm run build`
-2. Deploy to Vercel, Netlify, or your preferred hosting platform
-
-## 📱 Usage
-
-1. **Connect Wallet**: Click "Connect Wallet" and approve MetaMask connection
-2. **Create Post**: Upload image/video, add caption, and share
-3. **Explore**: Discover trending posts and new creators
-4. **Interact**: Like posts, follow creators, and send tips
-5. **Profile**: View your posts, followers, and earnings
-
-## 🧪 Testing
-
-Run the test suite:
 ```bash
-npx hardhat test
+cd frontend
+npm run build
+
+# Deploy to Vercel (recommended)
+vercel --prod
+
+# Or deploy to other platforms using the dist/ folder
 ```
 
-Test specific contracts:
-```bash
-npx hardhat test test/Socio3.js
-```
+## 🔐 Security Features
+
+- **Wallet-Based Authentication** → No passwords, no email vulnerabilities
+- **Smart Contract Access Controls** → Owner-only functions for critical operations
+- **Firebase Security Rules** → Proper read/write permissions
+- **IPFS Content Addressing** → Immutable content storage
+- **Input Validation** → Comprehensive validation on frontend and contracts
+- **Rate Limiting** → Faucet service prevents abuse
+- **Cross-Device Tracking** → Prevents duplicate gift exploitation
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if needed
-5. Submit a pull request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and test thoroughly
+4. Commit with clear messages: `git commit -m 'Add amazing feature'`
+5. Push to your branch: `git push origin feature/amazing-feature`
+6. Submit a pull request with detailed description
+
+### Development Guidelines
+- Follow existing code style and patterns
+- Add tests for new smart contract functions
+- Update documentation for new features
+- Test on Sepolia testnet before submitting
+- Ensure Firebase security rules are appropriate
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Links
+## 🔗 Links & Resources
 
-### Main Project
-- [Socio3 Platform](https://socio3.vercel.app/) - Live deployment
-- [GitHub Repository](https://github.com/atharvabaodhankar/socio3) - Source code
+### Project Links
+- **Live Platform**: [socio3.vercel.app](https://socio3.vercel.app)
+- **GitHub Repository**: [github.com/atharvabaodhankar/socio3](https://github.com/atharvabaodhankar/socio3)
+- **Faucet Service**: [github.com/atharvabaodhankar/sepolia-faucet-service](https://github.com/atharvabaodhankar/sepolia-faucet-service)
 
-### Faucet Service
-- [Sepolia Faucet Service](https://github.com/atharvabaodhankar/sepolia-faucet-service) - Dedicated faucet API
-- [Faucet API Endpoint](https://sepolia-faucet-service.vercel.app/api/faucet) - Live service
+### Blockchain Explorers
+- **PostContract**: [sepolia.etherscan.io/address/0x5d5C1d313f580027204e04E8D4E3162f37A661CF](https://sepolia.etherscan.io/address/0x5d5C1d313f580027204e04E8D4E3162f37A661CF)
+- **SocialContract**: [sepolia.etherscan.io/address/0xedb788eb4c9D5B0919C9e9c81947B8417FF57788](https://sepolia.etherscan.io/address/0xedb788eb4c9D5B0919C9e9c81947B8417FF57788)
+- **ProfileContract**: [sepolia.etherscan.io/address/0x314FBc86715eD6a8f07C775e775CD4E61CF903Df](https://sepolia.etherscan.io/address/0x314FBc86715eD6a8f07C775e775CD4E61CF903Df)
 
-### Technologies
+### Technology Documentation
 - [Ethereum](https://ethereum.org/) - Blockchain platform
-- [IPFS](https://ipfs.io/) - Decentralized storage
 - [Hardhat](https://hardhat.org/) - Development framework
 - [React](https://reactjs.org/) - Frontend framework
-- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Ethers.js](https://docs.ethers.io/) - Web3 library
+- [IPFS](https://ipfs.io/) - Decentralized storage
 - [Firebase](https://firebase.google.com/) - Backend services
-- [Vercel](https://vercel.com/) - Hosting platform
+- [Tailwind CSS](https://tailwindcss.com/) - Styling framework
 
 ---
 
-Built with ❤️ for the decentralized web
+**Built with ❤️ for the decentralized web**
+
+*Socio3 represents the future of social media - where users own their content, communities moderate themselves, and creators are directly rewarded by their audience. Join us in building a more open, transparent, and creator-friendly social platform.*
