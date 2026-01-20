@@ -1,11 +1,11 @@
 {
   "network": "sepolia",
   "chainId": "11155111",
-  "timestamp": "2025-11-11T06:30:15.034Z",
+  "timestamp": "2026-01-20T10:29:11.631Z",
   "deployer": "0xF5CaF845421A21D2326f3bA04Fb99eD0F75B8465",
   "contracts": {
-    "PostContract": "0xfAf5EdEb50A1677708141457fBdf61642B8a252E",
-    "SocialContract": "0x4Aa3Cf50E01552e7695883E376E4249aa717eb94",
-    "ProfileContract": "0x7040554cB52b34Dcf8836ddD503F318b1dd67eE4"
+    "PostContract": "0x5d5C1d313f580027204e04E8D4E3162f37A661CF",
+    "SocialContract": "0xedb788eb4c9D5B0919C9e9c81947B8417FF57788",
+    "ProfileContract": "0x314FBc86715eD6a8f07C775e775CD4E61CF903Df"
   }
 }
