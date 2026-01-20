@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
 import { uploadToPinata, unpinFile, getIPFSUrl } from '../config/pinata';
-import { JigsawStack } from "jigsawstack";
 import { savePostSettings } from '../services/postSettingsService';
 import LoadingModal from '../components/LoadingModal';
 import SuccessModal from '../components/SuccessModal';
@@ -24,14 +23,57 @@ const Upload = () => {
   const [allowComments, setAllowComments] = useState(true);
   const [showLikeCount, setShowLikeCount] = useState(true);
 
-  const handleFileSelect = (event) => {
+  const [validationStatus, setValidationStatus] = useState('idle'); // idle, validating, safe, unsafe, error
+  const [pinataResult, setPinataResult] = useState(null);
+
+  const handleFileSelect = async (event) => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
+      setValidationStatus('validating');
+      setPinataResult(null);
       
       // Create preview URL
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
+
+      // Start background scanning
+      try {
+        console.log('Background: Uploading to IPFS...');
+        const result = await uploadToPinata(file, ''); // Temporary caption
+        
+        if (result.success) {
+          setPinataResult(result);
+          console.log('Background: Validating content safety...');
+          const imageUrl = getIPFSUrl(result.imageHash);
+          
+          const jigsawResponse = await fetch('https://api.jigsawstack.com/v1/validate/nsfw', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': "sk_d58e9a57ce1b9fb2402c2c43abb638508ac808a1880d1111902476a6d00de65dde60fa3d112b27aa07b643df508f134b2f7f206d0ef0e08058f7e8f6e7e5c81f024wxvGiz4lUsH5wE9uuG"
+            },
+            body: JSON.stringify({ url: imageUrl })
+          });
+
+          const validation = await jigsawResponse.json();
+          console.log('Background: NSFW Result:', validation);
+
+          if (validation.nsfw) {
+            setValidationStatus('unsafe');
+            // Cleanup immediately
+            await unpinFile(result.imageHash);
+            await unpinFile(result.ipfsHash);
+          } else {
+            setValidationStatus('safe');
+          }
+        } else {
+          setValidationStatus('error');
+        }
+      } catch (err) {
+        console.error('Background validation error:', err);
+        setValidationStatus('error');
+      }
     }
   };
 
@@ -42,82 +84,71 @@ const Upload = () => {
       return;
     }
 
+    // Check if we are still validating
+    if (validationStatus === 'validating') {
+      setShowLoadingModal(true);
+      // Wait for validation to finish (simple poll or we could use a promise ref)
+      while (validationStatus === 'validating') {
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    if (validationStatus === 'unsafe') {
+      setErrorMessage('NSFW content detected. This content violates our community guidelines and cannot be posted.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (validationStatus === 'error') {
+      setErrorMessage('Content safety check failed. Please re-select the file and try again.');
+      setShowErrorModal(true);
+      return;
+    }
+
     setIsUploading(true);
     setShowLoadingModal(true);
     
     try {
-      // Upload to IPFS via Pinata
-      console.log('Uploading to IPFS...');
-      const result = await uploadToPinata(selectedFile, caption);
+      let finalPinataResult = pinataResult;
       
-        if (result.success) {
-        console.log('File uploaded to IPFS:', result.ipfsHash);
-
-        // Validate NSFW content
-        console.log('Validating content safety...');
-        const jigsaw = JigsawStack({ apiKey: "sk_d58e9a57ce1b9fb2402c2c43abb638508ac808a1880d1111902476a6d00de65dde60fa3d112b27aa07b643df508f134b2f7f206d0ef0e08058f7e8f6e7e5c81f024wxvGiz4lUsH5wE9uuG" });
-        
-        try {
-          // Use the gateway URL for validation
-          const imageUrl = getIPFSUrl(result.imageHash);
-          const validationResult = await jigsaw.validate.nsfw({
-            url: imageUrl
-          });
-
-          console.log('NSFW Validation Result:', validationResult);
-
-          if (validationResult.nsfw) {
-            // Unpin the file immediately
-            console.log('NSFW content detected. Unpinning file...');
-            await unpinFile(result.imageHash);
-            await unpinFile(result.ipfsHash); // Unpin metadata too if it was pinned
-
-            throw new Error('NSFW content detected. This content violates our community guidelines and cannot be posted.');
-          }
-        } catch (validationError) {
-          // If validation fails (network error etc), we might want to fail the upload
-          // OR if it was the NSFW error we just threw
-          console.error('Validation error:', validationError);
-          if (validationError.message.includes('NSFW')) {
-            throw validationError;
-          }
-          // Optional: Deciding if we want to fail open or closed on API errors
-          // For now, let's log it but maybe allow it if it's just a network glitch?
-          // Or strictly enforcing:
-           // throw new Error('Content validation failed. Please try again.');
-        }
-        
-        // Create post on blockchain
-        console.log('Creating post on blockchain...');
-        const postResult = await createPost(result.ipfsHash);
-        
-        // Save post settings to Firebase
-        try {
-          const postId = postResult.postId;
-          
-          if (postId) {
-            await savePostSettings(postId, account, {
-              allowComments,
-              showLikeCount
-            });
-          }
-        } catch (settingsError) {
-          console.error('Failed to save post settings:', settingsError);
-          // Don't fail the entire upload if settings save fails
-        }
-        
-        setShowLoadingModal(false);
-        setShowSuccessModal(true);
-        
-        // Reset form
-        setSelectedFile(null);
-        setCaption('');
-        setPreviewUrl(null);
-        setAllowComments(true);
-        setShowLikeCount(true);
-      } else {
-        throw new Error(result.error);
+      // If for some reason we don't have a result yet (e.g. background task failed but we want to retry here)
+      if (!finalPinataResult) {
+        console.log('Uploading to IPFS...');
+        const result = await uploadToPinata(selectedFile, caption);
+        if (!result.success) throw new Error(result.error);
+        finalPinataResult = result;
       }
+
+      // Create post on blockchain
+      console.log('Creating post on blockchain...');
+      const postResult = await createPost(finalPinataResult.ipfsHash);
+      
+      // Save post settings to Firebase
+      try {
+        const postId = postResult.postId;
+        
+        if (postId) {
+          await savePostSettings(postId, account, {
+            allowComments,
+            showLikeCount
+          });
+        }
+      } catch (settingsError) {
+        console.error('Failed to save post settings:', settingsError);
+      }
+      
+      setShowLoadingModal(false);
+      setShowSuccessModal(true);
+      
+      // Reset form
+      setSelectedFile(null);
+      setCaption('');
+      setPreviewUrl(null);
+      setAllowComments(true);
+      setShowLikeCount(true);
+      setValidationStatus('idle');
+      setPinataResult(null);
+
     } catch (error) {
       console.error('Upload error:', error);
       setShowLoadingModal(false);
@@ -186,31 +217,64 @@ const Upload = () => {
               </label>
             </div>
           ) : (
-            <div className="relative rounded-2xl overflow-hidden">
-              {selectedFile?.type.startsWith('image/') ? (
-                <img
-                  src={previewUrl}
-                  alt="Preview"
-                  className="w-full max-h-96 object-cover"
-                />
-              ) : (
-                <video
-                  src={previewUrl}
-                  controls
-                  className="w-full max-h-96"
-                />
-              )}
-              <button
-                onClick={() => {
-                  setSelectedFile(null);
-                  setPreviewUrl(null);
-                }}
-                className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            <div className="space-y-4">
+              <div className="relative rounded-2xl overflow-hidden">
+                {selectedFile?.type.startsWith('image/') ? (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full max-h-96 object-cover"
+                  />
+                ) : (
+                  <video
+                    src={previewUrl}
+                    controls
+                    className="w-full max-h-96"
+                  />
+                )}
+                <button
+                  onClick={() => {
+                    setSelectedFile(null);
+                    setPreviewUrl(null);
+                    setValidationStatus('idle');
+                    setPinataResult(null);
+                  }}
+                  className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm hover:bg-black/70 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Validation Status Indicator */}
+              <div className={`p-4 rounded-xl border flex items-center space-x-3 transition-all duration-300 ${
+                validationStatus === 'validating' ? 'bg-white/5 border-white/20 text-white/60' :
+                validationStatus === 'safe' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                validationStatus === 'unsafe' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                validationStatus === 'error' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+                'hidden'
+              }`}>
+                {validationStatus === 'validating' && (
+                  <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+                )}
+                {validationStatus === 'safe' && (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                {(validationStatus === 'unsafe' || validationStatus === 'error') && (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                )}
+                <span className="text-sm font-medium">
+                  {validationStatus === 'validating' && "Scanning for inappropriate content..."}
+                  {validationStatus === 'safe' && "Content safety verified"}
+                  {validationStatus === 'unsafe' && "NSFW content detected. This file cannot be posted."}
+                  {validationStatus === 'error' && "Safety check failed. Please re-select the file."}
+                </span>
+              </div>
             </div>
           )}
         </div>
