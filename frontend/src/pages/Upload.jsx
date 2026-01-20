@@ -51,7 +51,7 @@ const Upload = () => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-api-key': "sk_d58e9a57ce1b9fb2402c2c43abb638508ac808a1880d1111902476a6d00de65dde60fa3d112b27aa07b643df508f134b2f7f206d0ef0e08058f7e8f6e7e5c81f024wxvGiz4lUsH5wE9uuG"
+              'x-api-key': import.meta.env.VITE_JIGSAWSTACK_API_KEY
             },
             body: JSON.stringify({ url: imageUrl })
           });
