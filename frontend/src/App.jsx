@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Web3Provider, useWeb3 } from "./context/Web3Context";
+import { Web3Provider } from "./context/Web3Context";
 import Navbar from "./components/Navbar";
 import WalletConnectionHandler from "./components/WalletConnectionHandler";
 import Home from "./pages/Home";
@@ -15,13 +15,12 @@ import "./utils/testLikedPosts";
 import "./utils/testPostSettings";
 import "./utils/testTrending";
 import "./utils/testFeed";
+import "./utils/testFaucet";
 import Post from "./pages/Post";
 import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";
 
 const AppRoutes = () => {
-  const { account } = useWeb3();
-
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -30,7 +29,7 @@ const AppRoutes = () => {
       <Route path="/upload" element={<Upload />} />
       <Route
         path="/profile/:address?"
-        element={<Profile key={account || "no-account"} />}
+        element={<Profile />}
       />
       <Route path="/wallet" element={<Wallet />} />
       <Route path="/admin" element={<Admin />} />
