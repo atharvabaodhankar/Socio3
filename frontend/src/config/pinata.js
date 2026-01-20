@@ -46,7 +46,7 @@ export const uploadToPinata = async (file, caption = '') => {
       name: `Socio3 Post - ${Date.now()}`,
       description: caption,
       image: `ipfs://${imageResult.IpfsHash}`,
-      imageUrl: `https://ipfs.io/ipfs/${imageResult.IpfsHash}`,
+      imageUrl: getIPFSUrl(imageResult.IpfsHash),
       caption: caption,
       timestamp: Date.now(),
       app: 'socio3'
@@ -106,7 +106,7 @@ export const uploadToPinata = async (file, caption = '') => {
 // Function to fetch metadata from IPFS
 export const fetchPostMetadata = async (metadataHash) => {
   try {
-    const response = await fetch(`https://ipfs.io/ipfs/${metadataHash}`);
+    const response = await fetchFromIPFS(metadataHash);
     if (!response.ok) {
       throw new Error(`Failed to fetch metadata: ${response.status}`);
     }
@@ -118,7 +118,7 @@ export const fetchPostMetadata = async (metadataHash) => {
       // This is a direct image file (old format)
       return {
         isDirectImage: true,
-        imageUrl: `https://ipfs.io/ipfs/${metadataHash}`,
+        imageUrl: getIPFSUrl(metadataHash),
         caption: '',
         description: ''
       };
@@ -143,7 +143,7 @@ export const fetchPostMetadata = async (metadataHash) => {
     // Fallback: treat as direct image
     return {
       isDirectImage: true,
-      imageUrl: `https://ipfs.io/ipfs/${metadataHash}`,
+      imageUrl: getIPFSUrl(metadataHash),
       caption: '',
       description: ''
     };
@@ -153,7 +153,7 @@ export const fetchPostMetadata = async (metadataHash) => {
     // Return fallback for direct image
     return {
       isDirectImage: true,
-      imageUrl: `https://ipfs.io/ipfs/${metadataHash}`,
+      imageUrl: getIPFSUrl(metadataHash),
       caption: '',
       description: ''
     };
@@ -161,6 +161,40 @@ export const fetchPostMetadata = async (metadataHash) => {
 };
 
 export const getIPFSUrl = (hash) => {
-  // Use public IPFS gateway for now
+  // Use Pinata gateway for better reliability
+  const gatewayUrl = import.meta.env.VITE_PINATA_GATEWAY_URL;
+  const gatewayToken = import.meta.env.VITE_PINATA_GATEWAY_TOKEN;
+  
+  if (gatewayUrl && gatewayToken) {
+    // Ensure the gateway URL has the protocol and add gateway token
+    const fullGatewayUrl = gatewayUrl.startsWith('http') ? gatewayUrl : `https://${gatewayUrl}`;
+    return `${fullGatewayUrl}/ipfs/${hash}?pinataGatewayToken=${gatewayToken}`;
+  }
+  // Fallback to public gateway
   return `https://ipfs.io/ipfs/${hash}`;
+};
+
+// Helper function to fetch from IPFS with authentication
+export const fetchFromIPFS = async (hash) => {
+  const gatewayUrl = import.meta.env.VITE_PINATA_GATEWAY_URL;
+  const gatewayToken = import.meta.env.VITE_PINATA_GATEWAY_TOKEN;
+  
+  if (gatewayUrl && gatewayToken) {
+    // Use authenticated Pinata gateway with query parameter
+    const fullGatewayUrl = gatewayUrl.startsWith('http') ? gatewayUrl : `https://${gatewayUrl}`;
+    const url = `${fullGatewayUrl}/ipfs/${hash}?pinataGatewayToken=${gatewayToken}`;
+    
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        return response;
+      }
+    } catch (error) {
+      console.warn('Pinata gateway failed, falling back to public gateway:', error);
+    }
+  }
+  
+  // Fallback to public gateway
+  const publicUrl = `https://ipfs.io/ipfs/${hash}`;
+  return fetch(publicUrl);
 };

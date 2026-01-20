@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { uploadToPinata, getIPFSUrl } from "../config/pinata";
+import { uploadToPinata, getIPFSUrl, fetchFromIPFS } from "../config/pinata";
 import { CONTRACT_ADDRESSES, PROFILE_CONTRACT_ABI } from "../config/contracts";
 
 // Save user profile to blockchain + IPFS
@@ -185,31 +185,58 @@ export const getUserProfile = async (provider, userAddress) => {
       return getDefaultProfile(userAddress);
     }
 
-    // Fetch profile data from IPFS with cache-busting via query parameter
+    // Fetch profile data from IPFS with timeout and fallback
     const ipfsUrl = getIPFSUrl(ipfsHash);
     const cacheBustedUrl = `${ipfsUrl}?t=${Date.now()}`;
     console.log('[getUserProfile] Fetching from IPFS:', cacheBustedUrl);
     
-    const response = await fetch(cacheBustedUrl);
+    try {
+      // Add timeout to IPFS fetch with authentication
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetchFromIPFS(ipfsHash);
+      
+      clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      console.error('[getUserProfile] IPFS fetch failed:', response.status, response.statusText);
-      throw new Error("Failed to fetch profile from IPFS");
+      if (!response.ok) {
+        console.error('[getUserProfile] IPFS fetch failed:', response.status, response.statusText);
+        throw new Error(`IPFS fetch failed: ${response.status}`);
+      }
+
+      const profileData = await response.json();
+      console.log('[getUserProfile] Profile data from IPFS:', profileData);
+
+      const finalProfile = {
+        ...profileData,
+        userAddress: userAddress.toLowerCase(),
+        ipfsHash,
+        timestamp: Number(timestamp),
+        exists,
+      };
+      
+      console.log('[getUserProfile] Final profile:', finalProfile);
+      return finalProfile;
+    } catch (fetchError) {
+      console.error('[getUserProfile] IPFS fetch error:', fetchError.message);
+      
+      // If IPFS fails, return profile with blockchain data only
+      console.log('[getUserProfile] Falling back to blockchain data only');
+      return {
+        userAddress: userAddress.toLowerCase(),
+        username: '', // Will be fetched separately
+        displayName: '',
+        bio: '',
+        website: '',
+        twitter: '',
+        instagram: '',
+        profileImage: '',
+        coverImage: '',
+        ipfsHash,
+        timestamp: Number(timestamp),
+        exists,
+      };
     }
-
-    const profileData = await response.json();
-    console.log('[getUserProfile] Profile data from IPFS:', profileData);
-
-    const finalProfile = {
-      ...profileData,
-      userAddress: userAddress.toLowerCase(),
-      ipfsHash,
-      timestamp: Number(timestamp),
-      exists,
-    };
-    
-    console.log('[getUserProfile] Final profile:', finalProfile);
-    return finalProfile;
   } catch (error) {
     console.error("[getUserProfile] Error getting profile:", error);
     return getDefaultProfile(userAddress);
