@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../context/Web3Context';
-import { uploadToPinata, getIPFSUrl } from '../config/pinata';
+import { getIPFSUrl } from '../config/pinata';
 import { 
   saveUserProfile, 
   getUserProfile,
   isUsernameAvailable 
 } from '../services/profileService';
 import { createUserMapping } from '../services/userMappingService';
+import { requestTestETHAdmin } from '../services/faucetService';
+import { markUserAsWelcomed } from '../services/firebaseService';
+import { checkUserNeedsETH } from '../services/faucetService';
 import LoadingModal from './LoadingModal';
 import SuccessModal from './SuccessModal';
 import ErrorModal from './ErrorModal';
@@ -37,13 +40,32 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
   const [transactionHash, setTransactionHash] = useState('');
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [needsETH, setNeedsETH] = useState(false);
+  const [checkingBalance, setCheckingBalance] = useState(false);
+  const [gettingETH, setGettingETH] = useState(false);
 
   // Load existing profile data when modal opens
   useEffect(() => {
     if (isOpen && account) {
       loadProfile();
+      checkETHBalance();
     }
   }, [isOpen, account]);
+
+  const checkETHBalance = async () => {
+    if (!provider || !account) return;
+    
+    try {
+      setCheckingBalance(true);
+      const needsETH = await checkUserNeedsETH(provider, account);
+      setNeedsETH(needsETH);
+    } catch (error) {
+      console.error('Error checking ETH balance:', error);
+      setNeedsETH(false);
+    } finally {
+      setCheckingBalance(false);
+    }
+  };
 
   const loadProfile = async () => {
     if (!provider || !account) return;
@@ -116,6 +138,34 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
     }
   };
 
+  const handleGetETH = async () => {
+    if (!account) return;
+    
+    try {
+      setGettingETH(true);
+      console.log('[GetETH] Requesting ETH for new user...');
+      
+      const result = await requestTestETHAdmin(account);
+      
+      if (result.success) {
+        console.log('[GetETH] ETH sent successfully:', result);
+        await markUserAsWelcomed(account, result);
+        setNeedsETH(false);
+        setSuccessMessage(`🎉 Great! We've sent you ${result.amount} ETH. You can now create your profile!`);
+        setShowSuccessModal(true);
+      } else {
+        console.error('[GetETH] Failed to send ETH:', result.error);
+        setErrorMessage(`Failed to send ETH: ${result.error}`);
+        setShowErrorModal(true);
+      }
+    } catch (error) {
+      console.error('[GetETH] Error:', error);
+      setErrorMessage(`Error getting ETH: ${error.message}`);
+      setShowErrorModal(true);
+    } finally {
+      setGettingETH(false);
+    }
+  };
   const checkUsernameAvailability = async (username) => {
     if (!provider || username.length < 3) return;
     
@@ -203,6 +253,8 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
       return;
     }
 
+    const isNewProfile = !profileData.exists;
+
     try {
       setUploading(true);
       setShowLoadingModal(true);
@@ -239,9 +291,10 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
       // Notify parent component
       onProfileUpdate && onProfileUpdate(result.profile || result);
       
+      // Create success message
       const message = profileData.exists 
         ? 'Your profile has been updated successfully on the blockchain!' 
-        : 'Welcome to Web3! Your profile has been created successfully on the blockchain!';
+        : '🎉 Welcome to Socio3! Your profile has been created successfully on the blockchain!';
       
       setSuccessMessage(message);
       setShowLoadingModal(false);
@@ -260,7 +313,14 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
     setShowSuccessModal(false);
     setTransactionHash('');
     setSuccessMessage('');
-    onClose();
+    
+    // If this was an ETH gift, refresh balance check
+    if (needsETH) {
+      checkETHBalance();
+    } else {
+      // If this was profile creation, close the modal
+      onClose();
+    }
   };
 
   const handleErrorClose = () => {
@@ -312,11 +372,74 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
           </button>
         </div>
 
-        {loading ? (
+        {loading || checkingBalance ? (
           <div className="flex justify-center items-center py-16">
             <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
+        ) : needsETH && !profileData.exists ? (
+          /* ETH Required Step - Matching Website Theme */
+          <div className="p-6">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              
+              <h3 className="text-xl font-semibold text-white mb-2">
+                ETH Required for Profile Creation
+              </h3>
+              
+              <p className="text-white/60 text-sm max-w-md mx-auto">
+                You need ETH to pay for blockchain transactions. We'll send you free test ETH to get started.
+              </p>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-white/60 text-sm">Gift Amount</span>
+                  <span className="text-white font-medium">0.005 ETH</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-white/60 text-sm">Network</span>
+                  <span className="text-white font-medium">Sepolia Testnet</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-white/60 text-sm">Your Address</span>
+                  <span className="text-white font-mono text-sm">
+                    {account?.slice(0, 6)}...{account?.slice(-4)}
+                  </span>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleGetETH}
+                disabled={gettingETH}
+                className="w-full px-4 py-3 bg-white hover:bg-white/90 text-black rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+              >
+                {gettingETH ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-black border-t-transparent mr-2"></div>
+                    Sending ETH...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Get Free ETH
+                  </>
+                )}
+              </button>
+              
+              <p className="text-white/40 text-xs text-center">
+                Free test ETH for Sepolia testnet only
+              </p>
+            </div>
+          </div>
         ) : (
+          /* Profile Form */
           <div className="p-6 space-y-6">
             {/* Cover Image */}
             <div>
@@ -479,35 +602,50 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end space-x-4 p-6 border-t border-white/10">
-          <button
-            onClick={onClose}
-            className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={uploading}
-            className="px-6 py-3 bg-white hover:bg-white/80 text-black rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {uploading ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{profileData.exists ? 'Updating...' : 'Creating Profile...'}</span>
-              </div>
-            ) : (
-              profileData.exists ? 'Save Changes' : 'Create Profile'
-            )}
-          </button>
-        </div>
+        {!needsETH || profileData.exists ? (
+          <div className="flex items-center justify-end space-x-4 p-6 border-t border-white/10">
+            <button
+              onClick={onClose}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={uploading}
+              className="px-6 py-3 bg-white hover:bg-white/80 text-black rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {uploading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>{profileData.exists ? 'Updating...' : 'Creating Profile...'}</span>
+                </div>
+              ) : (
+                profileData.exists ? 'Save Changes' : 'Create Profile'
+              )}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center p-6 border-t border-white/10">
+            <button
+              onClick={onClose}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Loading Modal */}
       <LoadingModal
         isOpen={showLoadingModal}
-        title="Creating Your Web3 Profile"
-        message="Your profile is being saved to the blockchain. This may take a few moments..."
+        title={profileData.exists ? "Updating Your Profile" : "Creating Your Web3 Profile"}
+        message={
+          profileData.exists 
+            ? "Your profile is being updated on the blockchain. This may take a few moments..."
+            : "Your profile is being created on the blockchain. This may take a few moments..."
+        }
       />
 
       {/* Success Modal */}
