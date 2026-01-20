@@ -18,8 +18,12 @@ A Web3-powered social media dApp inspired by Instagram, built with React, Ethere
 - **Admin Dashboard**: Real-time monitoring and manual controls
 - **Blockchain Transparency**: All moderation actions recorded on-chain
 
+### 🎁 Welcome Gift System
+- **Automatic ETH Gifting**: New users receive free Sepolia ETH for onboarding
+- **Pre-funding Profile Setup**: ETH sent before profile creation to cover gas fees
+- **Firebase Tracking**: Prevents duplicate gifts across devices and browsers
+- **Seamless Onboarding**: Users get ETH exactly when they need it
 ### 📊 Auto-Deletion Logic
-- **High Reports**: 5+ reports = automatic removal
 - **Low Engagement**: 0 likes + 3 reports = removal
 - **Report Ratio**: Reports ≥ (Likes × 2) = removal
 - **User Notifications**: Authors notified when posts are removed
@@ -37,6 +41,7 @@ A Web3-powered social media dApp inspired by Instagram, built with React, Ethere
 - Firebase Firestore for real-time data
 - IPFS via Pinata for media storage
 - Ethereum smart contracts (Solidity)
+- **Sepolia Faucet Service** for automated ETH distribution
 
 ### Blockchain
 - Hardhat development framework
@@ -121,6 +126,130 @@ npx hardhat run scripts/deployFresh.js --network sepolia
 - ✅ Admin dashboard for content moderation
 - ✅ Blockchain-based transparency for all actions
 - ✅ User notifications for removed content
+- ✅ **Welcome gift system** with automatic ETH distribution
+- ✅ **Pre-funding profile setup** for seamless onboarding
+
+## 🎁 Welcome Gift & Faucet System
+
+Socio3 features an intelligent welcome gift system that automatically provides new users with free Sepolia ETH to get started on their Web3 journey.
+
+### 🚀 How It Works
+
+#### Pre-Funding Profile Setup
+1. **User connects wallet** → Standard MetaMask connection
+2. **Clicks "Setup Profile"** → Profile creation modal opens
+3. **System checks ETH balance** → Detects if user has < 0.001 ETH
+4. **Shows ETH requirement screen** → Clean UI explaining the need for gas fees
+5. **User clicks "Get Free ETH"** → Automatic 0.005 ETH transfer
+6. **Success confirmation** → "Great! You can now create your profile!"
+7. **Profile form appears** → User can now complete profile creation
+8. **Transaction succeeds** → Profile created with gifted ETH
+
+#### Smart Detection
+- **Balance checking**: Automatically detects users who need ETH
+- **One-time gifts**: Firebase tracking prevents duplicate gifts
+- **Cross-device consistency**: Works across browsers and devices
+- **Error handling**: Graceful fallbacks if faucet service is unavailable
+
+### 🛠️ Technical Implementation
+
+#### Faucet Service Integration
+- **API Endpoint**: `https://sepolia-faucet-service.vercel.app/api/faucet`
+- **Admin Mode**: Uses master password for bypassing rate limits
+- **Gift Amount**: 0.005 ETH per new user
+- **Network**: Sepolia Testnet only
+
+#### Firebase Tracking
+```javascript
+// Welcome gift tracking in Firestore
+{
+  userAddress: "0x123...abc",
+  welcomedAt: serverTimestamp(),
+  giftSent: true,
+  transactionHash: "0xdef...",
+  amount: "0.005 ETH",
+  explorerUrl: "https://sepolia.etherscan.io/tx/...",
+  trigger: "pre_funding"
+}
+```
+
+#### Frontend Integration
+- **EditProfileModal.jsx**: Pre-funding step before profile creation
+- **Balance checking**: `checkUserNeedsETH()` function
+- **Automatic gifting**: `requestTestETHAdmin()` with master password
+- **UI consistency**: Matches website's sleek black theme
+
+### 🔧 Configuration
+
+#### Environment Variables
+```bash
+# Faucet service configuration
+VITE_FAUCET_API_URL=https://sepolia-faucet-service.vercel.app/api/faucet
+VITE_FAUCET_MASTER_PASSWORD=web3byatharva
+```
+
+#### Firebase Collection
+- **Collection**: `welcomeGifts`
+- **Document ID**: User's wallet address (lowercase)
+- **Purpose**: Prevent duplicate gifts and track success rates
+
+### 🎯 User Experience Benefits
+
+#### For New Users
+- **No barriers**: Get ETH before needing to pay gas fees
+- **Clear explanation**: Understand why ETH is needed
+- **Instant gratification**: Receive ETH immediately
+- **Seamless flow**: Natural progression from ETH → Profile → Interactions
+
+#### For Developers
+- **Reduced support**: Fewer "I can't create profile" issues
+- **Higher conversion**: More users complete onboarding
+- **Better analytics**: Track gift success rates and user progression
+- **Scalable solution**: Handles thousands of new users
+
+### 🔗 Faucet Service Repository
+
+The faucet functionality is powered by a dedicated Sepolia faucet service:
+
+**Repository**: [sepolia-faucet-service](https://github.com/atharvabaodhankar/sepolia-faucet-service)
+- ⚡ **Fast API**: Vercel-hosted serverless functions
+- 🔐 **Admin mode**: Master password for bypassing rate limits
+- 📊 **Rate limiting**: Prevents abuse while allowing legitimate use
+- 🛡️ **Security**: Input validation and error handling
+- 📈 **Monitoring**: Built-in analytics and logging
+
+### 🧪 Testing the Faucet System
+
+#### Manual Testing
+1. **Create fresh wallet** → Should have 0 ETH on Sepolia
+2. **Connect to Socio3** → Normal wallet connection
+3. **Click "Setup Profile"** → Should show ETH requirement screen
+4. **Click "Get Free ETH"** → Should receive 0.005 ETH
+5. **Verify transaction** → Check Sepolia Etherscan
+6. **Complete profile** → Should work with gifted ETH
+
+#### Test Functions (Development)
+```javascript
+// Available in browser console during development
+testFaucetService()           // Test faucet API functionality
+testFirebaseWelcomeSystem()   // Test Firebase welcome tracking
+testWelcomeGiftSystem()       // Test legacy localStorage system
+```
+
+### 📊 Analytics & Monitoring
+
+#### Gift Statistics
+- **Total gifts sent**: Track successful ETH distributions
+- **Success rate**: Monitor faucet service reliability
+- **User progression**: Measure onboarding completion rates
+- **Error tracking**: Identify and fix common issues
+
+#### Admin Dashboard Integration
+Future enhancement: Add faucet statistics to the admin dashboard at `/admin`
+- 📈 **Gift metrics**: Daily/weekly gift distribution charts
+- 👥 **User onboarding**: Track new user conversion rates
+- 🔧 **Service health**: Monitor faucet service uptime
+- 💰 **ETH balance**: Track faucet wallet balance
 
 ## 🛡️ Content Moderation System
 
@@ -214,8 +343,16 @@ npm run build
 
 ## 🎮 How to Use
 
-### For Users
+### For New Users (First Time)
 1. **Connect Wallet** - Click "Connect Wallet" and approve MetaMask connection
+2. **Get Free ETH** - When setting up profile, system will offer free Sepolia ETH
+3. **Create Profile** - Complete profile setup with username, bio, and images
+4. **Start Exploring** - Browse posts, follow creators, and engage with content
+5. **Create Posts** - Go to `/upload`, select image, add caption, and publish
+6. **Social Interactions** - Like posts, follow users, send tips with your gifted ETH
+
+### For Existing Users
+1. **Connect Wallet** - Standard wallet connection, no ETH gift needed
 2. **Create Posts** - Go to `/upload`, select image, add caption, and publish
 3. **Social Interactions** - Like posts, follow users, send tips
 4. **Report Content** - Click three dots (⋮) on any post → "Report Post" → Select category
@@ -313,11 +450,22 @@ This project is licensed under the MIT License.
 
 ## 🔗 Links
 
-- [Ethereum](https://ethereum.org/)
-- [IPFS](https://ipfs.io/)
-- [Hardhat](https://hardhat.org/)
-- [React](https://reactjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
+### Main Project
+- [Socio3 Platform](https://socio3.vercel.app/) - Live deployment
+- [GitHub Repository](https://github.com/atharvabaodhankar/socio3) - Source code
+
+### Faucet Service
+- [Sepolia Faucet Service](https://github.com/atharvabaodhankar/sepolia-faucet-service) - Dedicated faucet API
+- [Faucet API Endpoint](https://sepolia-faucet-service.vercel.app/api/faucet) - Live service
+
+### Technologies
+- [Ethereum](https://ethereum.org/) - Blockchain platform
+- [IPFS](https://ipfs.io/) - Decentralized storage
+- [Hardhat](https://hardhat.org/) - Development framework
+- [React](https://reactjs.org/) - Frontend framework
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Firebase](https://firebase.google.com/) - Backend services
+- [Vercel](https://vercel.com/) - Hosting platform
 
 ---
 
