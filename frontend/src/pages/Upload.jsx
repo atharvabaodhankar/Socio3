@@ -61,6 +61,8 @@ const Upload = () => {
 
           if (validation.nsfw) {
             setValidationStatus('unsafe');
+            setErrorMessage('NSFW content detected. This content violates our community guidelines and cannot be posted.');
+            setShowErrorModal(true);
             // Cleanup immediately
             await unpinFile(result.imageHash);
             await unpinFile(result.ipfsHash);
@@ -370,7 +372,7 @@ const Upload = () => {
         {/* Post Button */}
         <button
           onClick={handleUpload}
-          disabled={!selectedFile || !caption.trim() || isUploading}
+          disabled={!selectedFile || !caption.trim() || isUploading || validationStatus === 'unsafe' || validationStatus === 'validating'}
           className="w-full bg-white hover:bg-white/80 text-black py-4 rounded-2xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-colors"
         >
           {isUploading ? (
