@@ -30,6 +30,7 @@ const isFirebaseConfigured = () => {
 const LIKES_COLLECTION = 'likes';
 const COMMENTS_COLLECTION = 'comments';
 const POST_STATS_COLLECTION = 'postStats';
+const WELCOME_GIFTS_COLLECTION = 'welcomeGifts';
 
 // Like functions
 export const likePost = async (postId, userAddress) => {
@@ -251,5 +252,103 @@ export const getMultiplePostStats = async (postIds) => {
   } catch (error) {
     console.error('Error getting multiple post stats:', error);
     return {};
+  }
+};
+
+// Welcome Gift Tracking Functions
+export const hasUserBeenWelcomed = async (userAddress) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured, falling back to localStorage');
+    return localStorage.getItem(`welcomed_${userAddress.toLowerCase()}`) === 'true';
+  }
+
+  try {
+    const welcomeRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
+    const welcomeDoc = await getDoc(welcomeRef);
+    
+    return welcomeDoc.exists();
+  } catch (error) {
+    console.error('Error checking welcome status:', error);
+    // Fallback to localStorage if Firebase fails
+    return localStorage.getItem(`welcomed_${userAddress.toLowerCase()}`) === 'true';
+  }
+};
+
+export const markUserAsWelcomed = async (userAddress, giftResult = null) => {
+  try {
+    const welcomeData = {
+      userAddress: userAddress.toLowerCase(),
+      welcomedAt: serverTimestamp(),
+      giftSent: !!giftResult?.success,
+      transactionHash: giftResult?.transactionHash || null,
+      amount: giftResult?.amount || null,
+      explorerUrl: giftResult?.explorerUrl || null
+    };
+
+    if (isFirebaseConfigured()) {
+      const welcomeRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
+      await setDoc(welcomeRef, welcomeData);
+      console.log('[Firebase] User marked as welcomed:', userAddress);
+    }
+    
+    // Also set localStorage as backup
+    localStorage.setItem(`welcomed_${userAddress.toLowerCase()}`, 'true');
+    
+    return true;
+  } catch (error) {
+    console.error('Error marking user as welcomed:', error);
+    // Fallback to localStorage if Firebase fails
+    localStorage.setItem(`welcomed_${userAddress.toLowerCase()}`, 'true');
+    return false;
+  }
+};
+
+export const getWelcomeGiftHistory = async (userAddress) => {
+  if (!isFirebaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const welcomeRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
+    const welcomeDoc = await getDoc(welcomeRef);
+    
+    if (welcomeDoc.exists()) {
+      return welcomeDoc.data();
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting welcome gift history:', error);
+    return null;
+  }
+};
+
+// Admin function to get all welcome gift statistics
+export const getWelcomeGiftStats = async () => {
+  if (!isFirebaseConfigured()) {
+    return { total: 0, successful: 0, failed: 0 };
+  }
+
+  try {
+    const welcomeQuery = query(collection(db, WELCOME_GIFTS_COLLECTION));
+    const querySnapshot = await getDocs(welcomeQuery);
+    
+    let total = 0;
+    let successful = 0;
+    let failed = 0;
+    
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      total++;
+      if (data.giftSent) {
+        successful++;
+      } else {
+        failed++;
+      }
+    });
+    
+    return { total, successful, failed };
+  } catch (error) {
+    console.error('Error getting welcome gift stats:', error);
+    return { total: 0, successful: 0, failed: 0 };
   }
 };
