@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
-import { uploadToPinata } from '../config/pinata';
+import { uploadToPinata, unpinFile, getIPFSUrl } from '../config/pinata';
+import { JigsawStack } from "jigsawstack";
 import { savePostSettings } from '../services/postSettingsService';
 import LoadingModal from '../components/LoadingModal';
 import SuccessModal from '../components/SuccessModal';
@@ -49,8 +50,42 @@ const Upload = () => {
       console.log('Uploading to IPFS...');
       const result = await uploadToPinata(selectedFile, caption);
       
-      if (result.success) {
+        if (result.success) {
         console.log('File uploaded to IPFS:', result.ipfsHash);
+
+        // Validate NSFW content
+        console.log('Validating content safety...');
+        const jigsaw = JigsawStack({ apiKey: "sk_d58e9a57ce1b9fb2402c2c43abb638508ac808a1880d1111902476a6d00de65dde60fa3d112b27aa07b643df508f134b2f7f206d0ef0e08058f7e8f6e7e5c81f024wxvGiz4lUsH5wE9uuG" });
+        
+        try {
+          // Use the gateway URL for validation
+          const imageUrl = getIPFSUrl(result.imageHash);
+          const validationResult = await jigsaw.validate.nsfw({
+            url: imageUrl
+          });
+
+          console.log('NSFW Validation Result:', validationResult);
+
+          if (validationResult.nsfw) {
+            // Unpin the file immediately
+            console.log('NSFW content detected. Unpinning file...');
+            await unpinFile(result.imageHash);
+            await unpinFile(result.ipfsHash); // Unpin metadata too if it was pinned
+
+            throw new Error('NSFW content detected. This content violates our community guidelines and cannot be posted.');
+          }
+        } catch (validationError) {
+          // If validation fails (network error etc), we might want to fail the upload
+          // OR if it was the NSFW error we just threw
+          console.error('Validation error:', validationError);
+          if (validationError.message.includes('NSFW')) {
+            throw validationError;
+          }
+          // Optional: Deciding if we want to fail open or closed on API errors
+          // For now, let's log it but maybe allow it if it's just a network glitch?
+          // Or strictly enforcing:
+           // throw new Error('Content validation failed. Please try again.');
+        }
         
         // Create post on blockchain
         console.log('Creating post on blockchain...');

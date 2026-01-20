@@ -103,6 +103,27 @@ export const uploadToPinata = async (file, caption = '') => {
   }
 };
 
+export const unpinFile = async (hash) => {
+  try {
+    const response = await fetch(`https://api.pinata.cloud/pinning/unpin/${hash}`, {
+      method: 'DELETE',
+      headers: {
+        'pinata_api_key': PINATA_CONFIG.apiKey,
+        'pinata_secret_api_key': PINATA_CONFIG.apiSecret
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to unpin file: ${response.status}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error unpinning file:', error);
+    return false;
+  }
+};
+
 // Function to fetch metadata from IPFS
 export const fetchPostMetadata = async (metadataHash) => {
   try {
