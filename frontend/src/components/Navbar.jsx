@@ -27,47 +27,66 @@ const Navbar = () => {
   }, [isConnected]);
 
   const navItems = [
-    { path: '/', label: 'Home', icon: (
-      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-      </svg>
-    )},
-    { path: '/explore', label: 'Explore', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    )},
-    { path: '/search', label: 'Search', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-    )},
-    { path: '/upload', label: 'Create', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-    )},
-    { path: '/profile', label: 'Profile', icon: (
-      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-      </svg>
-    )},
-    { path: '/wallet', label: 'Wallet', icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-      </svg>
-    )}
+    {
+      path: '/', label: 'Home', icon: (
+        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+      )
+    },
+    {
+      path: '/explore', label: 'Explore', icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      )
+    },
+    {
+      path: '/search', label: 'Search', icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      )
+    },
+    {
+      path: '/messages', label: 'Messages', icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+      )
+    },
+    {
+      path: '/upload', label: 'Create', icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      )
+    },
+    {
+      path: '/profile', label: 'Profile', icon: (
+        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+        </svg>
+      )
+    },
+    {
+      path: '/wallet', label: 'Wallet', icon: (
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      )
+    }
   ];
 
   return (
     <nav className="bg-black/90 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
-            <img 
-              src="/socio3.png" 
-              alt="Socio3 Logo" 
+          <Link to="/" className="flex items-center space-x-3 flex-shrink-0">
+            <img
+              src="/socio3.png"
+              alt="Socio3 Logo"
               className="w-10 h-10 rounded-xl shadow-lg"
             />
             <span className="text-2xl font-bold text-white hidden sm:block">
@@ -76,19 +95,18 @@ const Navbar = () => {
           </Link>
 
           {/* Navigation Items - Desktop */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center space-x-1 flex-1 justify-center max-w-3xl">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 relative ${
-                  location.pathname === item.path
-                    ? 'bg-white/10 text-white shadow-lg'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-200 relative ${location.pathname === item.path
+                  ? 'bg-white/10 text-white shadow-lg'
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 {item.icon}
-                <span className="font-medium">{item.label}</span>
+                <span className="font-medium text-sm">{item.label}</span>
                 {item.path === '/profile' && unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -96,15 +114,15 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
-            
+
             {/* Search Button */}
             {isConnected && (
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5"
-                title="Search users"
+                title="Search users (Ctrl+K)"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
@@ -112,7 +130,9 @@ const Navbar = () => {
           </div>
 
           {/* Connect Wallet Button */}
-          <ConnectWalletButton />
+          <div className="flex-shrink-0">
+            <ConnectWalletButton />
+          </div>
         </div>
       </div>
 
@@ -124,11 +144,10 @@ const Navbar = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 relative ${
-                  location.pathname === item.path
-                    ? 'text-white bg-white/10'
-                    : 'text-white/60 hover:text-white'
-                }`}
+                className={`flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 relative ${location.pathname === item.path
+                  ? 'text-white bg-white/10'
+                  : 'text-white/60 hover:text-white'
+                  }`}
               >
                 {item.icon}
                 <span className="text-xs mt-1 font-medium">{item.label}</span>
@@ -139,7 +158,7 @@ const Navbar = () => {
                 )}
               </Link>
             ))}
-            
+
             {/* Mobile Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
@@ -155,9 +174,9 @@ const Navbar = () => {
       )}
 
       {/* Search Modal */}
-      <SearchModal 
-        isOpen={isSearchOpen} 
-        onClose={() => setIsSearchOpen(false)} 
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
       />
     </nav>
   );

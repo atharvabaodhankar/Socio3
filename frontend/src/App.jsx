@@ -9,6 +9,10 @@ import Profile from "./pages/Profile";
 import Upload from "./pages/Upload";
 import Wallet from "./pages/Wallet";
 import Admin from "./pages/Admin";
+import Messages from "./pages/Messages";
+// import ScrollToTop from "./components/ScrollToTop";
+import { usePresence } from "./hooks/usePresence";
+import { useWeb3 } from "./context/Web3Context";
 
 // Import test utilities for development
 import "./utils/testLikedPosts";
@@ -21,6 +25,11 @@ import ScrollToTop from "./components/ScrollToTop";
 import "./App.css";
 
 const AppRoutes = () => {
+  const { account } = useWeb3();
+
+  // Track user presence globally
+  usePresence(account);
+
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -34,6 +43,7 @@ const AppRoutes = () => {
       <Route path="/wallet" element={<Wallet />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/post/:postId/:authorAddress" element={<Post />} />
+      <Route path="/messages" element={<Messages />} />
     </Routes>
   );
 };

@@ -15,6 +15,7 @@ import { createUserMapping } from '../services/userMappingService';
 import { getTipStats } from '../services/tipService';
 import { useLikedPosts } from '../hooks/useLikedPosts';
 import { useSavedPosts } from '../hooks/useSavedPosts';
+import { createOrGetChat } from '../services/firebaseService';
 
 const Profile = () => {
   const { address } = useParams();
@@ -29,15 +30,15 @@ const Profile = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [tipStats, setTipStats] = useState({ totalReceived: '0', totalSent: '0', tipCount: 0, sentCount: 0 });
-  
+
   // Determine if this is the current user's profile
   const isOwnProfile = !address || address.toLowerCase() === account?.toLowerCase();
   const profileAddress = address || account;
-  
+
   // Hooks for liked and saved posts
   const { likedPosts, loading: likedLoading, refreshLikedPosts } = useLikedPosts(profileAddress);
   const { savedPosts, loading: savedLoading, loadSavedPosts } = useSavedPosts();
-  
+
   // Fetch posts for this profile - ensure it updates when account changes
   const { posts, loading, error, refetch } = usePosts(profileAddress);
   const { getFollowerCount } = useContracts();
@@ -49,10 +50,10 @@ const Profile = () => {
       // Reset profile state before loading
       setUserProfile(null);
       setProfileLoading(true);
-      
+
       loadUserProfile();
       loadTipStats();
-      
+
       // Load saved posts if it's own profile
       if (isOwnProfile && account) {
         loadSavedPosts();
@@ -65,9 +66,9 @@ const Profile = () => {
       console.log('[Profile] Cannot load profile - missing address or provider');
       return;
     }
-    
+
     console.log('[Profile] Loading profile for address:', profileAddress);
-    
+
     try {
       setProfileLoading(true);
       const profile = await getUserProfile(provider, profileAddress);
@@ -96,7 +97,7 @@ const Profile = () => {
 
   const loadTipStats = async () => {
     if (!profileAddress) return;
-    
+
     try {
       const stats = await getTipStats(profileAddress);
       setTipStats(stats);
@@ -107,10 +108,10 @@ const Profile = () => {
 
   const handleProfileUpdate = async (updatedProfile) => {
     console.log('[Profile] Profile updated, reloading from blockchain...');
-    
+
     // Reload profile from blockchain to get fresh data
     await loadUserProfile();
-    
+
     // Update Firebase mapping when profile is updated
     try {
       await createUserMapping(profileAddress, updatedProfile);
@@ -194,7 +195,7 @@ const Profile = () => {
               )}
             </div>
             {isOwnProfile && (
-              <button 
+              <button
                 onClick={() => setIsEditModalOpen(true)}
                 className="absolute bottom-2 right-2 w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
               >
@@ -204,7 +205,7 @@ const Profile = () => {
               </button>
             )}
           </div>
-          
+
           {/* Profile Info */}
           <div className="flex-1 text-center md:text-left">
             <div className="mb-4">
@@ -234,7 +235,7 @@ const Profile = () => {
                 </p>
               )}
             </div>
-            
+
             {/* Stats */}
             <div className="flex justify-center md:justify-start space-x-8 mb-6">
               <div className="text-center">
@@ -256,7 +257,7 @@ const Profile = () => {
                 <div className="text-sm text-white/60">Tips Earned</div>
               </div>
             </div>
-            
+
             {/* Bio */}
             {userProfile?.bio && (
               <p className="text-white/80 mb-6 max-w-md">
@@ -288,19 +289,19 @@ const Profile = () => {
                     className="text-white/80 hover:text-white transition-colors flex items-center space-x-2"
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
                     </svg>
                     <span>@{userProfile.twitter}</span>
                   </a>
                 )}
               </div>
             )}
-            
+
             {/* Action Buttons */}
             <div className="flex justify-center md:justify-start space-x-4">
               {isOwnProfile ? (
                 <>
-                  <button 
+                  <button
                     onClick={() => setIsEditModalOpen(true)}
                     className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
                   >
@@ -309,7 +310,7 @@ const Profile = () => {
                     </svg>
                     <span>{userProfile?.exists ? 'Edit Profile' : 'Setup Profile'}</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       loadUserProfile();
                       loadTipStats();
@@ -324,7 +325,7 @@ const Profile = () => {
                     </svg>
                     <span>Refresh</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => setIsTipNotificationsOpen(true)}
                     className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
                     title="View tip messages"
@@ -337,12 +338,12 @@ const Profile = () => {
                 </>
               ) : (
                 <>
-                  <FollowButton 
+                  <FollowButton
                     userAddress={profileAddress}
                     size="large"
                     variant="primary"
                   />
-                  <button 
+                  <button
                     onClick={() => {
                       if (!isConnected) {
                         alert('Please connect your wallet to send tips');
@@ -357,10 +358,26 @@ const Profile = () => {
                     </svg>
                     <span>Tip</span>
                   </button>
-                  <button className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 text-white">
+                  <button
+                    onClick={async () => {
+                      if (!isConnected) {
+                        alert('Please connect your wallet to send messages');
+                        return;
+                      }
+                      try {
+                        await createOrGetChat(account, profileAddress);
+                        navigate('/messages');
+                      } catch (error) {
+                        console.error('Error creating chat:', error);
+                        alert('Failed to create chat. Please try again.');
+                      }
+                    }}
+                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
+                  >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
+                    <span>Message</span>
                   </button>
                 </>
               )}
@@ -372,33 +389,30 @@ const Profile = () => {
       {/* Content Tabs */}
       <div className="flex justify-center mb-8">
         <div className="flex space-x-1 bg-white/5 border border-white/10 rounded-2xl p-1">
-          <button 
+          <button
             onClick={() => setActiveTab('posts')}
-            className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${
-              activeTab === 'posts' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
-            }`}
+            className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${activeTab === 'posts' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
+              }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
             <span>Posts</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('liked')}
-            className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${
-              activeTab === 'liked' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
-            }`}
+            className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${activeTab === 'liked' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
+              }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
             <span>Liked</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('saved')}
-            className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${
-              activeTab === 'saved' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
-            }`}
+            className={`px-6 py-3 rounded-xl font-medium flex items-center space-x-2 transition-colors ${activeTab === 'saved' ? 'bg-white/20 text-white' : 'text-white/60 hover:text-white'
+              }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
@@ -416,8 +430,8 @@ const Profile = () => {
       ) : error ? (
         <div className="text-center py-16">
           <p className="text-white/60 mb-4">Error loading posts: {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
           >
             Retry
@@ -426,14 +440,14 @@ const Profile = () => {
       ) : activeTab === 'posts' && posts.length > 0 ? (
         <div className="grid grid-cols-3 gap-1 md:gap-4">
           {posts.map((post, index) => (
-            <div 
-              key={post.id} 
+            <div
+              key={post.id}
               onClick={() => openPostModal(index)}
               className="aspect-square bg-white/10 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
             >
-              <img 
-                src={post.imageUrl} 
-                alt="Post" 
+              <img
+                src={post.imageUrl}
+                alt="Post"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -473,14 +487,14 @@ const Profile = () => {
         ) : likedPosts.length > 0 ? (
           <div className="grid grid-cols-3 gap-1 md:gap-4">
             {likedPosts.map((post, index) => (
-              <div 
-                key={post.id} 
+              <div
+                key={post.id}
                 onClick={() => openPostModal(index)}
                 className="aspect-square bg-white/10 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
               >
-                <img 
-                  src={post.imageUrl} 
-                  alt="Liked Post" 
+                <img
+                  src={post.imageUrl}
+                  alt="Liked Post"
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -510,7 +524,7 @@ const Profile = () => {
             </div>
             <h3 className="text-2xl font-semibold mb-3 text-white">No Liked Posts</h3>
             <p className="text-white/60">Posts you like will appear here.</p>
-            <button 
+            <button
               onClick={refreshLikedPosts}
               className="mt-4 bg-white hover:bg-white/80 text-black px-6 py-3 rounded-xl font-medium transition-colors"
             >
@@ -526,17 +540,17 @@ const Profile = () => {
         ) : savedPosts.length > 0 ? (
           <div className="grid grid-cols-3 gap-1 md:gap-4">
             {savedPosts.map((savedPost, index) => (
-              <div 
-                key={savedPost.id} 
+              <div
+                key={savedPost.id}
                 onClick={() => {
                   // Navigate to the saved post
                   navigate(`/post/${savedPost.postId}/${savedPost.postAuthor}`);
                 }}
                 className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg md:rounded-2xl cursor-pointer hover:opacity-80 transition-all duration-200 hover:scale-105 relative group overflow-hidden"
               >
-                <img 
-                  src={savedPost.postImageUrl} 
-                  alt="Saved Post" 
+                <img
+                  src={savedPost.postImageUrl}
+                  alt="Saved Post"
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -569,7 +583,7 @@ const Profile = () => {
           </div>
         )
       ) : null}
-        
+
       {/* Empty state for own profile */}
       {isOwnProfile && posts.length === 0 && !loading && (
         <div className="text-center py-16">
@@ -582,8 +596,8 @@ const Profile = () => {
           <p className="text-white/60 mb-8 max-w-md mx-auto leading-relaxed">
             Start your Web3 social journey by sharing your first post with the community.
           </p>
-          <button 
-            onClick={() => window.location.href = '/upload'} 
+          <button
+            onClick={() => window.location.href = '/upload'}
             className="bg-white hover:bg-white/80 text-black px-8 py-3 rounded-xl font-medium transition-colors"
           >
             Create Post

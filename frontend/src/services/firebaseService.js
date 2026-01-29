@@ -1,27 +1,28 @@
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  deleteDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  doc,
+  addDoc,
+  deleteDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
   onSnapshot,
   serverTimestamp,
   increment,
   writeBatch,
   getDoc,
-  setDoc
+  setDoc,
+  limit
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
 // Check if Firebase is properly configured
 const isFirebaseConfigured = () => {
   try {
-    return !!db && !!import.meta.env.VITE_FIREBASE_PROJECT_ID;
+    return db !== null && db !== undefined;
   } catch (error) {
-    console.warn('Firebase not configured:', error);
+    console.warn('Firebase not properly configured:', error);
     return false;
   }
 };
@@ -31,100 +32,155 @@ const LIKES_COLLECTION = 'likes';
 const COMMENTS_COLLECTION = 'comments';
 const POST_STATS_COLLECTION = 'postStats';
 const WELCOME_GIFTS_COLLECTION = 'welcomeGifts';
+const CHATS_COLLECTION = 'chats';
+const USERS_COLLECTION = 'users';
 
 // Like functions
 export const likePost = async (postId, userAddress) => {
   if (!isFirebaseConfigured()) {
-    console.warn('Firebase not configured. Please set up Firestore database.');
-    throw new Error('Firebase not configured');
+    console.warn('Firebase not configured, skipping like');
+    return;
   }
 
   try {
-    const likeId = `${postId}_${userAddress.toLowerCase()}`;
-    const likeRef = doc(db, LIKES_COLLECTION, likeId);
-    
-    await setDoc(likeRef, {
-      postId: postId.toString(),
+    // Add like document
+    await addDoc(collection(db, LIKES_COLLECTION), {
+      postId,
       userAddress: userAddress.toLowerCase(),
       timestamp: serverTimestamp()
     });
 
     // Update post stats
-    await updatePostStats(postId, { likes: increment(1) });
-    
-    return true;
+    const postStatsRef = doc(db, POST_STATS_COLLECTION, postId);
+    const postStatsDoc = await getDoc(postStatsRef);
+
+    if (postStatsDoc.exists()) {
+      await setDoc(postStatsRef, {
+        likeCount: increment(1)
+      }, { merge: true });
+    } else {
+      await setDoc(postStatsRef, {
+        likeCount: 1,
+        commentCount: 0,
+        shareCount: 0
+      });
+    }
+
+    console.log(`[Firebase] Liked post ${postId}`);
   } catch (error) {
     console.error('Error liking post:', error);
-    if (error.code === 'permission-denied') {
-      throw new Error('Please set up Firebase Firestore in test mode. See FIREBASE_QUICK_SETUP.md');
-    }
     throw error;
   }
 };
 
 export const unlikePost = async (postId, userAddress) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured, skipping unlike');
+    return;
+  }
+
   try {
-    const likeId = `${postId}_${userAddress.toLowerCase()}`;
-    const likeRef = doc(db, LIKES_COLLECTION, likeId);
-    
-    await deleteDoc(likeRef);
+    // Find and delete the like document
+    const likesQuery = query(
+      collection(db, LIKES_COLLECTION),
+      where('postId', '==', postId),
+      where('userAddress', '==', userAddress.toLowerCase())
+    );
+
+    const querySnapshot = await getDocs(likesQuery);
+    const batch = writeBatch(db);
+
+    querySnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
 
     // Update post stats
-    await updatePostStats(postId, { likes: increment(-1) });
-    
-    return true;
+    const postStatsRef = doc(db, POST_STATS_COLLECTION, postId);
+    await setDoc(postStatsRef, {
+      likeCount: increment(-1)
+    }, { merge: true });
+
+    console.log(`[Firebase] Unliked post ${postId}`);
   } catch (error) {
     console.error('Error unliking post:', error);
     throw error;
   }
 };
 
-export const hasUserLiked = async (postId, userAddress) => {
+export const isPostLiked = async (postId, userAddress) => {
+  if (!isFirebaseConfigured()) {
+    return false;
+  }
+
   try {
-    const likeId = `${postId}_${userAddress.toLowerCase()}`;
-    const likeRef = doc(db, LIKES_COLLECTION, likeId);
-    const likeDoc = await getDoc(likeRef);
-    
-    return likeDoc.exists();
+    const likesQuery = query(
+      collection(db, LIKES_COLLECTION),
+      where('postId', '==', postId),
+      where('userAddress', '==', userAddress.toLowerCase()),
+      limit(1)
+    );
+
+    const querySnapshot = await getDocs(likesQuery);
+    return !querySnapshot.empty;
   } catch (error) {
-    console.error('Error checking like status:', error);
+    console.error('Error checking if post is liked:', error);
     return false;
   }
 };
 
-export const getLikesCount = async (postId) => {
+export const getPostLikeCount = async (postId) => {
   if (!isFirebaseConfigured()) {
     return 0;
   }
 
   try {
-    const statsRef = doc(db, POST_STATS_COLLECTION, postId.toString());
-    const statsDoc = await getDoc(statsRef);
-    
-    if (statsDoc.exists()) {
-      return statsDoc.data().likes || 0;
+    const postStatsRef = doc(db, POST_STATS_COLLECTION, postId);
+    const postStatsDoc = await getDoc(postStatsRef);
+
+    if (postStatsDoc.exists()) {
+      return postStatsDoc.data().likeCount || 0;
     }
     return 0;
   } catch (error) {
-    console.error('Error getting likes count:', error);
+    console.error('Error getting post like count:', error);
     return 0;
   }
 };
 
 // Comment functions
-export const addComment = async (postId, userAddress, text) => {
+export const addComment = async (postId, userAddress, comment) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured, skipping comment');
+    return;
+  }
+
   try {
-    const commentRef = await addDoc(collection(db, COMMENTS_COLLECTION), {
-      postId: postId.toString(),
+    await addDoc(collection(db, COMMENTS_COLLECTION), {
+      postId,
       userAddress: userAddress.toLowerCase(),
-      text: text.trim(),
+      comment,
       timestamp: serverTimestamp()
     });
 
     // Update post stats
-    await updatePostStats(postId, { comments: increment(1) });
-    
-    return commentRef.id;
+    const postStatsRef = doc(db, POST_STATS_COLLECTION, postId);
+    const postStatsDoc = await getDoc(postStatsRef);
+
+    if (postStatsDoc.exists()) {
+      await setDoc(postStatsRef, {
+        commentCount: increment(1)
+      }, { merge: true });
+    } else {
+      await setDoc(postStatsRef, {
+        likeCount: 0,
+        commentCount: 1,
+        shareCount: 0
+      });
+    }
+
+    console.log(`[Firebase] Added comment to post ${postId}`);
   } catch (error) {
     console.error('Error adding comment:', error);
     throw error;
@@ -132,23 +188,27 @@ export const addComment = async (postId, userAddress, text) => {
 };
 
 export const getComments = async (postId) => {
+  if (!isFirebaseConfigured()) {
+    return [];
+  }
+
   try {
-    const q = query(
+    const commentsQuery = query(
       collection(db, COMMENTS_COLLECTION),
-      where('postId', '==', postId.toString()),
-      orderBy('timestamp', 'asc')
+      where('postId', '==', postId),
+      orderBy('timestamp', 'desc')
     );
-    
-    const querySnapshot = await getDocs(q);
+
+    const querySnapshot = await getDocs(commentsQuery);
     const comments = [];
-    
+
     querySnapshot.forEach((doc) => {
       comments.push({
         id: doc.id,
         ...doc.data()
       });
     });
-    
+
     return comments;
   } catch (error) {
     console.error('Error getting comments:', error);
@@ -156,34 +216,19 @@ export const getComments = async (postId) => {
   }
 };
 
-export const getCommentsCount = async (postId) => {
-  if (!isFirebaseConfigured()) {
-    return 0;
-  }
-
-  try {
-    const statsRef = doc(db, POST_STATS_COLLECTION, postId.toString());
-    const statsDoc = await getDoc(statsRef);
-    
-    if (statsDoc.exists()) {
-      return statsDoc.data().comments || 0;
-    }
-    return 0;
-  } catch (error) {
-    console.error('Error getting comments count:', error);
-    return 0;
-  }
-};
-
-// Real-time listeners
 export const subscribeToComments = (postId, callback) => {
-  const q = query(
+  if (!isFirebaseConfigured()) {
+    callback([]);
+    return () => { };
+  }
+
+  const commentsQuery = query(
     collection(db, COMMENTS_COLLECTION),
-    where('postId', '==', postId.toString()),
-    orderBy('timestamp', 'asc')
+    where('postId', '==', postId),
+    orderBy('timestamp', 'desc')
   );
-  
-  return onSnapshot(q, (querySnapshot) => {
+
+  return onSnapshot(commentsQuery, (querySnapshot) => {
     const comments = [];
     querySnapshot.forEach((doc) => {
       comments.push({
@@ -195,134 +240,163 @@ export const subscribeToComments = (postId, callback) => {
   });
 };
 
-export const subscribeToPostStats = (postId, callback) => {
-  const statsRef = doc(db, POST_STATS_COLLECTION, postId.toString());
-  
-  return onSnapshot(statsRef, (doc) => {
-    if (doc.exists()) {
-      callback(doc.data());
-    } else {
-      callback({ likes: 0, comments: 0 });
-    }
-  });
-};
+export const getCommentCount = async (postId) => {
+  if (!isFirebaseConfigured()) {
+    return 0;
+  }
 
-// Helper function to update post stats
-const updatePostStats = async (postId, updates) => {
   try {
-    const statsRef = doc(db, POST_STATS_COLLECTION, postId.toString());
-    const statsDoc = await getDoc(statsRef);
-    
-    if (!statsDoc.exists()) {
-      // Initialize stats if they don't exist
-      await setDoc(statsRef, {
-        postId: postId.toString(),
-        likes: 0,
-        comments: 0,
-        ...updates
-      });
-    } else {
-      // Update existing stats
-      const batch = writeBatch(db);
-      batch.update(statsRef, updates);
-      await batch.commit();
+    const postStatsRef = doc(db, POST_STATS_COLLECTION, postId);
+    const postStatsDoc = await getDoc(postStatsRef);
+
+    if (postStatsDoc.exists()) {
+      return postStatsDoc.data().commentCount || 0;
     }
+    return 0;
   } catch (error) {
-    console.error('Error updating post stats:', error);
+    console.error('Error getting comment count:', error);
+    return 0;
   }
 };
 
-// Batch operations for better performance
-export const getMultiplePostStats = async (postIds) => {
+// Post stats functions
+export const getPostStats = async (postId) => {
+  if (!isFirebaseConfigured()) {
+    return { likeCount: 0, commentCount: 0, shareCount: 0 };
+  }
+
   try {
-    const stats = {};
-    
-    // Get all stats in parallel
-    const promises = postIds.map(async (postId) => {
-      const [likes, comments] = await Promise.all([
-        getLikesCount(postId),
-        getCommentsCount(postId)
-      ]);
-      
-      stats[postId] = { likes, comments };
+    const postStatsRef = doc(db, POST_STATS_COLLECTION, String(postId));
+    const postStatsDoc = await getDoc(postStatsRef);
+
+    if (postStatsDoc.exists()) {
+      const data = postStatsDoc.data();
+      return {
+        likeCount: data.likeCount || 0,
+        commentCount: data.commentCount || 0,
+        shareCount: data.shareCount || 0
+      };
+    }
+
+    return { likeCount: 0, commentCount: 0, shareCount: 0 };
+  } catch (error) {
+    console.error('Error getting post stats:', error);
+    return { likeCount: 0, commentCount: 0, shareCount: 0 };
+  }
+};
+
+export const incrementShareCount = async (postId) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured, skipping share count');
+    return;
+  }
+
+  try {
+    const postStatsRef = doc(db, POST_STATS_COLLECTION, postId);
+    const postStatsDoc = await getDoc(postStatsRef);
+
+    if (postStatsDoc.exists()) {
+      await setDoc(postStatsRef, {
+        shareCount: increment(1)
+      }, { merge: true });
+    } else {
+      await setDoc(postStatsRef, {
+        likeCount: 0,
+        commentCount: 0,
+        shareCount: 1
+      });
+    }
+
+    console.log(`[Firebase] Incremented share count for post ${postId}`);
+  } catch (error) {
+    console.error('Error incrementing share count:', error);
+    throw error;
+  }
+};
+
+export const getMultiplePostStats = async (postIds) => {
+  if (!isFirebaseConfigured()) {
+    return {};
+  }
+
+  try {
+    const statsPromises = postIds.map(postId =>
+      getPostStats(postId).then(stats => ({ postId, stats }))
+    );
+
+    const results = await Promise.all(statsPromises);
+
+    const statsMap = {};
+    results.forEach(({ postId, stats }) => {
+      statsMap[postId] = stats;
     });
-    
-    await Promise.all(promises);
-    return stats;
+
+    return statsMap;
   } catch (error) {
     console.error('Error getting multiple post stats:', error);
     return {};
   }
 };
 
-// Welcome Gift Tracking Functions
-export const hasUserBeenWelcomed = async (userAddress) => {
+// Welcome gift tracking functions
+export const hasReceivedWelcomeGift = async (userAddress) => {
   if (!isFirebaseConfigured()) {
-    console.warn('Firebase not configured, falling back to localStorage');
-    return localStorage.getItem(`welcomed_${userAddress.toLowerCase()}`) === 'true';
+    return false;
   }
 
   try {
-    const welcomeRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
-    const welcomeDoc = await getDoc(welcomeRef);
-    
-    return welcomeDoc.exists();
+    const userDocRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
+    const userDoc = await getDoc(userDocRef);
+    return userDoc.exists();
   } catch (error) {
-    console.error('Error checking welcome status:', error);
-    // Fallback to localStorage if Firebase fails
-    return localStorage.getItem(`welcomed_${userAddress.toLowerCase()}`) === 'true';
-  }
-};
-
-export const markUserAsWelcomed = async (userAddress, giftResult = null) => {
-  try {
-    const welcomeData = {
-      userAddress: userAddress.toLowerCase(),
-      welcomedAt: serverTimestamp(),
-      giftSent: !!giftResult?.success,
-      transactionHash: giftResult?.transactionHash || null,
-      amount: giftResult?.amount || null,
-      explorerUrl: giftResult?.explorerUrl || null
-    };
-
-    if (isFirebaseConfigured()) {
-      const welcomeRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
-      await setDoc(welcomeRef, welcomeData);
-      console.log('[Firebase] User marked as welcomed:', userAddress);
-    }
-    
-    // Also set localStorage as backup
-    localStorage.setItem(`welcomed_${userAddress.toLowerCase()}`, 'true');
-    
-    return true;
-  } catch (error) {
-    console.error('Error marking user as welcomed:', error);
-    // Fallback to localStorage if Firebase fails
-    localStorage.setItem(`welcomed_${userAddress.toLowerCase()}`, 'true');
+    console.error('Error checking welcome gift status:', error);
     return false;
   }
 };
 
-export const getWelcomeGiftHistory = async (userAddress) => {
+export const recordWelcomeGift = async (userAddress, txHash) => {
   if (!isFirebaseConfigured()) {
-    return null;
+    console.warn('Firebase not configured, skipping welcome gift record');
+    return;
   }
 
   try {
-    const welcomeRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
-    const welcomeDoc = await getDoc(welcomeRef);
-    
-    if (welcomeDoc.exists()) {
-      return welcomeDoc.data();
-    }
-    return null;
+    const userDocRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
+    await setDoc(userDocRef, {
+      userAddress: userAddress.toLowerCase(),
+      txHash,
+      timestamp: serverTimestamp(),
+      giftSent: true
+    });
+
+    console.log(`[Firebase] Recorded welcome gift for ${userAddress}`);
   } catch (error) {
-    console.error('Error getting welcome gift history:', error);
-    return null;
+    console.error('Error recording welcome gift:', error);
+    throw error;
   }
 };
 
-// Admin function to get all welcome gift statistics
+export const recordFailedWelcomeGift = async (userAddress, error) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured, skipping failed gift record');
+    return;
+  }
+
+  try {
+    const userDocRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
+    await setDoc(userDocRef, {
+      userAddress: userAddress.toLowerCase(),
+      error: error.message || String(error),
+      timestamp: serverTimestamp(),
+      giftSent: false
+    });
+
+    console.log(`[Firebase] Recorded failed welcome gift for ${userAddress}`);
+  } catch (firebaseError) {
+    console.error('Error recording failed welcome gift:', firebaseError);
+  }
+};
+
 export const getWelcomeGiftStats = async () => {
   if (!isFirebaseConfigured()) {
     return { total: 0, successful: 0, failed: 0 };
@@ -331,11 +405,11 @@ export const getWelcomeGiftStats = async () => {
   try {
     const welcomeQuery = query(collection(db, WELCOME_GIFTS_COLLECTION));
     const querySnapshot = await getDocs(welcomeQuery);
-    
+
     let total = 0;
     let successful = 0;
     let failed = 0;
-    
+
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       total++;
@@ -345,10 +419,277 @@ export const getWelcomeGiftStats = async () => {
         failed++;
       }
     });
-    
+
     return { total, successful, failed };
   } catch (error) {
     console.error('Error getting welcome gift stats:', error);
     return { total: 0, successful: 0, failed: 0 };
+  }
+};
+
+// Subscribe to post stats in real-time
+export const subscribeToPostStats = (postId, callback) => {
+  if (!isFirebaseConfigured()) {
+    callback({ likes: 0, comments: 0, shares: 0 });
+    return () => { };
+  }
+
+  const postStatsRef = doc(db, POST_STATS_COLLECTION, String(postId));
+
+  return onSnapshot(postStatsRef, (doc) => {
+    if (doc.exists()) {
+      const data = doc.data();
+      callback({
+        likes: data.likeCount || 0,
+        comments: data.commentCount || 0,
+        shares: data.shareCount || 0
+      });
+    } else {
+      callback({ likes: 0, comments: 0, shares: 0 });
+    }
+  });
+};
+
+// Alternative names for welcome gift functions (for compatibility)
+export const hasUserBeenWelcomed = hasReceivedWelcomeGift;
+export const markUserAsWelcomed = recordWelcomeGift;
+
+export const getWelcomeGiftHistory = async (userAddress) => {
+  if (!isFirebaseConfigured()) {
+    return null;
+  }
+
+  try {
+    const userDocRef = doc(db, WELCOME_GIFTS_COLLECTION, userAddress.toLowerCase());
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      return userDoc.data();
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting welcome gift history:', error);
+    return null;
+  }
+};
+
+// Chat Functions
+export const createOrGetChat = async (currentUserAddress, otherUserAddress) => {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase not configured');
+  }
+
+  try {
+    // Generate deterministic chatId by sorting addresses
+    const addresses = [currentUserAddress.toLowerCase(), otherUserAddress.toLowerCase()].sort();
+    const chatId = `${addresses[0]}_${addresses[1]}`;
+
+    const chatRef = doc(db, CHATS_COLLECTION, chatId);
+    const chatDoc = await getDoc(chatRef);
+
+    if (!chatDoc.exists()) {
+      // Create new chat
+      await setDoc(chatRef, {
+        participants: addresses,
+        lastMessage: null,
+        lastMessageTime: null,
+        createdAt: serverTimestamp()
+      });
+      console.log('[Chat] Created new chat:', chatId);
+    }
+
+    return chatId;
+  } catch (error) {
+    console.error('Error creating/getting chat:', error);
+    throw error;
+  }
+};
+
+export const sendMessage = async (chatId, senderAddress, text) => {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase not configured');
+  }
+
+  try {
+    // Add message to messages subcollection
+    const messagesRef = collection(db, CHATS_COLLECTION, chatId, 'messages');
+    await addDoc(messagesRef, {
+      text: text.trim(),
+      sender: senderAddress.toLowerCase(),
+      timestamp: serverTimestamp(),
+      reactions: {}
+    });
+
+    // Update chat metadata
+    const chatRef = doc(db, CHATS_COLLECTION, chatId);
+    await setDoc(chatRef, {
+      lastMessage: text.trim(),
+      lastMessageTime: serverTimestamp()
+    }, { merge: true });
+
+    return true;
+  } catch (error) {
+    console.error('Error sending message:', error);
+    throw error;
+  }
+};
+
+export const subscribeToMessages = (chatId, callback) => {
+  const messagesRef = collection(db, CHATS_COLLECTION, chatId, 'messages');
+  const q = query(messagesRef, orderBy('timestamp', 'asc'));
+
+  return onSnapshot(q, (querySnapshot) => {
+    const messages = [];
+    querySnapshot.forEach((doc) => {
+      messages.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    callback(messages);
+  });
+};
+
+export const subscribeToMyChats = (userAddress, callback) => {
+  const chatsRef = collection(db, CHATS_COLLECTION);
+  const q = query(
+    chatsRef,
+    where('participants', 'array-contains', userAddress.toLowerCase()),
+    orderBy('lastMessageTime', 'desc')
+  );
+
+  return onSnapshot(q, (querySnapshot) => {
+    const chats = [];
+    querySnapshot.forEach((doc) => {
+      chats.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    callback(chats);
+  });
+};
+
+// Presence Functions
+export const updateUserPresence = async (userAddress) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured, skipping presence update');
+    return;
+  }
+
+  try {
+    const userRef = doc(db, USERS_COLLECTION, userAddress.toLowerCase());
+    await setDoc(userRef, {
+      isOnline: true,
+      lastSeen: serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.error('Error updating user presence:', error);
+  }
+};
+
+export const setUserOffline = async (userAddress) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('Firebase not configured, skipping offline status');
+    return;
+  }
+
+  try {
+    const userRef = doc(db, USERS_COLLECTION, userAddress.toLowerCase());
+    await setDoc(userRef, {
+      isOnline: false,
+      lastSeen: serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.error('Error setting user offline:', error);
+  }
+};
+
+export const subscribeToUserStatus = (address, callback) => {
+  const userRef = doc(db, USERS_COLLECTION, address.toLowerCase());
+
+  return onSnapshot(userRef, (doc) => {
+    if (doc.exists()) {
+      callback(doc.data());
+    } else {
+      callback({ isOnline: false, lastSeen: null });
+    }
+  });
+};
+
+// Message Management Functions
+export const deleteMessage = async (chatId, messageId) => {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase not configured');
+  }
+
+  try {
+    const messageRef = doc(db, CHATS_COLLECTION, chatId, 'messages', messageId);
+    await deleteDoc(messageRef);
+    console.log('[Chat] Message deleted:', messageId);
+    return true;
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    throw error;
+  }
+};
+
+export const editMessage = async (chatId, messageId, newText) => {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase not configured');
+  }
+
+  try {
+    const messageRef = doc(db, CHATS_COLLECTION, chatId, 'messages', messageId);
+    await setDoc(messageRef, {
+      text: newText.trim(),
+      edited: true,
+      editedAt: serverTimestamp()
+    }, { merge: true });
+    console.log('[Chat] Message edited:', messageId);
+    return true;
+  } catch (error) {
+    console.error('Error editing message:', error);
+    throw error;
+  }
+};
+
+export const addReaction = async (chatId, messageId, userAddress, emoji) => {
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase not configured');
+  }
+
+  try {
+    const messageRef = doc(db, CHATS_COLLECTION, chatId, 'messages', messageId);
+    const messageDoc = await getDoc(messageRef);
+
+    if (messageDoc.exists()) {
+      const data = messageDoc.data();
+      const reactions = data.reactions || {};
+
+      // Toggle reaction - if user already reacted with this emoji, remove it
+      if (reactions[emoji] && reactions[emoji].includes(userAddress.toLowerCase())) {
+        reactions[emoji] = reactions[emoji].filter(addr => addr !== userAddress.toLowerCase());
+        if (reactions[emoji].length === 0) {
+          delete reactions[emoji];
+        }
+      } else {
+        // Add reaction
+        if (!reactions[emoji]) {
+          reactions[emoji] = [];
+        }
+        reactions[emoji].push(userAddress.toLowerCase());
+      }
+
+      await setDoc(messageRef, {
+        reactions
+      }, { merge: true });
+
+      console.log('[Chat] Reaction updated:', messageId);
+      return true;
+    }
+  } catch (error) {
+    console.error('Error adding reaction:', error);
+    throw error;
   }
 };
