@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import { useSocialInteractions } from "../hooks/useSocialInteractions";
@@ -48,6 +49,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   const [tipAmount, setTipAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [successType, setSuccessType] = useState(""); // "tip" or "report"
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleLike = async () => {
@@ -137,6 +139,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
           post.author
         )}! 🎉`
       );
+      setSuccessType("tip");
       setShowSuccessModal(true);
       setTipAmount("");
       setShowTipModal(false);
@@ -234,6 +237,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
       setHasReported(true);
       
       setSuccessMessage('Post reported successfully. Thank you for helping keep our community safe.');
+      setSuccessType("report");
       setShowReportModal(false);
       setShowOptionsMenu(false);
       setShowSuccessModal(true);
@@ -666,17 +670,23 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
       </div>
 
       {/* Tip Modal */}
-      {showTipModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Tip Creator</h3>
+      {showTipModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          onClick={() => setShowTipModal(false)}
+        >
+          <div 
+            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Tip Creator</h3>
               <button
                 onClick={() => setShowTipModal(false)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
               >
                 <svg
-                  className="w-5 h-5 text-white/60"
+                  className="w-5 h-5 text-white/60 hover:text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -691,12 +701,12 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               </button>
             </div>
 
-            <div className="flex items-center space-x-3 mb-4">
+            <div className="flex items-center space-x-3 mb-6 p-3 bg-white/5 rounded-xl">
               <div
-                className="w-12 h-12 bg-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
                 onClick={handleProfileClick}
               >
-                <span className="text-black font-semibold">
+                <span className="text-white font-bold">
                   {post.author?.slice(2, 4).toUpperCase()}
                 </span>
               </div>
@@ -757,13 +767,20 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass rounded-2xl p-6 w-full max-w-md text-center">
+      {showSuccessModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          onClick={() => setShowSuccessModal(false)}
+        >
+          <div 
+            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-green-400"
@@ -780,28 +797,42 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              Tip Sent Successfully!
+              {successType === "report" ? "Report Submitted!" : "Tip Sent Successfully!"}
             </h3>
             <p className="text-gray-300 mb-6">{successMessage}</p>
-            <div className="text-sm text-gray-400 mb-6">
-              <p>💰 The tip has been sent directly to the creator's wallet</p>
-              <p>🔗 Transaction confirmed on the blockchain</p>
-            </div>
+            {successType === "tip" ? (
+              <div className="text-sm text-gray-400 mb-6">
+                <p>💰 The tip has been sent directly to the creator's wallet</p>
+                <p>🔗 Transaction confirmed on the blockchain</p>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-400 mb-6">
+                <p>🛡️ Your report helps keep the community safe</p>
+                <p>✅ Our moderation team will review this post</p>
+              </div>
+            )}
             <button
               onClick={() => setShowSuccessModal(false)}
               className="btn-primary px-6 py-3 rounded-xl w-full"
             >
-              Awesome! 🎉
+              {successType === "report" ? "Done" : "Awesome! 🎉"}
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Error Modal */}
-      {showErrorModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass rounded-2xl p-6 w-full max-w-md text-center">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+      {showErrorModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          onClick={() => setShowErrorModal(false)}
+        >
+          <div 
+            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 w-full max-w-md text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg
                 className="w-8 h-8 text-red-400"
                 fill="none"
@@ -817,7 +848,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              Tip Failed
+              Oops! Something went wrong
             </h3>
             <p className="text-gray-300 mb-6">{errorMessage}</p>
             <div className="flex space-x-3">
@@ -838,13 +869,20 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-md">
+      {showShareModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          onClick={() => setShowShareModal(false)}
+        >
+          <div 
+            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Share Post</h3>
               <button
@@ -954,26 +992,33 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Report Modal */}
-      {showReportModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Report Post</h3>
+      {showReportModal && createPortal(
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+          onClick={() => setShowReportModal(false)}
+        >
+          <div 
+            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Report Post</h3>
               <button 
                 onClick={() => setShowReportModal(false)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors"
               >
-                <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-white/60 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
             
-            <p className="text-white/80 mb-4 text-sm">
+            <p className="text-white/70 mb-6 text-sm leading-relaxed">
               Help us keep the community safe. What's wrong with this post?
             </p>
             
@@ -1054,13 +1099,14 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
               </button>
             </div>
 
-            <div className="mt-4 p-3 bg-white/5 rounded-xl">
-              <p className="text-white/60 text-xs">
+            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/5">
+              <p className="text-white/50 text-xs leading-relaxed">
                 Reports are reviewed by our community moderation system. False reports may result in account restrictions.
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
