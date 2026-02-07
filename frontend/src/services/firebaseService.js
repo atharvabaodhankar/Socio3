@@ -492,7 +492,7 @@ export const createOrGetChat = async (currentUserAddress, otherUserAddress) => {
       await setDoc(chatRef, {
         participants: addresses,
         lastMessage: null,
-        lastMessageTime: null,
+        lastMessageTime: serverTimestamp(), // Initialize with timestamp
         createdAt: serverTimestamp()
       });
       console.log('[Chat] Created new chat:', chatId);
