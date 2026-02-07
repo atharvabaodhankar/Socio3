@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const WelcomeGiftModal = ({ isOpen, onClose, userAddress, giftResult, isProcessing }) => {
@@ -13,11 +14,11 @@ const WelcomeGiftModal = ({ isOpen, onClose, userAddress, giftResult, isProcessi
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           className="bg-gray-900 rounded-2xl p-8 max-w-md w-full border border-gray-700"
@@ -153,7 +154,8 @@ const WelcomeGiftModal = ({ isOpen, onClose, userAddress, giftResult, isProcessi
           )}
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
