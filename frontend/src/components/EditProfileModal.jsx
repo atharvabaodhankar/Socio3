@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { getIPFSUrl } from '../config/pinata';
 import { 
@@ -354,7 +355,7 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-black border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
@@ -441,35 +442,6 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
         ) : (
           /* Profile Form */
           <div className="p-6 space-y-6">
-            {/* Cover Image */}
-            <div>
-              <label className="block text-lg font-medium mb-4 text-white">Cover Image</label>
-              <div className="relative h-32 bg-white/10 rounded-xl overflow-hidden">
-                {coverImagePreview && (
-                  <img
-                    src={coverImagePreview}
-                    alt="Cover"
-                    className="w-full h-full object-cover"
-                  />
-                )}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageSelect('cover', e)}
-                    className="hidden"
-                    id="cover-upload"
-                  />
-                  <label
-                    htmlFor="cover-upload"
-                    className="cursor-pointer bg-black/60 hover:bg-black/80 px-4 py-2 rounded-lg text-white font-medium transition-colors"
-                  >
-                    Change Cover
-                  </label>
-                </div>
-              </div>
-            </div>
-
             {/* Profile Image */}
             <div>
               <label className="block text-lg font-medium mb-4 text-white">Profile Picture</label>
@@ -665,7 +637,8 @@ const EditProfileModal = ({ isOpen, onClose, onProfileUpdate }) => {
         message={errorMessage}
         onRetry={handleRetry}
       />
-    </div>
+    </div>,
+    document.body
   );
 };
 
