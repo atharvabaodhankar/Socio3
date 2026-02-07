@@ -81,7 +81,7 @@ const Explore = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-white mb-2">Explore</h1>
@@ -108,9 +108,9 @@ const Explore = () => {
 
       {/* Desktop Layout */}
       <div className="hidden lg:block">
-        <div className="grid grid-cols-3 gap-8">
-          {/* Main Feed */}
-          <div className="col-span-2 space-y-8">
+        <div className="flex justify-center gap-8">
+          {/* Main Feed - Instagram style centered */}
+          <div className="w-full max-w-[470px] lg:max-w-[614px] space-y-6">
             {loading ? (
               <div className="flex justify-center items-center py-16">
                 <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -146,8 +146,8 @@ const Explore = () => {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar - Fixed width */}
+          <div className="w-[320px] space-y-6 flex-shrink-0">
             {/* Trending Creators */}
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
               <h3 className="text-lg font-semibold mb-4 text-white">Trending Creators</h3>

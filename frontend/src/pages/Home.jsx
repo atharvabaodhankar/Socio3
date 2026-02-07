@@ -292,10 +292,10 @@ const Home = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Main Feed */}
-        <div className="lg:col-span-3">
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="flex justify-center gap-8">
+        {/* Main Feed - Instagram style centered */}
+        <div className="w-full max-w-[470px] lg:max-w-[614px]">
           {/* Stories Section */}
           <div className="mb-8">
             <div className="flex space-x-4 overflow-x-auto pb-4">
@@ -338,7 +338,7 @@ const Home = () => {
 
 
           {/* Feed Content */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             {postsLoading || feedLoading ? (
               <div className="flex justify-center items-center py-16">
                 <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -453,9 +453,9 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar - Hidden on mobile, fixed width on desktop */}
         {isConnected && (
-          <div className="hidden lg:block space-y-6">
+          <div className="hidden lg:block w-[320px] space-y-6 flex-shrink-0">
             {/* Suggested Creators */}
             <div className="bg-white/5 border border-white/10 p-6 rounded-2xl">
               <h3 className="text-lg font-semibold mb-6 text-white">Suggested for You</h3>

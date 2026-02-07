@@ -309,7 +309,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
   }, [showOptionsMenu]);
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden card-hover mb-8">
+    <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden card-hover mb-6">
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-3">
@@ -410,7 +410,7 @@ const PostCard = ({ post, onLike, onTip, onComment, onClick }) => {
 
       {/* Post Image */}
       <div
-        className="relative aspect-square bg-white/10 cursor-pointer"
+        className="relative w-full aspect-square bg-white/10 cursor-pointer overflow-hidden"
         onDoubleClick={(e) => {
           e.stopPropagation();
           if (!isLiked) handleLike();
