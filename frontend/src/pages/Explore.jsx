@@ -89,12 +89,12 @@ const Explore = () => {
       </div>
 
       {/* Filter tabs */}
-      <div className="flex space-x-2 mb-8 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit">
+      <div className="flex space-x-2 mb-8 p-1 bg-white/5 border border-white/10 rounded-2xl w-full md:w-fit overflow-x-auto no-scrollbar">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
+            className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 whitespace-nowrap ${
               activeTab === tab.id
                 ? 'bg-white/20 text-white shadow-lg'
                 : 'text-white/60 hover:text-white hover:bg-white/10'
