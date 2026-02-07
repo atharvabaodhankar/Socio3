@@ -55,7 +55,7 @@ function App() {
         <div className="min-h-screen bg-black text-white">
           <Navbar />
           <WalletConnectionHandler />
-          <main className="max-w-6xl mx-auto">
+          <main className="max-w-6xl mx-auto pb-20 md:pb-0">
             <AppRoutes />
           </main>
           <ScrollToTop />
