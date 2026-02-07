@@ -11,11 +11,13 @@ import TipNotifications from '../components/TipNotifications';
 import FollowButton from '../components/FollowButton';
 import { getUserProfile, getDisplayName } from '../services/profileService';
 import { getIPFSUrl } from '../config/pinata';
-import { createUserMapping } from '../services/userMappingService';
+
+import { createUserMapping, getUserByAddress } from '../services/userMappingService';
 import { getTipStats } from '../services/tipService';
 import { useLikedPosts } from '../hooks/useLikedPosts';
 import { useSavedPosts } from '../hooks/useSavedPosts';
 import { createOrGetChat } from '../services/firebaseService';
+import UserListModal from '../components/UserListModal';
 
 const Profile = () => {
   const { address } = useParams();
@@ -31,6 +33,14 @@ const Profile = () => {
   const [profileLoading, setProfileLoading] = useState(true);
   const [tipStats, setTipStats] = useState({ totalReceived: '0', totalSent: '0', tipCount: 0, sentCount: 0 });
 
+  // User List State
+  const [isFollowersModalOpen, setIsFollowersModalOpen] = useState(false);
+  const [isFollowingModalOpen, setIsFollowingModalOpen] = useState(false);
+  const [followersList, setFollowersList] = useState([]);
+  const [followingList, setFollowingList] = useState([]);
+  const [followingCount, setFollowingCount] = useState(0); // Add state for following count
+  const [listLoading, setListLoading] = useState(false);
+
   // Determine if this is the current user's profile
   const isOwnProfile = !address || address.toLowerCase() === account?.toLowerCase();
   const profileAddress = address || account;
@@ -41,7 +51,7 @@ const Profile = () => {
 
   // Fetch posts for this profile - ensure it updates when account changes
   const { posts, loading, error, refetch } = usePosts(profileAddress);
-  const { getFollowerCount } = useContracts();
+  const { getFollowerCount, getFollowers, getFollowing } = useContracts();
   const { followerCount: liveFollowerCount } = useFollow(profileAddress);
 
   // Load user profile and tip stats
@@ -60,6 +70,21 @@ const Profile = () => {
       }
     }
   }, [profileAddress, provider, account, isOwnProfile]); // Add account as dependency
+
+  // Separate effect to load following count
+  useEffect(() => {
+    if (profileAddress) {
+      const loadFollowingCount = async () => {
+        try {
+          const following = await getFollowing(profileAddress);
+          setFollowingCount(following.length);
+        } catch (error) {
+          console.error('Error loading following count:', error);
+        }
+      };
+      loadFollowingCount();
+    }
+  }, [profileAddress, getFollowing]);
 
   const loadUserProfile = async () => {
     if (!profileAddress || !provider) {
@@ -103,6 +128,50 @@ const Profile = () => {
       setTipStats(stats);
     } catch (error) {
       console.error('Error loading tip stats:', error);
+    }
+  };
+
+  const handleOpenFollowers = async () => {
+    setIsFollowersModalOpen(true);
+    setListLoading(true);
+    try {
+      const followerAddresses = await getFollowers(profileAddress);
+      
+      // Fetch user details for each address
+      const usersWithDetails = await Promise.all(
+        followerAddresses.map(async (addr) => {
+          const user = await getUserByAddress(addr);
+          return user || { address: addr };
+        })
+      );
+      
+      setFollowersList(usersWithDetails);
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+    } finally {
+      setListLoading(false);
+    }
+  };
+
+  const handleOpenFollowing = async () => {
+    setIsFollowingModalOpen(true);
+    setListLoading(true);
+    try {
+      const followingAddresses = await getFollowing(profileAddress);
+      
+      // Fetch user details for each address
+      const usersWithDetails = await Promise.all(
+        followingAddresses.map(async (addr) => {
+          const user = await getUserByAddress(addr);
+          return user || { address: addr };
+        })
+      );
+      
+      setFollowingList(usersWithDetails);
+    } catch (error) {
+      console.error('Error fetching following:', error);
+    } finally {
+      setListLoading(false);
     }
   };
 
@@ -241,12 +310,19 @@ const Profile = () => {
                 <div className="text-2xl font-bold text-white">{posts.length}</div>
                 <div className="text-sm text-white/60">Posts</div>
               </div>
-              <div className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0">
+              <div 
+                className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleOpenFollowers}
+              >
                 <div className="text-2xl font-bold text-white">{liveFollowerCount}</div>
                 <div className="text-sm text-white/60">Followers</div>
               </div>
-              <div className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0">
-                <div className="text-2xl font-bold text-white">0</div>
+              <div 
+                className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleOpenFollowing}
+              >
+                {/* We don't have a live count hook for following yet, so specific number might be slightly off until modal opens if not tracked elsewhere */}
+                <div className="text-2xl font-bold text-white">{followingCount}</div>
                 <div className="text-sm text-white/60">Following</div>
               </div>
               <div className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0">
@@ -311,21 +387,6 @@ const Profile = () => {
                     <span>Edit Profile</span>
                   </button>
                   <button
-                    onClick={() => {
-                      loadUserProfile();
-                      loadTipStats();
-                      refetch(); // Refresh posts
-                      refreshLikedPosts(); // Refresh liked posts
-                    }}
-                    className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
-                    title="Refresh profile data"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    <span>Refresh</span>
-                  </button>
-                  <button
                     onClick={() => setIsTipNotificationsOpen(true)}
                     className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
                     title="View tip messages"
@@ -334,6 +395,16 @@ const Profile = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                     </svg>
                     <span>Tips</span>
+                  </button>
+                  <button
+                    onClick={() => navigate('/wallet')}
+                    className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
+                    title="View wallet"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>Wallet</span>
                   </button>
                 </>
               ) : (
@@ -641,6 +712,22 @@ const Profile = () => {
           // Refresh tip stats when closing notifications
           loadTipStats();
         }}
+      />
+
+      {/* User List Modals */}
+      <UserListModal
+        isOpen={isFollowersModalOpen}
+        onClose={() => setIsFollowersModalOpen(false)}
+        title="Followers"
+        users={followersList}
+        loading={listLoading}
+      />
+      <UserListModal
+        isOpen={isFollowingModalOpen}
+        onClose={() => setIsFollowingModalOpen(false)}
+        title="Following"
+        users={followingList}
+        loading={listLoading}
       />
     </div>
   );

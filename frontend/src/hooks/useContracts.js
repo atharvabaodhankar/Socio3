@@ -272,6 +272,84 @@ export const useContracts = () => {
     }
   };
 
+  const getFollowers = async (userAddress) => {
+    if (!socialContract) return [];
+    
+    try {
+      // Get all follow/unfollow events involving this user as the target
+      const followFilter = socialContract.filters.UserFollowed(null, userAddress);
+      const unfollowFilter = socialContract.filters.UserUnfollowed(null, userAddress);
+      
+      const [followEvents, unfollowEvents] = await Promise.all([
+        socialContract.queryFilter(followFilter),
+        socialContract.queryFilter(unfollowFilter)
+      ]);
+
+      // Combine and sort events by block number and log index
+      const allEvents = [
+        ...followEvents.map(e => ({ type: 'follow', follower: e.args[0], block: e.blockNumber, index: e.index })),
+        ...unfollowEvents.map(e => ({ type: 'unfollow', follower: e.args[0], block: e.blockNumber, index: e.index }))
+      ].sort((a, b) => {
+        if (a.block !== b.block) return a.block - b.block;
+        return a.index - b.index;
+      });
+
+      // Reconstruct state
+      const followers = new Set();
+      allEvents.forEach(event => {
+        if (event.type === 'follow') {
+          followers.add(event.follower);
+        } else {
+          followers.delete(event.follower);
+        }
+      });
+
+      return Array.from(followers);
+    } catch (error) {
+      console.error('Error getting followers:', error);
+      return [];
+    }
+  };
+
+  const getFollowing = async (userAddress) => {
+    if (!socialContract) return [];
+    
+    try {
+      // Get all follow/unfollow events where this user is the actor
+      const followFilter = socialContract.filters.UserFollowed(userAddress, null);
+      const unfollowFilter = socialContract.filters.UserUnfollowed(userAddress, null);
+      
+      const [followEvents, unfollowEvents] = await Promise.all([
+        socialContract.queryFilter(followFilter),
+        socialContract.queryFilter(unfollowFilter)
+      ]);
+
+      // Combine and sort events
+      const allEvents = [
+        ...followEvents.map(e => ({ type: 'follow', followed: e.args[1], block: e.blockNumber, index: e.index })),
+        ...unfollowEvents.map(e => ({ type: 'unfollow', followed: e.args[1], block: e.blockNumber, index: e.index }))
+      ].sort((a, b) => {
+        if (a.block !== b.block) return a.block - b.block;
+        return a.index - b.index;
+      });
+
+      // Reconstruct state
+      const following = new Set();
+      allEvents.forEach(event => {
+        if (event.type === 'follow') {
+          following.add(event.followed);
+        } else {
+          following.delete(event.followed);
+        }
+      });
+
+      return Array.from(following);
+    } catch (error) {
+      console.error('Error getting following:', error);
+      return [];
+    }
+  };
+
   return {
     postContract,
     socialContract,
@@ -294,6 +372,8 @@ export const useContracts = () => {
     hasUserLiked,
     getFollowerCount,
     getLikesCount,
-    getTipsAmount
+    getTipsAmount,
+    getFollowers,
+    getFollowing
   };
 };
