@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { useContracts } from '../hooks/useContracts';
+import { saveReportNotification, getReportTypeName } from '../services/reportService';
 import { useSocialInteractions } from '../hooks/useSocialInteractions';
 import { useUsernames } from '../hooks/useUsernames';
 import { useSavedPosts } from '../hooks/useSavedPosts';
@@ -14,7 +16,7 @@ import ErrorModal from './ErrorModal';
 const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) => {
   const navigate = useNavigate();
   const { account, formatAddress, isConnected, provider } = useWeb3();
-  const { tipPost } = useContracts();
+  const { tipPost, reportPost, hasUserReported, contractsReady } = useContracts();
   const { 
     isLiked, 
     likes, 
@@ -48,6 +50,11 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
+  const [checkingReportStatus, setCheckingReportStatus] = useState(false);
+  const [successType, setSuccessType] = useState(""); // "tip" or "report"
   const [modalMessage, setModalMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -128,6 +135,7 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       
       setShowLoadingModal(false);
       setModalMessage(`Successfully tipped ${tipAmount} ETH to ${getDisplayName(post.author)}!`);
+      setSuccessType("tip");
       setShowSuccessModal(true);
       setTipAmount('');
       setShowTipInput(false);
@@ -135,6 +143,60 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       console.error('Error sending tip:', error);
       setShowLoadingModal(false);
       setErrorMessage('Failed to send tip. Please try again.');
+      setShowErrorModal(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReport = async (reportType, reason) => {
+    if (!isConnected || !post) return;
+    
+    try {
+      setIsLoading(true);
+      setShowLoadingModal(true);
+      
+      // Call smart contract reportPost function
+      console.log('Reporting post in modal:', post.id, 'Type:', reportType, 'Reason:', reason);
+      const tx = await reportPost(post.id, reportType, reason);
+      
+      // Save report to Firebase for tracking
+      try {
+        await saveReportNotification({
+          postId: post.id,
+          postAuthor: post.author,
+          reporterAddress: account,
+          reportType: reportType,
+          reportTypeName: getReportTypeName(reportType),
+          reason: reason,
+          transactionHash: tx.hash || tx.transactionHash || 'unknown',
+          postCaption: post.caption ? post.caption.slice(0, 100) : ''
+        });
+      } catch (firebaseError) {
+        console.error('Error saving report to Firebase in modal:', firebaseError);
+      }
+      
+      // Update states
+      setHasReported(true);
+      setShowLoadingModal(false);
+      setModalMessage('Post reported successfully. Thank you for helping keep our community safe.');
+      setSuccessType("report");
+      setShowReportModal(false);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Error reporting post in modal:', error);
+      setShowLoadingModal(false);
+      
+      const errorMessage = error.message || error.toString();
+      if (errorMessage.includes('already reported') || errorMessage.includes('You have already reported this post')) {
+        setErrorMessage('You have already reported this post. Thank you for helping keep our community safe.');
+      } else if (errorMessage.includes('Cannot report your own post')) {
+        setErrorMessage('You cannot report your own posts.');
+      } else {
+        setErrorMessage('Failed to report post. Please try again.');
+      }
+      
+      setShowReportModal(false);
       setShowErrorModal(true);
     } finally {
       setIsLoading(false);
@@ -178,6 +240,7 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       
       // Show success feedback
       setModalMessage('Post link copied to clipboard! 📋');
+      setSuccessType("");
       setShowSuccessModal(true);
     } catch (clipboardError) {
       console.error('Clipboard error:', clipboardError);
@@ -238,6 +301,31 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       onPrev();
     }
   };
+
+  // Check report status
+  useEffect(() => {
+    const checkReportStatus = async () => {
+      if (post?.id && account && isConnected && contractsReady && hasUserReported) {
+        try {
+          setCheckingReportStatus(true);
+          const reported = await hasUserReported(post.id, account);
+          setHasReported(reported);
+        } catch (error) {
+          console.error('Error checking report status in modal:', error);
+          setHasReported(false);
+        } finally {
+          setCheckingReportStatus(false);
+        }
+      } else {
+        setHasReported(false);
+        setCheckingReportStatus(false);
+      }
+    };
+
+    if (isOpen) {
+      checkReportStatus();
+    }
+  }, [post?.id, account, isConnected, contractsReady, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -462,11 +550,68 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
                 }
               </p>
             </div>
-            <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-              <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
-            </button>
+            <div className="relative">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowOptionsMenu(!showOptionsMenu);
+                }}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+
+              {showOptionsMenu && (
+                <div className="absolute right-0 top-full mt-2 bg-gray-800 border border-gray-700 rounded-xl py-2 min-w-[150px] z-20 shadow-xl">
+                  {!contractsReady ? (
+                    <div className="px-4 py-2 text-gray-400 text-sm flex items-center space-x-2">
+                      <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Loading...</span>
+                    </div>
+                  ) : post.author && account && post.author.toLowerCase() !== account.toLowerCase() ? (
+                    checkingReportStatus ? (
+                      <div className="px-4 py-2 text-gray-400 text-sm flex items-center space-x-2">
+                        <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Checking...</span>
+                      </div>
+                    ) : hasReported ? (
+                      <div className="px-4 py-2 text-green-400 text-sm flex items-center space-x-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Reported</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowReportModal(true);
+                          setShowOptionsMenu(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-red-400 hover:bg-white/5 transition-colors flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <span>Report Post</span>
+                      </button>
+                    )
+                  ) : (
+                    <div className="px-4 py-2 text-gray-500 text-sm">
+                      Cannot report your own post
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setShowOptionsMenu(false)}
+                    className="w-full px-4 py-2 text-left text-gray-400 hover:bg-white/5 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Comments section */}
@@ -644,8 +789,9 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={handleModalClose}
-        title="Tip Sent!"
+        title={successType === "report" ? "Report Submitted!" : "Tip Sent!"}
         message={modalMessage}
+        type={successType}
       />
 
       {/* Error Modal */}
@@ -661,9 +807,9 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
       />
 
       {/* Share Modal */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 w-full max-w-md">
+      {showShareModal && createPortal(
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4" onClick={() => setShowShareModal(false)}>
+          <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Share Post</h3>
               <button 
@@ -684,6 +830,7 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
                   try {
                     await navigator.clipboard.writeText(postUrl);
                     setModalMessage('Link copied to clipboard! 📋');
+                    setSuccessType("");
                     setShowShareModal(false);
                     setShowSuccessModal(true);
                   } catch (error) {
@@ -737,7 +884,57 @@ const PostModal = ({ post, isOpen, onClose, onNext, onPrev, hasNext, hasPrev }) 
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Report Modal */}
+      {showReportModal && createPortal(
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[70] flex items-center justify-center p-4" onClick={() => setShowReportModal(false)}>
+          <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white">Report Post</h3>
+              <button 
+                onClick={() => setShowReportModal(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <svg className="w-5 h-5 text-white/60 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <p className="text-white/70 mb-6 text-sm leading-relaxed">
+              Help us keep the community safe. What's wrong with this post?
+            </p>
+            
+            <div className="space-y-2">
+              {[
+                { id: 1, name: 'Spam', desc: 'Repetitive or unwanted content' },
+                { id: 2, name: 'Inappropriate Content', desc: 'Offensive or harmful material' },
+                { id: 3, name: 'Harassment', desc: 'Bullying or targeting individuals' },
+                { id: 4, name: 'Copyright Violation', desc: 'Unauthorized use of copyrighted content' },
+                { id: 5, name: 'Other', desc: 'Something else that violates our guidelines' }
+              ].map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => handleReport(type.id, type.name)}
+                  disabled={isLoading}
+                  className="w-full flex items-center space-x-3 p-3 bg-white/5 hover:bg-white/10 rounded-xl transition-colors disabled:opacity-50"
+                >
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <div className="text-left">
+                    <p className="text-white font-medium">{type.name}</p>
+                    <p className="text-white/60 text-sm">{type.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

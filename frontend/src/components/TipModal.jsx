@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useWeb3 } from '../context/Web3Context';
 import { ethers } from 'ethers';
 import { saveTipMessage } from '../services/tipService';
@@ -123,7 +124,7 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div 
@@ -205,7 +206,7 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
                         onClick={() => setAmount(preAmount)}
                         className={`p-2 rounded-lg text-sm font-medium transition-colors ${
                           amount === preAmount
-                            ? 'bg-purple-500 text-white'
+                             ? 'bg-purple-500 text-white'
                             : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                         }`}
                         disabled={loading}
@@ -276,7 +277,8 @@ const TipModal = ({ isOpen, onClose, recipientAddress, recipientName }) => {
           )}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 };
 
