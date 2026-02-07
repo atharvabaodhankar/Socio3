@@ -8,10 +8,12 @@ import {
     subscribeToUserStatus,
     deleteMessage,
     editMessage,
-    addReaction
+    addReaction,
+    createOrGetChat
 } from '../services/firebaseService';
 import { getUserProfile, getDisplayName } from '../services/profileService';
 import { getIPFSUrl } from '../config/pinata';
+import NewChatModal from '../components/NewChatModal';
 
 const Messages = () => {
     const navigate = useNavigate();
@@ -27,6 +29,8 @@ const Messages = () => {
     const [editText, setEditText] = useState('');
     const [showReactionPicker, setShowReactionPicker] = useState(null);
     const [hoveredMessage, setHoveredMessage] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false);
     const messagesEndRef = useRef(null);
     const emojiPickerRef = useRef(null);
     const reactionPickerRef = useRef(null);
@@ -250,6 +254,41 @@ const Messages = () => {
 
     const reactionEmojis = ['❤️', '👍', '😂', '😮', '😢', '🔥', '🎉', '👏'];
 
+    const handleNewChatSelect = async (address) => {
+        try {
+            const chatId = await createOrGetChat(account, address);
+            // The subscription to chats will pick this up, but we can proactively 
+            // set selection or wait for chats update
+            setIsNewChatModalOpen(false);
+            
+            // Find the chat if it already exists or wait for it to be added by subscription
+            const existingChat = chats.find(c => c.id === chatId);
+            if (existingChat) {
+                setSelectedChat(existingChat);
+            } else {
+                // If it's brand new, it will appear in chats list soon
+                // We'll let the user select it from the list once it appears
+                // or we can pollyfill the selectedChat state
+                setSelectedChat({
+                    id: chatId,
+                    participants: [account.toLowerCase(), address.toLowerCase()],
+                    lastMessage: null,
+                    lastMessageTime: new Date()
+                });
+            }
+        } catch (error) {
+            console.error('Error starting new chat:', error);
+        }
+    };
+
+    const filteredChats = chats.filter(chat => {
+        const otherUser = getOtherUserAddress(chat);
+        const profile = getOtherUserProfile(chat);
+        const name = profile ? getDisplayName(profile, otherUser) : formatAddress(otherUser);
+        return name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+               otherUser.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+
     if (!isConnected) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
@@ -261,118 +300,173 @@ const Messages = () => {
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">Messages</h1>
+            <div className="flex items-center justify-between mb-8">
+                <h1 className="text-3xl font-bold">Messages</h1>
+                <button 
+                    onClick={() => setIsNewChatModalOpen(true)}
+                    className="md:hidden bg-white text-black p-2 rounded-full hover:bg-white/90 transition-colors"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+            </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden" style={{ height: '70vh' }}>
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm" style={{ height: '75vh' }}>
                 <div className="flex h-full">
                     {/* Chat List - Left Panel */}
-                    <div className={`w-full md:w-1/3 border-r border-white/10 overflow-y-auto ${selectedChat ? 'hidden md:block' : ''}`}>
-                        {chats.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                                <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
-                                    <svg className="w-8 h-8 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                </div>
-                                <h3 className="text-lg font-semibold mb-2">No Messages Yet</h3>
-                                <p className="text-white/60 text-sm">Visit a user's profile and click "Message" to start chatting</p>
-                            </div>
-                        ) : (
-                            chats.map((chat) => {
-                                const otherUser = getOtherUserAddress(chat);
-                                const profile = getOtherUserProfile(chat);
-                                const isOnline = isUserOnline(chat);
+                    <div className={`w-full md:w-[350px] border-r border-white/10 flex flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
+                        {/* Chat List Header */}
+                        <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                            <h2 className="text-xl font-bold truncate pr-2">{formatAddress(account)}</h2>
+                            <button 
+                                onClick={() => setIsNewChatModalOpen(true)}
+                                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white"
+                                title="New Message"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                        </div>
 
-                                return (
-                                    <div
-                                        key={chat.id}
-                                        onClick={() => setSelectedChat(chat)}
-                                        className={`flex items-center space-x-3 p-4 cursor-pointer transition-colors ${selectedChat?.id === chat.id
-                                            ? 'bg-white/10'
-                                            : 'hover:bg-white/5'
-                                            }`}
+                        {/* Chat Search */}
+                        <div className="p-4">
+                            <div className="relative">
+                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input
+                                    type="text"
+                                    placeholder="Search chats..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:border-white/20 transition-colors"
+                                />
+                            </div>
+                        </div>
+
+                        {/* List Items */}
+                        <div className="flex-1 overflow-y-auto custom-scrollbar">
+                            {chats.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                                    <h3 className="text-lg font-semibold mb-2">No Messages Yet</h3>
+                                    <p className="text-white/60 text-sm mb-6">Send private photos and messages to a friend.</p>
+                                    <button 
+                                        onClick={() => setIsNewChatModalOpen(true)}
+                                        className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-medium transition-colors"
                                     >
+                                        Send message
+                                    </button>
+                                </div>
+                            ) : filteredChats.length === 0 ? (
+                                <div className="p-8 text-center text-white/40">
+                                    No chats match your search.
+                                </div>
+                            ) : (
+                                filteredChats.map((chat) => {
+                                    const otherUser = getOtherUserAddress(chat);
+                                    const profile = getOtherUserProfile(chat);
+                                    const isOnline = isUserOnline(chat);
+
+                                    return (
+                                        <div
+                                            key={chat.id}
+                                            onClick={() => setSelectedChat(chat)}
+                                            className={`flex items-center space-x-3 p-4 cursor-pointer transition-colors ${selectedChat?.id === chat.id
+                                                ? 'bg-white/10'
+                                                : 'hover:bg-white/5'
+                                                }`}
+                                        >
+                                            <div className="relative">
+                                                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                    {profile?.profileImage ? (
+                                                        <img
+                                                            src={getIPFSUrl(profile.profileImage)}
+                                                            alt="Profile"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-black font-bold text-lg">
+                                                            {(profile?.username || otherUser)?.slice(0, 2).toUpperCase()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-black ${isOnline ? 'bg-green-500' : 'bg-gray-500'
+                                                    }`} />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-semibold truncate text-white">
+                                                    {profile ? getDisplayName(profile, otherUser) : formatAddress(otherUser)}
+                                                </h3>
+                                                <p className={`text-sm truncate ${chat.lastMessage ? 'text-white/60' : 'text-blue-400 font-medium'}`}>
+                                                    {chat.lastMessage || 'New conversation'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Messages Panel - Right Panel */}
+                    <div className={`${selectedChat ? 'flex' : 'hidden'} md:flex md:flex-1 flex-col w-full bg-black/20`}>
+                        {selectedChat ? (
+                            <>
+                                {/* Chat Header */}
+                                <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <button 
+                                            onClick={() => setSelectedChat(null)}
+                                            className="md:hidden p-2 -ml-2 text-white/60 hover:text-white rounded-full"
+                                        >
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
                                         <div className="relative">
-                                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center overflow-hidden">
-                                                {profile?.profileImage ? (
+                                            <div
+                                                className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden cursor-pointer"
+                                                onClick={() => {
+                                                    const otherUser = getOtherUserAddress(selectedChat);
+                                                    navigate(`/profile/${otherUser}`);
+                                                }}
+                                            >
+                                                {getOtherUserProfile(selectedChat)?.profileImage ? (
                                                     <img
-                                                        src={getIPFSUrl(profile.profileImage)}
+                                                        src={getIPFSUrl(getOtherUserProfile(selectedChat).profileImage)}
                                                         alt="Profile"
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (
-                                                    <span className="text-black font-bold">
-                                                        {(profile?.username || otherUser)?.slice(0, 2).toUpperCase()}
+                                                    <span className="text-black font-bold text-sm">
+                                                        {(getOtherUserProfile(selectedChat)?.username || getOtherUserAddress(selectedChat))?.slice(0, 2).toUpperCase()}
                                                     </span>
                                                 )}
                                             </div>
-                                            {/* Online indicator */}
-                                            <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${isOnline ? 'bg-green-500' : 'bg-gray-500'
-                                                }`} />
+                                            <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-black ${isUserOnline(selectedChat) ? 'bg-green-500' : 'bg-gray-500'}`} />
                                         </div>
 
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold truncate">
-                                                {profile ? getDisplayName(profile, otherUser) : formatAddress(otherUser)}
+                                        <div>
+                                            <h3 className="font-semibold text-white">
+                                                {getOtherUserProfile(selectedChat)
+                                                    ? getDisplayName(getOtherUserProfile(selectedChat), getOtherUserAddress(selectedChat))
+                                                    : formatAddress(getOtherUserAddress(selectedChat))
+                                                }
                                             </h3>
-                                            <p className="text-sm text-white/60 truncate">
-                                                {chat.lastMessage || 'No messages yet'}
+                                            <p className="text-[10px] text-white/40 uppercase tracking-wider font-bold">
+                                                {isUserOnline(selectedChat) ? 'Active Now' : 'Offline'}
                                             </p>
                                         </div>
                                     </div>
-                                );
-                            })
-                        )}
-                    </div>
-
-                    {/* Messages Panel - Right Panel */}
-                    <div className={`${selectedChat ? 'flex' : 'hidden'} md:flex md:w-2/3 flex-col w-full`}>
-                        {selectedChat ? (
-                            <>
-                                {/* Chat Header */}
-                                <div className="p-4 border-b border-white/10 flex items-center space-x-3">
-                                    <button 
-                                        onClick={() => setSelectedChat(null)}
-                                        className="md:hidden mr-1 p-2 -ml-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                        </svg>
-                                    </button>
-                                    <div className="relative">
-                                        <div
-                                            className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden cursor-pointer"
-                                            onClick={() => {
-                                                const otherUser = getOtherUserAddress(selectedChat);
-                                                navigate(`/profile/${otherUser}`);
-                                            }}
-                                        >
-                                            {getOtherUserProfile(selectedChat)?.profileImage ? (
-                                                <img
-                                                    src={getIPFSUrl(getOtherUserProfile(selectedChat).profileImage)}
-                                                    alt="Profile"
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <span className="text-black font-bold text-sm">
-                                                    {(getOtherUserProfile(selectedChat)?.username || getOtherUserAddress(selectedChat))?.slice(0, 2).toUpperCase()}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-black ${isUserOnline(selectedChat) ? 'bg-green-500' : 'bg-gray-500'
-                                            }`} />
-                                    </div>
-
-                                    <div>
-                                        <h3 className="font-semibold">
-                                            {getOtherUserProfile(selectedChat)
-                                                ? getDisplayName(getOtherUserProfile(selectedChat), getOtherUserAddress(selectedChat))
-                                                : formatAddress(getOtherUserAddress(selectedChat))
-                                            }
-                                        </h3>
-                                        <p className="text-xs text-white/60">
-                                            {isUserOnline(selectedChat) ? 'Online' : 'Offline'}
-                                        </p>
+                                    <div className="flex items-center space-x-2">
+                                        <button className="p-2 text-white/60 hover:text-white rounded-full transition-colors">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
 
@@ -623,14 +717,27 @@ const Messages = () => {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                         </svg>
                                     </div>
-                                    <h3 className="text-xl font-semibold mb-2">Select a Chat</h3>
-                                    <p className="text-white/60">Choose a conversation from the list to start messaging</p>
+                                    <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent mb-2">Your Messages</h3>
+                                    <p className="text-white/40 mb-8 max-w-[280px] mx-auto">Send private photos and messages to a friend or group.</p>
+                                    <button 
+                                        onClick={() => setIsNewChatModalOpen(true)}
+                                        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95"
+                                    >
+                                        Send message
+                                    </button>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+
+            {/* Modal for new chat */}
+            <NewChatModal 
+                isOpen={isNewChatModalOpen}
+                onClose={() => setIsNewChatModalOpen(false)}
+                onSelect={handleNewChatSelect}
+            />
         </div>
     );
 };
