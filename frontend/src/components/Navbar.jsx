@@ -58,13 +58,6 @@ const Navbar = () => {
       )
     },
     {
-      path: '/wallet', label: 'Wallet', icon: (
-        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      )
-    },
-    {
       path: '/upload', label: 'Create', icon: (
         <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -140,9 +133,9 @@ const Navbar = () => {
       {/* Mobile Navigation - Fixed Bottom */}
       {isConnected && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-black/95 backdrop-blur-xl z-50 pb-safe">
-          <div className="flex justify-between items-center px-4 py-3">
+          <div className="flex justify-between items-center px-6 py-3">
             {navItems
-              .filter(item => ['/', '/explore', '/wallet', '/messages', '/profile'].includes(item.path))
+              .filter(item => ['/', '/explore', '/upload', '/messages', '/profile'].includes(item.path))
               .map((item) => (
               <Link
                 key={item.path}
