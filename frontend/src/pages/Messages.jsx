@@ -60,7 +60,10 @@ const Messages = () => {
     useEffect(() => {
         if (!account) return;
 
+        console.log('[Messages] Subscribing to chats for:', account);
+        
         const unsubscribe = subscribeToMyChats(account, (chatsData) => {
+            console.log('[Messages] Received chats update:', chatsData.length, 'chats');
             setChats(chatsData);
 
             // Load profiles for all chat participants
@@ -70,6 +73,9 @@ const Messages = () => {
                     loadUserProfile(otherUser);
                 }
             });
+        }, (error) => {
+            console.error('[Messages] Error subscribing to chats:', error);
+            // If there's an index error, it will show here
         });
 
         return () => unsubscribe();
@@ -400,8 +406,8 @@ const Messages = () => {
                                                 <h3 className="font-semibold truncate text-white">
                                                     {profile ? getDisplayName(profile, otherUser) : formatAddress(otherUser)}
                                                 </h3>
-                                                <p className={`text-sm truncate ${chat.lastMessage ? 'text-white/60' : 'text-blue-400 font-medium'}`}>
-                                                    {chat.lastMessage || 'New conversation'}
+                                                <p className={`text-sm truncate ${chat.lastMessage && chat.lastMessage.trim() ? 'text-white/60' : 'text-white/40 italic'}`}>
+                                                    {chat.lastMessage && chat.lastMessage.trim() ? chat.lastMessage : 'Start a conversation'}
                                                 </p>
                                             </div>
                                         </div>

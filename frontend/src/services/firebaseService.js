@@ -488,14 +488,20 @@ export const createOrGetChat = async (currentUserAddress, otherUserAddress) => {
     const chatDoc = await getDoc(chatRef);
 
     if (!chatDoc.exists()) {
-      // Create new chat
+      // Create new chat with proper initial values
       await setDoc(chatRef, {
         participants: addresses,
-        lastMessage: null,
-        lastMessageTime: serverTimestamp(), // Initialize with timestamp
-        createdAt: serverTimestamp()
+        lastMessage: '', // Empty string instead of null
+        lastMessageTime: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
       console.log('[Chat] Created new chat:', chatId);
+    } else {
+      // Update timestamp to bring chat to top
+      await setDoc(chatRef, {
+        updatedAt: serverTimestamp()
+      }, { merge: true });
     }
 
     return chatId;
@@ -511,22 +517,26 @@ export const sendMessage = async (chatId, senderAddress, text) => {
   }
 
   try {
+    const trimmedText = text.trim();
+    
     // Add message to messages subcollection
     const messagesRef = collection(db, CHATS_COLLECTION, chatId, 'messages');
     await addDoc(messagesRef, {
-      text: text.trim(),
+      text: trimmedText,
       sender: senderAddress.toLowerCase(),
       timestamp: serverTimestamp(),
       reactions: {}
     });
 
-    // Update chat metadata
+    // Update chat metadata - CRITICAL for showing in chat list
     const chatRef = doc(db, CHATS_COLLECTION, chatId);
     await setDoc(chatRef, {
-      lastMessage: text.trim(),
-      lastMessageTime: serverTimestamp()
+      lastMessage: trimmedText,
+      lastMessageTime: serverTimestamp(),
+      updatedAt: serverTimestamp()
     }, { merge: true });
 
+    console.log('[Chat] Message sent and chat updated:', chatId);
     return true;
   } catch (error) {
     console.error('Error sending message:', error);
@@ -550,24 +560,60 @@ export const subscribeToMessages = (chatId, callback) => {
   });
 };
 
-export const subscribeToMyChats = (userAddress, callback) => {
-  const chatsRef = collection(db, CHATS_COLLECTION);
-  const q = query(
-    chatsRef,
-    where('participants', 'array-contains', userAddress.toLowerCase()),
-    orderBy('lastMessageTime', 'desc')
-  );
+export const subscribeToMyChats = (userAddress, callback, onError) => {
+  if (!isFirebaseConfigured()) {
+    console.warn('[Firebase] Not configured, returning empty chats');
+    callback([]);
+    return () => { };
+  }
 
-  return onSnapshot(q, (querySnapshot) => {
-    const chats = [];
-    querySnapshot.forEach((doc) => {
-      chats.push({
-        id: doc.id,
-        ...doc.data()
-      });
-    });
-    callback(chats);
-  });
+  try {
+    const chatsRef = collection(db, CHATS_COLLECTION);
+    const q = query(
+      chatsRef,
+      where('participants', 'array-contains', userAddress.toLowerCase()),
+      orderBy('lastMessageTime', 'desc')
+    );
+
+    console.log('[Firebase] Setting up chat subscription for:', userAddress);
+
+    return onSnapshot(q, 
+      (querySnapshot) => {
+        const chats = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          chats.push({
+            id: doc.id,
+            ...data
+          });
+        });
+        console.log('[Firebase] Chat snapshot received:', chats.length, 'chats');
+        callback(chats);
+      },
+      (error) => {
+        console.error('[Firebase] Error in chat subscription:', error);
+        console.error('[Firebase] Error code:', error.code);
+        console.error('[Firebase] Error message:', error.message);
+        
+        // If it's an index error, provide helpful message
+        if (error.code === 'failed-precondition' || error.message.includes('index')) {
+          console.error('[Firebase] ⚠️ FIRESTORE INDEX REQUIRED!');
+          console.error('[Firebase] Create a composite index for:');
+          console.error('[Firebase] Collection: chats');
+          console.error('[Firebase] Fields: participants (Array), lastMessageTime (Descending)');
+          console.error('[Firebase] The error message should contain a link to create the index.');
+        }
+        
+        if (onError) {
+          onError(error);
+        }
+      }
+    );
+  } catch (error) {
+    console.error('[Firebase] Error setting up subscription:', error);
+    callback([]);
+    return () => { };
+  }
 };
 
 // Presence Functions
