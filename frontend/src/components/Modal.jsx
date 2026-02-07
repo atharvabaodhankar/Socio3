@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import './Modal.css';
 
 const Modal = ({ isOpen, onClose, title, children, type = 'default' }) => {
@@ -10,7 +11,7 @@ const Modal = ({ isOpen, onClose, title, children, type = 'default' }) => {
     }
   };
 
-  return (
+  return createPortal(
     <div className="modal-backdrop" onClick={handleBackdropClick}>
       <div className={`modal-content ${type}`}>
         <div className="modal-header">
@@ -23,7 +24,8 @@ const Modal = ({ isOpen, onClose, title, children, type = 'default' }) => {
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
