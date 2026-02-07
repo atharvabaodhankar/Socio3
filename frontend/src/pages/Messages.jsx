@@ -266,7 +266,7 @@ const Messages = () => {
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden" style={{ height: '70vh' }}>
                 <div className="flex h-full">
                     {/* Chat List - Left Panel */}
-                    <div className="w-full md:w-1/3 border-r border-white/10 overflow-y-auto">
+                    <div className={`w-full md:w-1/3 border-r border-white/10 overflow-y-auto ${selectedChat ? 'hidden md:block' : ''}`}>
                         {chats.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
                                 <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mb-4">
@@ -326,11 +326,19 @@ const Messages = () => {
                     </div>
 
                     {/* Messages Panel - Right Panel */}
-                    <div className="hidden md:flex md:w-2/3 flex-col">
+                    <div className={`${selectedChat ? 'flex' : 'hidden'} md:flex md:w-2/3 flex-col w-full`}>
                         {selectedChat ? (
                             <>
                                 {/* Chat Header */}
                                 <div className="p-4 border-b border-white/10 flex items-center space-x-3">
+                                    <button 
+                                        onClick={() => setSelectedChat(null)}
+                                        className="md:hidden mr-1 p-2 -ml-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
                                     <div className="relative">
                                         <div
                                             className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden cursor-pointer"

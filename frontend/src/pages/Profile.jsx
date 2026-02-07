@@ -236,23 +236,23 @@ const Profile = () => {
               )}
             </div>
 
-            {/* Stats */}
-            <div className="flex justify-center md:justify-start space-x-8 mb-6">
-              <div className="text-center">
+            <div className="grid grid-cols-2 gap-4 md:flex md:space-x-8 mb-6">
+              <div className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0">
                 <div className="text-2xl font-bold text-white">{posts.length}</div>
                 <div className="text-sm text-white/60">Posts</div>
               </div>
-              <div className="text-center">
+              <div className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0">
                 <div className="text-2xl font-bold text-white">{liveFollowerCount}</div>
                 <div className="text-sm text-white/60">Followers</div>
               </div>
-              <div className="text-center">
+              <div className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0">
                 <div className="text-2xl font-bold text-white">0</div>
                 <div className="text-sm text-white/60">Following</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">
-                  {(parseFloat(tipStats.totalReceived) + posts.reduce((total, post) => total + post.tips, 0)).toFixed(3)} ETH
+              <div className="text-center p-3 bg-white/5 rounded-xl md:bg-transparent md:p-0">
+                <div className="text-xl md:text-2xl font-bold text-white bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                  {(parseFloat(tipStats.totalReceived) + posts.reduce((total, post) => total + post.tips, 0)).toFixed(3)}
+                  <span className="text-sm text-white/60 ml-1">ETH</span>
                 </div>
                 <div className="text-sm text-white/60">Tips Earned</div>
               </div>
@@ -298,17 +298,17 @@ const Profile = () => {
             )}
 
             {/* Action Buttons */}
-            <div className="flex justify-center md:justify-start space-x-4">
+            <div className="grid grid-cols-2 gap-3 md:flex md:justify-start md:space-x-4">
               {isOwnProfile ? (
                 <>
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
+                    className="col-span-2 md:col-span-1 bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
-                    <span>{userProfile?.exists ? 'Edit Profile' : 'Setup Profile'}</span>
+                    <span>Edit Profile</span>
                   </button>
                   <button
                     onClick={() => {
@@ -317,7 +317,7 @@ const Profile = () => {
                       refetch(); // Refresh posts
                       refreshLikedPosts(); // Refresh liked posts
                     }}
-                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
+                    className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
                     title="Refresh profile data"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,7 +327,7 @@ const Profile = () => {
                   </button>
                   <button
                     onClick={() => setIsTipNotificationsOpen(true)}
-                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
+                    className="bg-white/5 border border-white/10 px-4 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
                     title="View tip messages"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -338,11 +338,13 @@ const Profile = () => {
                 </>
               ) : (
                 <>
-                  <FollowButton
-                    userAddress={profileAddress}
-                    size="large"
-                    variant="primary"
-                  />
+                  <div className="col-span-2 md:w-auto">
+                    <FollowButton
+                      userAddress={profileAddress}
+                      size="large"
+                      variant="primary"
+                    />
+                  </div>
                   <button
                     onClick={() => {
                       if (!isConnected) {
@@ -351,7 +353,7 @@ const Profile = () => {
                       }
                       setIsTipModalOpen(true);
                     }}
-                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
+                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
@@ -372,7 +374,7 @@ const Profile = () => {
                         alert('Failed to create chat. Please try again.');
                       }
                     }}
-                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center space-x-2 text-white"
+                    className="bg-white/5 border border-white/10 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200 flex items-center justify-center space-x-2 text-white"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
