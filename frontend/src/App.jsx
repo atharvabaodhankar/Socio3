@@ -22,6 +22,7 @@ import "./utils/testFeed";
 import "./utils/testFaucet";
 import Post from "./pages/Post";
 import ScrollToTop from "./components/ScrollToTop";
+import Layout from "./components/Layout";
 import "./App.css";
 
 const AppRoutes = () => {
@@ -52,14 +53,9 @@ function App() {
   return (
     <Web3Provider>
       <Router>
-        <div className="min-h-screen bg-black text-white">
-          <Navbar />
-          <WalletConnectionHandler />
-          <main className="max-w-6xl mx-auto pb-20 md:pb-0">
-            <AppRoutes />
-          </main>
-          <ScrollToTop />
-        </div>
+        <Layout>
+          <AppRoutes />
+        </Layout>
       </Router>
     </Web3Provider>
   );
