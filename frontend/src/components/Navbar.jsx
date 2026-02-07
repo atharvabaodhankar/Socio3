@@ -76,10 +76,10 @@ const Navbar = () => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <nav className="hidden md:flex flex-col fixed left-0 top-0 h-screen border-r border-white/10 bg-black z-[100] transition-all duration-300 ease-in-out group w-20 hover:w-64 hover:bg-black/95 hover:backdrop-blur-xl hover:shadow-[15px_0_30px_rgba(0,0,0,0.6)]">
+      <nav className="hidden md:flex flex-col fixed left-0 top-0 h-screen border-r border-white/10 bg-black z-[100] transition-all duration-300 ease-in-out delay-150 hover:delay-0 group w-20 hover:w-64 hover:bg-black/95 hover:backdrop-blur-xl hover:shadow-[15px_0_30px_rgba(0,0,0,0.6)]">
         <div className="flex flex-col h-full p-3 pt-8 overflow-hidden">
           {/* Logo */}
-          <Link to="/" className="flex items-center mb-10 px-3 transition-all duration-300 justify-center group-hover:justify-start">
+          <Link to="/" className="flex items-center mb-10 px-3 transition-all duration-300 ease-in-out justify-center group-hover:justify-start">
              <div className="flex-shrink-0">
                <img
                 src="/socio3.png"
@@ -87,7 +87,7 @@ const Navbar = () => {
                 className="w-10 h-10 rounded-xl shadow-lg transition-transform duration-300"
               />
             </div>
-            <span className="text-2xl font-bold text-white tracking-tight transition-all duration-300 overflow-hidden max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-4 whitespace-nowrap">
+            <span className="text-2xl font-bold text-white tracking-tight transition-all duration-300 ease-in-out delay-100 group-hover:delay-0 overflow-hidden max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-4 whitespace-nowrap">
               Socio3
             </span>
           </Link>
@@ -108,12 +108,12 @@ const Navbar = () => {
                 <div className="transition-transform duration-300 flex-shrink-0 group-hover/item:scale-110">
                   {item.icon}
                 </div>
-                <span className="text-lg font-medium whitespace-nowrap overflow-hidden transition-all duration-300 max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-4">
+                <span className="text-lg font-medium whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out delay-100 group-hover:delay-0 max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100 group-hover:ml-4">
                   {item.label}
                 </span>
                 
                 {item.path === '/profile' && unreadCount > 0 && (
-                  <div className={`absolute top-1 transition-all duration-300 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 border-black z-10 ${
+                  <div className={`absolute top-1 transition-all duration-300 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center border-2 z-10 ${
                     item.path === location.pathname ? 'border-white/20' : 'border-black'
                   } right-1 group-hover:right-3`}>
                     {unreadCount > 9 ? '9+' : unreadCount}
