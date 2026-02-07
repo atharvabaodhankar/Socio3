@@ -354,7 +354,7 @@ const Messages = () => {
                                     <p className="text-white/60 text-sm mb-6">Send private photos and messages to a friend.</p>
                                     <button 
                                         onClick={() => setIsNewChatModalOpen(true)}
-                                        className="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-medium transition-colors"
+                                        className="bg-white hover:bg-white/90 text-black px-6 py-3 rounded-xl font-medium transition-colors"
                                     >
                                         Send message
                                     </button>
@@ -721,7 +721,7 @@ const Messages = () => {
                                     <p className="text-white/40 mb-8 max-w-[280px] mx-auto">Send private photos and messages to a friend or group.</p>
                                     <button 
                                         onClick={() => setIsNewChatModalOpen(true)}
-                                        className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold transition-all shadow-lg hover:shadow-blue-500/20 active:scale-95"
+                                        className="bg-white hover:bg-white/90 text-black px-6 py-3 rounded-xl font-medium transition-colors"
                                     >
                                         Send message
                                     </button>
